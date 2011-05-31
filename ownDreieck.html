@@ -123,10 +123,10 @@ function init() {
                 var myShaderProgram2 = ShaderProgramBuilder.buildShaderProgram(vertShader2, fragShader2);
                 var myShaderProgram3 = ShaderProgramBuilder.buildShaderProgram(vertShader3, fragShader3);
                    
-                myRoot.shaderProgram = myShaderProgram2;
+                myRoot.shaderProgram = myShaderProgram3;
                 triangle.shaderProgram = myShaderProgram2;
-                triangle2.shaderProgram = myShaderProgram2;
-                triangle3.shaderProgram = myShaderProgram2;
+                triangle2.shaderProgram = myShaderProgram3;
+                triangle3.shaderProgram = myShaderProgram3;
                 console.log(triangle3);
                 triangle4.shaderProgram = myShaderProgram2;
                 object3dCube.shaderProgram = myShaderProgram2;
@@ -136,8 +136,8 @@ function init() {
                 triangle2.textures[0] = myTexture2;
                 triangle2.textures[1] = myTexture3;
                 
-                //triangle3.connectTexture(myTexture, "randomTextureCoord", "uSampler" ,myGl);
-                //triangle2.connectTexture(myTexture2, "randomTextureCoord", "uSampler" ,myGl);
+                triangle3.connectTexture(myTexture3, "randomTextureCoord", "uSampler" ,myGl);
+                triangle2.connectTexture(myTexture3, "randomTextureCoord", "uSampler" ,myGl);
 
                 /*Here RootNode is declared as Node to start drawing.
                 Beginning here, all children of the Node will be drawn.                
