@@ -262,6 +262,18 @@ ShaderProgram.prototype = {
 	fragmentShader: null,
 	// a reference to the compiled and linked binary of the program
 	binary: null,
+	/**
+	 * sets a buffer
+	 * @param para a ShaderParameter object
+	 * @param values the array to be set
+	 */
+	setBuffer: function(para, values, itemSize) {
+		var location;
+		location = this.gl.getAttribLocation(this.binary, para.identifier);
+		gl.bindBuffer(gl.ARRAY_BUFFER, values);
+		gl.vertexAttribPointer(location, itemSize, gl.FLOAT, false, 0, 0);
+	},
+	
 	/*
 	 * sets a shader parameter to a specified value
 	 * @param para a ShaderParameter object

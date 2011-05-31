@@ -29,11 +29,11 @@ Drawer.prototype = {
     	if (obj.buffer.itemSize != null) {
 	    	
 	    	
-	    	WebGLBase.perspective(45, this.currentGl.viewportWidth / this.currentGl.viewportHeight, 0.1, 100.0);
-	     	WebGLBase.setMatrixUniforms(this.currentGl, shaderProgram.binary);	
+	    	WebGLBase.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0);
+	     	WebGLBase.setMatrixUniforms(gl, shaderProgram.binary);	
 
+			shaderProgram.binary.setBuffer()
 	        gl.bindBuffer(gl.ARRAY_BUFFER, obj.buffer.values);
-        
 		    gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, obj.buffer.itemSize, gl.FLOAT, false, 0, 0);
 		    
 		    if (obj.texBuffer != null){
