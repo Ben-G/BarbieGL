@@ -39,7 +39,7 @@ Drawer.prototype = {
 		    gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, obj.buffer.itemSize, gl.FLOAT, false, 0, 0);
 		    
 		    if (obj.texBuffer != null){
-		    	//obj has a texture in use
+		    	//obj has a texture in use COMMIT TEST
 		    	//request texture to be hold in place by textureModel
 		    	TextureModel.activate(obj.textures, obj,gl);      	              	
 		    	
