@@ -1,0 +1,97 @@
+<html>
+<head>
+<title>Bier</title>
+<script type="text/javascript" src="utils/utils.js"></script>
+<script type="text/javascript" src="utils/sort.js"></script>
+<script type="text/javascript" src="utils/drawer.js"></script>
+<script type="text/javascript" src="utils/events.js"></script>
+<script type="text/javascript" src="utils/shapeFactory.js"></script>
+<script type="text/javascript" src="shaders.js"></script>
+<script type="text/javascript" src="model/shaderModel.js"></script>
+<script type="text/javascript" src="model/objectModel.js"></script>
+<script type="text/javascript" src="model/textureModel.js"></script>
+
+
+<script type="text/javascript" src="utils/sylvester.js"></script> 
+<script type="text/javascript" src="utils/GlUtils.js"></script> 
+<script type="text/javascript" src="components/object3D.js"></script>
+<script type="text/javascript" src="components/texture.js"></script>
+<script type="text/javascript" src="skeleton.js"></script>
+
+
+<script type="text/javascript">
+	var frag1;
+	var vert1;
+	var frag2;
+	var vert2;
+	var dl = new DeferrableList();
+	var myDefs = new Array();
+	var myGl;
+	
+	// TODO: find gl mit reingeben
+	myDefs.push(ShaderPartFactory.createFromName("fragshader").addCallback(function(part) { frag1 = part; }));
+	myDefs.push(ShaderPartFactory.createFromName("rotation").addCallback(function(part) { vert1 = part }));
+	myDefs.push(ShaderPartFactory.createFromName("redshader").addCallback(function(part) { frag2 = part; }));
+	myDefs.push(ShaderPartFactory.createFromName("vertshader").addCallback(function(part) { vert2 = part }));
+	dl.addDeferrables(myDefs);
+	dl.finalCallback(function() { main(); });
+	
+	function main() {
+		myGl = WebGLBase.initGL(document.getElementById("scene"));
+		frag1.gl = vert1.gl = frag2.gl = vert2.gl = myGl;
+
+		fragShader = ShaderBuilder.buildShaderFromParts(new Array(frag1), Shader.TYPE_FRAGMENT_SHADER, myGl);
+		vertShader = ShaderBuilder.buildShaderFromParts(new Array(vert1), Shader.TYPE_VERTEX_SHADER, myGl)
+		var program = ShaderProgramBuilder.buildShaderProgram(vertShader, fragShader);
+		
+		fragShader2 = ShaderBuilder.buildShaderFromParts(new Array(frag2), Shader.TYPE_FRAGMENT_SHADER, myGl);
+		vertShader2 = ShaderBuilder.buildShaderFromParts(new Array(vert2), Shader.TYPE_VERTEX_SHADER, myGl)
+		var program2 = ShaderProgramBuilder.buildShaderProgram(vertShader2, fragShader2);		
+		
+		var texture = TextureModel.find("grass.png", myGl);
+		
+
+		/*
+		program.setParameter(vertShader.parts[0].parameters[2], 0.0);
+		program.setParameter(vertShader.parts[0].parameters[3], 0.0);
+		program.setParameter(vertShader.parts[0].parameters[4], 0.0);
+		program.setParameter(vertShader.parts[0].parameters[5], 0.0);
+		program.setParameter(vertShader.parts[0].parameters[6], 0.0);
+		program.setParameter(vertShader.parts[0].parameters[7], 3.1415);
+		program.setParameter(vertShader.parts[0].parameters[8], 0);
+		program.setParameter(vertShader.parts[0].parameters[9], 100);
+		*/
+		
+		
+		//console.log(vertShader.getSrc());
+		myDrawer = new Drawer();
+		var myRoot = new Object3D(myGl);
+		myRoot.shaderProgram = program2;
+		myRoot.zOffset = -10;
+		ObjectModel.find("pyramide").addCallback(
+			 function(data){
+                    triangle = myRoot.add(WebGLBase.createObjectFromFile(data, myGl));
+                    triangle.shaderProgram = program2;
+                    triangle.textures[0] = texture;
+                    triangle.connectTexture(texture, "randomTextureCoord", "uSampler", myGl);
+                    
+                    triangle2 = triangle.add(WebGLBase.createObjectFromFile(data, myGl));
+                    triangle2.shaderProgram = program2;
+                    
+                    triangle3 = myRoot.add(WebGLBase.createObjectFromFile(data, myGl));
+                    triangle3.shaderProgram = program2;
+                    triangle.zOffset=-10;
+                    triangle.xOffset=-1;
+                    triangle.yOffset=2;
+                    triangle2.zOffset=0;
+                    triangle3.zOffset=-10;
+                    
+                    triangle2.xOffset=-2;
+                    triangle3.xOffset=0;
+                    myDrawer.startDrawing(myRoot);
+                   }
+                  );
+	}
+</script>
+	
+<canvas id="scene" width=512 height=512></canvas>

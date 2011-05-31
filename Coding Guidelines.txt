@@ -1,0 +1,50 @@
+JavaScript Klassendefinitionen:
+
+	- zuerst Kommentar
+		
+		/*
+		 * BEGIN Class Klassenname
+		 *
+		 * Beschreibung
+		 */
+
+	- function header
+
+			Klassenname = function() {}
+
+	- dann alle Attribute der Klasse definieren
+		- Kommentar mit Beschreibung
+		- Attributname in Camelcase (Konstanten in Großbuchstaben)
+		- falls möglich einen Standardwert festlegen, falls bekannt:
+			- Strings: ""
+			- int: 0
+			- float 0.0
+			- sonstiges: null
+
+		// Beschreibung
+		Klassenname.attributName = Standardwert
+
+	- danach Definition der Methoden (über prototype)
+		- Methodennamen Camelcase
+		- Kommentar mit Beschreibung
+
+		Klassenname.prototype = {
+			/**
+			 * Beschreibung im JavaDoc Stil
+			 */
+			methodenName: function(attributliste) {
+				body
+			},
+			/**
+			 * Beschreibung im JavaDoc Stil
+			 */
+			methodenName2: function(attributliste) {
+				body
+			},
+		}
+
+	- zum Schluss Kommentar
+
+		/*
+		 * END Class Klassenname
+		 */

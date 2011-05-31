@@ -1,0 +1,6 @@
+{
+  "type": "vertex_shader",
+  "sourcepath": "rotation.glsl"
+}
+
+

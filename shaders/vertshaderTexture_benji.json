@@ -1,0 +1,4 @@
+{
+  "type": "vertex_shader",
+  "sourcepath": "vertshaderTexture_benji.glsl"
+}
