@@ -44,6 +44,7 @@ Drawer.prototype = {
 		    	TextureModel.activate(obj.textures, obj,gl);      	              	
 		    	
 			  
+			  
 		    }
 		    gl.drawArrays(gl.TRIANGLES, 0, obj.buffer.numItems);
         
