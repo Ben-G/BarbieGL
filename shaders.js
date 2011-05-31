@@ -270,8 +270,8 @@ ShaderProgram.prototype = {
 	setBuffer: function(para, values, itemSize) {
 		var location;
 		location = this.gl.getAttribLocation(this.binary, para.identifier);
-		gl.bindBuffer(gl.ARRAY_BUFFER, values);
-		gl.vertexAttribPointer(location, itemSize, gl.FLOAT, false, 0, 0);
+		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, values);
+		this.gl.vertexAttribPointer(location, itemSize, this.gl.FLOAT, false, 0, 0);
 	},
 	
 	/*

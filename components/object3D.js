@@ -44,7 +44,7 @@ function Object3D(gl){
 	
 	this.setShaderProgram = function(program) {
 		this.shaderProgram = program;	     	
-	    this.shaderProgram.vertexPositionAttribute = this.shaderProgram.gl.getAttribLocation(this.shaderProgram.binary, WebGLBase.stdParamNames["VERTEX_POSITION"]);
+	    this.shaderProgram.vertexPositionAttribute = this.shaderProgram.gl.getAttribLocation(this.shaderProgram.binary, WebGLBase.stdParams["VERTEX_POSITION"].identifier);
     	this.shaderProgram.gl.enableVertexAttribArray(this.shaderProgram.vertexPositionAttribute);
 	},
 	
