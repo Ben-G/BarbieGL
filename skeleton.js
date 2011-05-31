@@ -7,10 +7,16 @@ function WebGLBase(){
     //Camera is fixed to 0,0,0
     this.cameraVector = $V([0,0,0,1]);
     
+    this.stdParamNames["VERTEX_POSITION"] = "aVertexPosition";
+    this.stdParamNames["DEFAULT_SAMPLER"] = "uSampler";
+    this.stdParamNames["NORMAL_DIRECTION"] = "aNormalDirection";
+    this.stdParamNames["TEXTURE_COORD"] = "aTextureCoord";
 }
 
 
 WebGLBase.prototype = {
+	stdParamNames: new Object(),
+	
     createShaderProgram: function(shaderArray, gl){
         shaderA = shaderArray[0].binary;
         shaderB = shaderArray[1].binary;

@@ -31,9 +31,7 @@ Drawer.prototype = {
 	    	
 	    	WebGLBase.perspective(45, this.currentGl.viewportWidth / this.currentGl.viewportHeight, 0.1, 100.0);
 	     	WebGLBase.setMatrixUniforms(this.currentGl, shaderProgram.binary);	
-	     	
-	        shaderProgram.vertexPositionAttribute = shaderProgram.gl.getAttribLocation(shaderProgram.binary, "aVertexPosition");
-    		shaderProgram.gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
+
 	        gl.bindBuffer(gl.ARRAY_BUFFER, obj.buffer.values);
         
 		    gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, obj.buffer.itemSize, gl.FLOAT, false, 0, 0);

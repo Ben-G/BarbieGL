@@ -26,6 +26,8 @@ function Object3D(gl){
     
 
 
+
+
     this.xOffset = 0;
     this.yOffset = 0;
     this.zOffset = 0;
@@ -39,6 +41,12 @@ function Object3D(gl){
 	this.rotValue = 0;
 	this.rotation = 0;
 	this.animationspeed = 0;
+	
+	this.setShaderProgram = function(program) {
+		this.shaderProgram = program;	     	
+	    this.shaderProgram.vertexPositionAttribute = shaderProgram.gl.getAttribLocation(shaderProgram.binary, WebGLBase.stdParamNames["VERTEX_POSITION"]);
+    	this.shaderProgram.gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
+	}
 	
 	
 	this.connectTexture = function(texture, shaderAttrib, samplerID, gl){
