@@ -4,6 +4,7 @@ function Drawer(){
     //this.currentShaderProgram
     this.shaders = new Array();
 }
+var last_frame;
 
 Drawer.prototype = {
      startDrawing: function(object){
@@ -13,16 +14,19 @@ Drawer.prototype = {
         this.currentGl.clearDepth(1.0);
         this.currentGl.enable(this.currentGl.DEPTH_TEST);
         this.currentGl.depthFunc(this.currentGl.LEQUAL);
-        setInterval(function(){ myDrawer.drawScene() }, 25);
-    },
+        setInterval(function(){ myDrawer.drawScene() }, 100);
+     },
 
     drawScene: function(){
+    	var last_frame = new Date().getTime();
     	this.currentGl.clear(this.currentGl.COLOR_BUFFER_BIT | this.currentGl.DEPTH_BUFFER_BIT);
     	this.currentShaderProgram = this.currentObject.shaderProgram;
     	this.drawElement(this.currentObject, this.currentGl, this.currentShaderProgram);
+    	console.log("Frame:" + (new Date().getTime() - last_frame) + " ms");
     },
     drawElement : function(obj, gl, shaderProgram, transMat){
     	
+    	var anfang = new Date().getTime();
     	gl.useProgram(shaderProgram.binary);
     	var lastTranslationMat = obj.refresh(gl,shaderProgram, transMat);	
     	
@@ -35,9 +39,11 @@ Drawer.prototype = {
 		    	//request texture to be hold in place by textureModel
 		    	TextureModel.activate(obj.textures, obj,gl);      	              	
 		    }
+		    
 		    gl.drawArrays(gl.TRIANGLES, 0, obj.buffer.numItems);
         
         }
+        //console.log("  " +   obj.name + " " + (new Date().getTime() - anfang) + " ms");
         if (obj.children.length > 0){
             for (var i=0; i<obj.children.length;i++){
             	 this.currentShaderProgram = obj.children[i].shaderProgram;
@@ -48,6 +54,8 @@ Drawer.prototype = {
         
        	gl.useProgram(shaderProgram.binary);
         obj.updateBoundingBox(gl, shaderProgram);
+        
+        
         /*gl.bindBuffer(gl.ARRAY_BUFFER, obj.boundingBox.buffer.values);
         gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, obj.boundingBox.buffer.itemSize, gl.FLOAT, false, 0, 0);
         gl.drawArrays(gl.LINE_LOOP, 0, obj.boundingBox.buffer.numItems);   

@@ -124,14 +124,21 @@ function init() {
                 var myShaderProgram2 = ShaderProgramBuilder.buildShaderProgram(vertShader2, fragShader2);
                 var myShaderProgram3 = ShaderProgramBuilder.buildShaderProgram(vertShader3, fragShader3);
                    
-                myRoot.setShaderProgram(myShaderProgram3);
+                myRoot.setShaderProgram(myShaderProgram2);
+                myRoot.name = "root";
                 triangle.setShaderProgram(myShaderProgram2);
-                triangle2.setShaderProgram(myShaderProgram3);
-                triangle3.setShaderProgram(myShaderProgram3);
+                triangle.name = "triangle";
+                triangle2.setShaderProgram(myShaderProgram2);
+                triangle2.name = "triangle2";
+                triangle3.setShaderProgram(myShaderProgram2);
+                triangle3.name = "triangle3";
                 console.log(triangle3);
                 triangle4.setShaderProgram(myShaderProgram2);
+                triangle4.name = "triangle4";
                 object3dCube.setShaderProgram(myShaderProgram2);
+                object3dCube.name = "3dcude";
                 object3d3.setShaderProgram(myShaderProgram2);
+                object3d3.name = "3d3";
                                 
                 triangle3.textures[0] = myTexture;
                 triangle2.textures[0] = myTexture2;
