@@ -13,7 +13,7 @@ Drawer.prototype = {
         this.currentGl.clearDepth(1.0);
         this.currentGl.enable(this.currentGl.DEPTH_TEST);
         this.currentGl.depthFunc(this.currentGl.LEQUAL);
-        setInterval(function(){ myDrawer.drawScene() }, 10);
+        setInterval(function(){ myDrawer.drawScene() }, 25);
     },
 
     drawScene: function(){

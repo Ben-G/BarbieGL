@@ -8,6 +8,8 @@ function WebGLBase(){
     this.cameraVector = $V([0,0,0,1]);
     
     this.stdParams["VERTEX_POSITION"] = new ShaderParameter("aVertexPosition", "vec3","attribute");
+    this.stdParams["MV_MATRIX"] = new ShaderParameter("uMVMatrix", "mat4","uniform");
+    this.stdParams["P_MATRIX"] = new ShaderParameter("uPMatrix", "mat4","uniform");
     this.stdParams["DEFAULT_SAMPLER"] = new ShaderParameter("aVertexPosition", "sampler2D","uniform");
     this.stdParams["NORMAL_DIRECTION"] = new ShaderParameter("aNormalDirection", "vec3","attribute");
     this.stdParams["TEXTURE_COORD"] = new ShaderParameter("aTextureCoord", "vec2","attribute");
