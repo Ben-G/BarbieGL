@@ -27,22 +27,13 @@ Drawer.prototype = {
     	var lastTranslationMat = obj.refresh(gl,shaderProgram, transMat);	
     	
     	if (obj.buffer.itemSize != null) {
-	    	
-	    	
-	    	WebGLBase.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0);
-	     	WebGLBase.setMatrixUniforms(gl, shaderProgram.binary);	
-
+	     	shaderProgram.setParameter(WebGLBase.stdParams["P_MATRIX"], new Float32Array(WebGLBase.pMatrix.flatten()));
 			shaderProgram.setBuffer(WebGLBase.stdParams["VERTEX_POSITION"], obj.buffer.values, obj.buffer.itemSize);
-	        //gl.bindBuffer(gl.ARRAY_BUFFER, obj.buffer.values);
-		    //gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, obj.buffer.itemSize, gl.FLOAT, false, 0, 0);
-		    
+
 		    if (obj.texBuffer != null){
 		    	//obj has a texture in use COMMIT TEST
 		    	//request texture to be hold in place by textureModel
 		    	TextureModel.activate(obj.textures, obj,gl);      	              	
-		    	
-			  
-			  
 		    }
 		    gl.drawArrays(gl.TRIANGLES, 0, obj.buffer.numItems);
         

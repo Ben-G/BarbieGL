@@ -161,10 +161,6 @@ WebGLBase.prototype = {
  
         return shader;
     },
-    setMatrixUniforms: function(gl, shaderProgram) {
-    	var loc = gl.getUniformLocation(shaderProgram, "uPMatrix");
-        gl.uniformMatrix4fv(loc, false, new Float32Array(this.pMatrix.flatten()))
-    },
     /**
         Creates a Object3D-Object from a specified JSON files
     */
