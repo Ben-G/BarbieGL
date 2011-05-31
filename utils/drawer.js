@@ -32,9 +32,9 @@ Drawer.prototype = {
 	    	WebGLBase.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0);
 	     	WebGLBase.setMatrixUniforms(gl, shaderProgram.binary);	
 
-			shaderProgram.binary.setBuffer()
-	        gl.bindBuffer(gl.ARRAY_BUFFER, obj.buffer.values);
-		    gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, obj.buffer.itemSize, gl.FLOAT, false, 0, 0);
+			shaderProgram.setBuffer(WebGLBase.stdParams["VERTEX_POSITION"], obj.buffer.values);
+	        //gl.bindBuffer(gl.ARRAY_BUFFER, obj.buffer.values);
+		    //gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, obj.buffer.itemSize, gl.FLOAT, false, 0, 0);
 		    
 		    if (obj.texBuffer != null){
 		    	//obj has a texture in use COMMIT TEST
