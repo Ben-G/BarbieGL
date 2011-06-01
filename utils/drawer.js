@@ -32,7 +32,7 @@ Drawer.prototype = {
     	
     	if (obj.buffer.itemSize != null) {
 	     	shaderProgram.setParameter(WebGLBase.stdParams["P_MATRIX"], new Float32Array(WebGLBase.pMatrix.flatten()));
-			shaderProgram.setBuffer(WebGLBase.stdParams["VERTEX_POSITION"], obj.buffer.values, obj.buffer.itemSize);
+			shaderProgram.setBuffer(WebGLBase.stdParams["VERTEX_POSITION"], obj.buffer, new Float32Array(obj.vertices));
 
 		    if (obj.texBuffer != null){
 		    	//obj has a texture in use COMMIT TEST

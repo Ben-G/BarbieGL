@@ -267,11 +267,14 @@ ShaderProgram.prototype = {
 	 * @param para a ShaderParameter object
 	 * @param values the array to be set
 	 */
-	setBuffer: function(para, values, itemSize) {
+	setBuffer: function(para, buffer, values) {
+		if(buffer == null) return;
 		var location;
-		location = this.gl.getAttribLocation(this.binary, para.identifier);
-		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, values);
-		this.gl.vertexAttribPointer(location, itemSize, this.gl.FLOAT, false, 0, 0);
+		var gl = this.gl;
+		location = gl.getAttribLocation(this.binary, para.identifier);
+		gl.bindBuffer(gl.ARRAY_BUFFER, buffer.values);
+		gl.bufferData(gl.ARRAY_BUFFER, values, gl.STATIC_DRAW);
+		gl.vertexAttribPointer(location, buffer.itemSize, gl.FLOAT, false, 0, 0);
 	},
 	
 	/*
