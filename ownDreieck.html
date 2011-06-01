@@ -87,9 +87,10 @@ function init() {
     myDefs[5] = WebGLBase.objectModel.find("triangle2").addCallback(
                 function(data){
                     triangle2 = triangle.add(WebGLBase.createObjectFromFile(data, myGl));
+                    temp = data;
                     triangle2.xOffset = 3;
                     triangle2.zOffset = -2;
-                   triangle2.startRotation(2,"y");
+                   	triangle2.startRotation(2,"y");
                     triangle2.onMyFirstEvent = function(data){alert("im triangle2: "+data);};
                     var myEventID = WebGLBase.event.register("a",triangle2.onMyFirstEvent);
                     WebGLBase.event.unregister("a", myEventID);
@@ -97,6 +98,7 @@ function init() {
     myDefs[6] = WebGLBase.objectModel.find("pyramide").addCallback(
                 function(data){
                     triangle3 = triangle2.add(WebGLBase.createObjectFromFile(data, myGl));
+                   
                     triangle3.yOffset = 3;
                     triangle3.xOffset = 5;
                     triangle3.startRotation(2,"x");
@@ -131,10 +133,16 @@ function init() {
                 triangle4.setShaderProgram(myShaderProgram2);
                 object3dCube.setShaderProgram(myShaderProgram2);
                 object3d3.setShaderProgram(myShaderProgram2);
+                
+                 /*for (i=0;i<100;i++){
+                    	triangleTemp = triangle2.add(WebGLBase.createObjectFromFile(temp, myGl));
+                    	triangleTemp.xOffset = i; 
+                    	triangleTemp.setShaderProgram(myShaderProgram2);
+                 }*/
                                 
                 triangle3.textures[0] = myTexture;
                 triangle2.textures[0] = myTexture2;
-                triangle2.textures[1] = myTexture3;
+
                 
                 triangle3.connectTexture(myTexture, "randomTextureCoord", "uSampler" ,myGl);
                 triangle2.connectTexture(myTexture2, "randomTextureCoord", "uSampler" ,myGl);

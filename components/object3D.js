@@ -54,6 +54,7 @@ function Object3D(gl){
 			
 		texture.attribLocation = gl.getAttribLocation(this.shaderProgram.binary, shaderAttrib);
         gl.enableVertexAttribArray(texture.attribLocation); 
+        //Texturinstanz ist dediziert für ein bestimmten Shader
         texture.sampler =  gl.getUniformLocation(this.shaderProgram.binary, samplerID); 
 	}
 	

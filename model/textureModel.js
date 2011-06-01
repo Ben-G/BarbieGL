@@ -7,7 +7,7 @@ function TextureUnit(unitID, texUnit){
 function TextureModel(){
 	this.cache = new Object();
 	this.currentUnit = 0;
-	this.maxUnit = 3;
+	this.maxUnit = 2;
 	this.textureUnitsArray = new Array();
 }
 
