@@ -21,7 +21,7 @@
 function init() {
     object3d = new Array();
  	var myGl = WebGLBase.initGL(document.getElementById("scene"));
- 	WebGLBase.perspective(45, myGl.viewportWidth / myGl.viewportHeight, 0.1, 100.0);
+ 	
     var myShaders = new Array();
     var myShaders2 = new Array();
     var myShaders3 = new Array();
@@ -128,9 +128,9 @@ function init() {
                 myRoot.name = "root";
                 triangle.setShaderProgram(myShaderProgram2);
                 triangle.name = "triangle";
-                triangle2.setShaderProgram(myShaderProgram2);
+                triangle2.setShaderProgram(myShaderProgram3);
                 triangle2.name = "triangle2";
-                triangle3.setShaderProgram(myShaderProgram2);
+                triangle3.setShaderProgram(myShaderProgram3);
                 triangle3.name = "triangle3";
                 console.log(triangle3);
                 triangle4.setShaderProgram(myShaderProgram2);
