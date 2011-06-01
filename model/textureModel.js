@@ -7,7 +7,7 @@ function TextureUnit(unitID, texUnit){
 function TextureModel(){
 	this.cache = new Object();
 	this.currentUnit = 0;
-	this.maxUnit = 3;
+	this.maxUnit = 4;
 	this.textureUnitsArray = new Array();
 }
 
@@ -57,6 +57,9 @@ TextureModel.prototype = {
 			        gl.bindTexture(gl.TEXTURE_2D, newTexture.webglTexture);
 			        console.log("aktualisiereTextur");
 	        
+	       		}
+	       		if(obj.name == "triangle") {
+	       			console.log("nicht");
 	       		}
 	       		obj.shaderProgram.setParameter(newTexture.samplerParameter, newTexture.textureUnit);
 	       		obj.shaderProgram.setBuffer(newTexture.coordParameter, obj.texBuffer, new Float32Array(obj.texBuffer.buffer))

@@ -272,6 +272,7 @@ ShaderProgram.prototype = {
 		var location;
 		var gl = this.gl;
 		location = gl.getAttribLocation(this.binary, para.identifier);
+		if(location == -1) return;
 		gl.bindBuffer(gl.ARRAY_BUFFER, buffer.values);
 		gl.bufferData(gl.ARRAY_BUFFER, values, gl.STATIC_DRAW);
 		gl.vertexAttribPointer(location, buffer.itemSize, gl.FLOAT, false, 0, 0);

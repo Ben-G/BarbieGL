@@ -126,7 +126,7 @@ function init() {
                    
                 myRoot.setShaderProgram(myShaderProgram2);
                 myRoot.name = "root";
-                triangle.setShaderProgram(myShaderProgram2);
+                triangle.setShaderProgram(myShaderProgram3);
                 triangle.name = "triangle";
                 triangle2.setShaderProgram(myShaderProgram3);
                 triangle2.name = "triangle2";
@@ -146,7 +146,7 @@ function init() {
                 */
                 triangle3.addTexture(myTexture, "randomTextureCoord", "uSampler" ,myGl);
                 triangle2.addTexture(myTexture2, "randomTextureCoord", "uSampler" ,myGl);
-                triangle2.addTexture(myTexture3, "randomTextureCoord", "uSampler" ,myGl);
+                triangle.addTexture(myTexture3, "randomTextureCoord", "uSampler" ,myGl);
 
                 /*Here RootNode is declared as Node to start drawing.
                 Beginning here, all children of the Node will be drawn.                
