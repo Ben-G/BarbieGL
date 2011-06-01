@@ -88,10 +88,6 @@ function Object3D(gl){
 		    this.rotationMatrix = WebGLBase.createRotationMatrix(this.rotationAxis, this.rotValue);
 		    translationMatrix = translationMatrix.x(this.rotationMatrix);
 
-		    var mvUniform = gl.getUniformLocation(shaderProgram.binary, "uMVMatrix");
-		    gl.uniformMatrix4fv(mvUniform, false, new Float32Array(translationMatrix.flatten()));
-
-			
             return this.lastTranslMatrix = translationMatrix;
     }
 
