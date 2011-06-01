@@ -41,8 +41,9 @@ Drawer.prototype = {
 		    }
 		    
 		    gl.drawArrays(gl.TRIANGLES, 0, obj.buffer.numItems);
-        
+        	
         }
+        
         //console.log("  " +   obj.name + " " + (new Date().getTime() - anfang) + " ms");
         if (obj.children.length > 0){
             for (var i=0; i<obj.children.length;i++){
@@ -55,7 +56,7 @@ Drawer.prototype = {
        	gl.useProgram(shaderProgram.binary);
         obj.updateBoundingBox(gl, shaderProgram);
         
-        
+        //console.log(obj.name + " " + (new Date().getTime() - anfang) + " ms");
         /*gl.bindBuffer(gl.ARRAY_BUFFER, obj.boundingBox.buffer.values);
         gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, obj.boundingBox.buffer.itemSize, gl.FLOAT, false, 0, 0);
         gl.drawArrays(gl.LINE_LOOP, 0, obj.boundingBox.buffer.numItems);   
