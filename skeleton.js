@@ -77,6 +77,7 @@ WebGLBase.prototype = {
         var newGL =  canvas.getContext(this.CONTEXTNAME);
         newGL.viewportWidth = canvas.width;
         newGL.viewportHeight = canvas.height;
+        WebGLBase.perspective(45, newGL.viewportWidth / newGL.viewportHeight, 0.1, 100.0);
         if(!newGL) {
         console.log("Error initialising WebGL!");
         }
