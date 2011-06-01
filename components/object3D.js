@@ -187,7 +187,7 @@ function Object3D(gl){
         this.minPoint = new Point3D(VMin.elements[0],VMin.elements[1],VMin.elements[2]);
         this.maxPoint = new Point3D(VMax.elements[0],VMax.elements[1],VMax.elements[2]);
 
-        this.boundings[0] = createBoundingBox(this.minPoint, this.maxPoint);
+        //this.boundings[0] = createBoundingBox(this.minPoint, this.maxPoint);
         this.boundingBox = WebGLBase.createBoundingBox(this.boundings, this.boundingBox , gl); 
 
         //Override the translationMatrix in the Shader because here the translation is applied
