@@ -40,26 +40,29 @@ TextureModel.prototype = {
     _addToCache: function(shaderName,shaderString){
         this.cache[shaderName] = shaderString;
     },
-    activate: function(textures,obj, gl){
-    	    	
-    	for (i=0; i<textures.length; i++){    	
-	    	var newTexture = textures[i];
-	    	
-	    	if (newTexture.textureUnit == null){
-	    	
-		    	var texUnit = this.getTexUnit(gl);
+    activate: function(obj){
+    	var gl = obj.gl;
+    	if(obj.shaderProgram == null) throw "You must set a shader program first"; 	
+    	for (i=0; i<obj.textures.length; i++){   	
+	    	var newTexture = obj.textures[i];
+	    	if(newTexture.samplerParameter != null) {
+		    	if (newTexture.textureUnit == null){
 		    	
-				newTexture.textureUnit = texUnit.unitIdentifier;
-				this.textureUnitsArray[texUnit.unitIdentifier] = newTexture;
-				newTexture.texUnit = texUnit.textureUnit;
-			    gl.activeTexture(newTexture.texUnit);
-		        gl.bindTexture(gl.TEXTURE_2D, newTexture.webglTexture);
-		        console.log("aktualisiereTextur");
-        
+			    	var texUnit = this.getTexUnit(gl);
+			    	
+					newTexture.textureUnit = texUnit.unitIdentifier;
+					this.textureUnitsArray[texUnit.unitIdentifier] = newTexture;
+					newTexture.texUnit = texUnit.textureUnit;
+				    gl.activeTexture(newTexture.texUnit);
+			        gl.bindTexture(gl.TEXTURE_2D, newTexture.webglTexture);
+			        console.log("aktualisiereTextur");
+	        
+	       		}
+	       		obj.shaderProgram.setParameter(newTexture.samplerParameter, newTexture.textureUnit);
+	       		obj.shaderProgram.setBuffer(newTexture.coordParameter, obj.texBuffer, new Float32Array(obj.texBuffer.buffer))
        		}
-       	    gl.uniform1i(obj.textures[i].sampler, obj.textures[i].textureUnit);
-            gl.bindBuffer(gl.ARRAY_BUFFER,obj.texBuffer.values);
-			gl.vertexAttribPointer(obj.textures[i].attribLocation,obj.texBuffer.itemSize, gl.FLOAT, false, 0,0);
+            //gl.bindBuffer(gl.ARRAY_BUFFER,obj.texBuffer.values);
+			//gl.vertexAttribPointer(obj.textures[i].attribLocation,obj.texBuffer.itemSize, gl.FLOAT, false, 0,0);
        }
     },
     getTexUnit: function(gl){

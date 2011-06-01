@@ -45,17 +45,20 @@ function Object3D(gl){
 		this.shaderProgram = program;	     	
 	    this.shaderProgram.vertexPositionAttribute = this.shaderProgram.gl.getAttribLocation(this.shaderProgram.binary, WebGLBase.stdParams["VERTEX_POSITION"].identifier);
     	this.shaderProgram.gl.enableVertexAttribArray(this.shaderProgram.vertexPositionAttribute);
-	},
+	}
 	
 	
-	this.connectTexture = function(texture, shaderAttrib, samplerID, gl){
+	this.addTexture = function(texture, shaderAttrib, samplerID, gl){
 		if (this.shaderProgram === null)
 			throw "ConnectWithoutShaderException";
 			
-		texture.attribLocation = gl.getAttribLocation(this.shaderProgram.binary, shaderAttrib);
-        gl.enableVertexAttribArray(texture.attribLocation); 
-        //Texturinstanz ist dediziert für ein bestimmten Shader
-        texture.sampler =  gl.getUniformLocation(this.shaderProgram.binary, samplerID); 
+		var texCoordsPara = new ShaderParameter(shaderAttrib, "vec2", "attribute");
+		var samplerPara = new ShaderParameter(samplerID, "sampler2D", "uniform");
+
+		texture.coordParameter = texCoordsPara;
+        texture.samplerParameter =  samplerPara;
+        
+        this.textures.push(texture);
 	}
 	
 	
@@ -89,10 +92,6 @@ function Object3D(gl){
 		    this.rotationMatrix = WebGLBase.createRotationMatrix(this.rotationAxis, this.rotValue);
 		    translationMatrix = translationMatrix.x(this.rotationMatrix);
 
-		    var mvUniform = gl.getUniformLocation(shaderProgram.binary, "uMVMatrix");
-		    gl.uniformMatrix4fv(mvUniform, false, new Float32Array(translationMatrix.flatten()));
-
-			
             return this.lastTranslMatrix = translationMatrix;
     }
 
@@ -195,10 +194,7 @@ function Object3D(gl){
         //Override the translationMatrix in the Shader because here the translation is applied
         //to the vertices directly
         
-        var mvUniform = gl.getUniformLocation(shaderProgram.binary, "uMVMatrix");
-        gl.uniformMatrix4fv(mvUniform, false, new Float32Array(Matrix.I(4).flatten()));
-
-        //var mvUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
-		//gl.uniformMatrix4fv(mvUniform, false, new Float32Array(WebGLBase.pMatrix.flatten()));
+        //var mvUniform = gl.getUniformLocation(shaderProgram.binary, "uMVMatrix");
+        //gl.uniformMatrix4fv(mvUniform, false, new Float32Array(Matrix.I(4).flatten()));
     }
 }

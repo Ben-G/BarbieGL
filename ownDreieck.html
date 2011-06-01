@@ -134,18 +134,8 @@ function init() {
                 object3dCube.setShaderProgram(myShaderProgram2);
                 object3d3.setShaderProgram(myShaderProgram2);
                 
-                 /*for (i=0;i<100;i++){
-                    	triangleTemp = triangle2.add(WebGLBase.createObjectFromFile(temp, myGl));
-                    	triangleTemp.xOffset = i; 
-                    	triangleTemp.setShaderProgram(myShaderProgram2);
-                 }*/
-                                
-                triangle3.textures[0] = myTexture;
-                triangle2.textures[0] = myTexture2;
-
-                
-                triangle3.connectTexture(myTexture, "randomTextureCoord", "uSampler" ,myGl);
-                triangle2.connectTexture(myTexture2, "randomTextureCoord", "uSampler" ,myGl);
+                triangle3.addTexture(myTexture, "randomTextureCoord", "uSampler" ,myGl);
+                triangle2.addTexture(myTexture2, "randomTextureCoord", "uSampler" ,myGl);
 
                 /*Here RootNode is declared as Node to start drawing.
                 Beginning here, all children of the Node will be drawn.                

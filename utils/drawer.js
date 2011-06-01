@@ -28,16 +28,17 @@ Drawer.prototype = {
     	
     	var anfang = new Date().getTime();
     	gl.useProgram(shaderProgram.binary);
-    	var lastTranslationMat = obj.refresh(gl,shaderProgram, transMat);	
+    	var translationMat = obj.refresh(gl,shaderProgram, transMat);	
     	
     	if (obj.buffer.itemSize != null) {
 	     	shaderProgram.setParameter(WebGLBase.stdParams["P_MATRIX"], new Float32Array(WebGLBase.pMatrix.flatten()));
-			shaderProgram.setBuffer(WebGLBase.stdParams["VERTEX_POSITION"], obj.buffer.values, obj.buffer.itemSize);
+			shaderProgram.setParameter(WebGLBase.stdParams["MV_MATRIX"], new Float32Array(translationMat.flatten()));
+			shaderProgram.setBuffer(WebGLBase.stdParams["VERTEX_POSITION"], obj.buffer, new Float32Array(obj.vertices));
 
 		    if (obj.texBuffer != null){
 		    	//obj has a texture in use COMMIT TEST
 		    	//request texture to be hold in place by textureModel
-		    	TextureModel.activate(obj.textures, obj,gl);      	              	
+		    	TextureModel.activate(obj);      	              	
 		    }
 		    
 		    gl.drawArrays(gl.TRIANGLES, 0, obj.buffer.numItems);
@@ -48,7 +49,7 @@ Drawer.prototype = {
         if (obj.children.length > 0){
             for (var i=0; i<obj.children.length;i++){
             	 this.currentShaderProgram = obj.children[i].shaderProgram;
-                 this.drawElement(obj.children[i],gl,this.currentShaderProgram, lastTranslationMat);
+                 this.drawElement(obj.children[i],gl,this.currentShaderProgram, translationMat);
                 
             }
         }
