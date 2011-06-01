@@ -10,7 +10,7 @@ Drawer.prototype = {
      startDrawing: function(object){
         this.currentObject = object;
         this.currentGl = object.gl;
-        this.currentGl.clearColor(0.5, 0.5, 0.5, 1.0);     
+        this.currentGl.clearColor(0.0, 0.0, 0.0, 1.0);     
         this.currentGl.clearDepth(1.0);
         this.currentGl.enable(this.currentGl.DEPTH_TEST);
         this.currentGl.depthFunc(this.currentGl.LEQUAL);
@@ -22,7 +22,7 @@ Drawer.prototype = {
     	this.currentGl.clear(this.currentGl.COLOR_BUFFER_BIT | this.currentGl.DEPTH_BUFFER_BIT);
     	this.currentShaderProgram = this.currentObject.shaderProgram;
     	this.drawElement(this.currentObject, this.currentGl, this.currentShaderProgram);
-    	console.log("Frame:" + (new Date().getTime() - last_frame) + " ms");
+    	//console.log("Frame:" + (new Date().getTime() - last_frame) + " ms");
     },
     drawElement : function(obj, gl, shaderProgram, transMat){
     	
