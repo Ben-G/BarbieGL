@@ -38,7 +38,7 @@ Drawer.prototype = {
 		    if (obj.texBuffer != null){
 		    	//obj has a texture in use COMMIT TEST
 		    	//request texture to be hold in place by textureModel
-		    	TextureModel.activate(obj.textures, obj,gl);      	              	
+		    	TextureModel.activate(obj);      	              	
 		    }
 		    
 		    gl.drawArrays(gl.TRIANGLES, 0, obj.buffer.numItems);
