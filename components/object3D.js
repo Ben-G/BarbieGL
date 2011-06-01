@@ -1,3 +1,18 @@
+
+ShaderParameter.prototype = {
+	// the identifier of the parameter
+	identifier: "",
+	// the datatype (vec2, mat4, float, int etc.)
+	type: "",
+	// the modifier (uniform, attribute or varying)
+	modifier: "",
+	// a pointer to the parameters location in the GPU Memory (a WebGL specific object)
+	location: null,
+	getSrc: function() {
+		return this.modifier + " " + this.type + " " + this.identifier;
+	}
+};
+
 function Object3D(gl){
 	this.gl = gl;
 	this.buffer = new Object();
@@ -44,9 +59,9 @@ function Object3D(gl){
 	
 	this.setShaderProgram = function(program) {
 		this.shaderProgram = program;	     	
-	    this.shaderProgram.vertexPositionAttribute = this.shaderProgram.gl.getAttribLocation(this.shaderProgram.binary, WebGLBase.stdParams["VERTEX_POSITION"].identifier);
+	    this.shaderProgram.vertexPositionAttribute = this.shaderProgram.gl.getAttribLocation(this.shaderProgram.binary, WebGLBase.stdParamNames["VERTEX_POSITION"]);
     	this.shaderProgram.gl.enableVertexAttribArray(this.shaderProgram.vertexPositionAttribute);
-	},
+	}
 	
 	
 	this.connectTexture = function(texture, shaderAttrib, samplerID, gl){

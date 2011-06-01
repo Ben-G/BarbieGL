@@ -4,8 +4,8 @@
 <title>Learning WebGL &mdash; lesson 6</title> 
 <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1"> 
  
-<script type="text/javascript" src="sylvester.js"></script> 
-<script type="text/javascript" src="GlUtils.js"></script> 
+<script type="text/javascript" src="utils/sylvester.js"></script> 
+<script type="text/javascript" src="utils/GlUtils.js"></script> 
  
 <script id="shader-fs" type="x-shader/x-fragment"> 
   #ifdef GL_ES
@@ -17,6 +17,7 @@
   uniform sampler2D uSampler;
  
   void main(void) {
+  	float alpha=texture2D(uSampler,vTextureCoord).a;
     gl_FragColor = texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t));
   }
 </script> 
@@ -146,7 +147,7 @@
 	    context_3d.enable(context_3d.TEXTURE_2D);
 	    context_3d.bindTexture(context_3d.TEXTURE_2D, texture);
 	    context_3d.pixelStorei(context_3d.UNPACK_FLIP_Y_WEBGL, true);
-	    context_3d.texImage2D(context_3d.TEXTURE_2D, 0,context_3d.RGBA, context_3d.RGBA, context_3d.UNSIGNED_BYTE,canvas_2d);
+	    context_3d.texImage2D(context_3d.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas_2d);
 	    context_3d.texParameteri(context_3d.TEXTURE_2D, context_3d.TEXTURE_MAG_FILTER, context_3d.LINEAR);
 	    context_3d.texParameteri(context_3d.TEXTURE_2D, context_3d.TEXTURE_MIN_FILTER, context_3d.LINEAR_MIPMAP_NEAREST);
 	    context_3d.generateMipmap(context_3d.TEXTURE_2D);
@@ -160,9 +161,8 @@
     var ctx = crateImage.getContext('2d');
     var date = new Date();
     var secs = date.getSeconds() + date.getMilliseconds() / 1000;
-    ctx.fillStyle = 'rgba(255,0,0,255)';
-    ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-    ctx.fillStyle = 'white';
+    ctx.globalAlpha = 0.0;
+    ctx.fillStyle = 'black';
     ctx.lineWidth = 5;
     ctx.strokeStyle = 'black';
     ctx.save();
@@ -175,9 +175,9 @@
     //  two(date.getSeconds());
     var leftOffset = ctx.canvas.width / 2;
     var topOffset = ctx.canvas.height / 2;
-    ctx.strokeText(text, leftOffset, topOffset);
+    //ctx.strokeText(text, leftOffset, topOffset);
     ctx.fillText(text, leftOffset, topOffset);
-    ctx.restore();
+    //ctx.restore();
      crateTexture = map2DCanvasAsTexture(crateImage, gl);
   }
 
@@ -406,7 +406,7 @@ initBuffers();
 </head> 
  
  
-<body onload="webGLStart();"> 
+<body onload="webGLStart();" bgcolor="green"> 
   <a href="http://learningwebgl.com/blog/?p=571">&lt;&lt; Back to Lesson 6</a><br /> 
  
   <canvas id="lesson06-canvas" style="border: none;" width="500" height="500"></canvas> 
