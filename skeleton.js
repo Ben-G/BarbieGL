@@ -84,6 +84,7 @@ WebGLBase.prototype = {
         return newGL;
     },
     createObject3D: function(polygons, gl){
+    	
         var newObject = new Object3D();
         newObject.gl = gl;
         newObject.buffer.values = gl.createBuffer();
@@ -98,20 +99,15 @@ WebGLBase.prototype = {
         newObject.buffer.numItems = totalItemSize/3;
         return newObject;
     },
-    createBoundingBox: function(polygons, box ,gl){
-    	if(box == null) return this.createObject3D(polygons, gl);
-    	
-        newObject = box;
-	    gl.bindBuffer(gl.ARRAY_BUFFER, newObject.buffer.values);
-        var totalItemSize = 0;	
-        for (var i=0; i<polygons.length; i++){
-	        newObject.vertices = newObject.vertices.concat(polygons[i]);
-	        totalItemSize+=polygons[i].length;
-        }
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(newObject.vertices), gl.STATIC_DRAW);
-        newObject.buffer.itemSize = 3;
-        newObject.buffer.numItems = totalItemSize/3;
-        return newObject;
+    createBoundingBox: function(polygons, boundingBox ,gl){
+    	if(boundingBox == null) return this.createObject3D(polygons, gl);    	        
+	    gl.bindBuffer(gl.ARRAY_BUFFER, boundingBox.buffer.values);  
+	    boundingBox.vertices = polygons;
+	    var totalItemSize = polygons.length;                     
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(boundingBox.vertices), gl.STATIC_DRAW);
+        boundingBox.buffer.itemSize = 3;
+        boundingBox.buffer.numItems = totalItemSize/3;
+        return boundingBox;
     },
        /**
             privat method; Used by "CreateObjectFromFile". Differs from "createObject3D" because
@@ -404,7 +400,7 @@ function createBoundingBox(minPoint, maxPoint) {
     minPoint.x, minPoint.y,  maxPoint.z,
     minPoint.x,  maxPoint.y, maxPoint.z,
     minPoint.x,  maxPoint.y, minPoint.z,
-    ]	
+    ];
 }
 
 

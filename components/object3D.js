@@ -4,7 +4,6 @@ function Object3D(gl){
 	this.texBuffer = null;
     this.children = new Array();
     this.vertices = new Array();
-    this.boundings = new Array();
     this.textures = new Array();
     //this.boundingBox
     //this.lastTranslMatrix
@@ -92,7 +91,7 @@ function Object3D(gl){
 		    var mvUniform = gl.getUniformLocation(shaderProgram.binary, "uMVMatrix");
 		    gl.uniformMatrix4fv(mvUniform, false, new Float32Array(translationMatrix.flatten()));
 
-
+			
             return this.lastTranslMatrix = translationMatrix;
     }
 
@@ -186,9 +185,11 @@ function Object3D(gl){
                  
         this.minPoint = new Point3D(VMin.elements[0],VMin.elements[1],VMin.elements[2]);
         this.maxPoint = new Point3D(VMax.elements[0],VMax.elements[1],VMax.elements[2]);
+		
+		//var boundings= new Array();
+        boundings = createBoundingBox(this.minPoint, this.maxPoint);
+        this.boundingBox = WebGLBase.createBoundingBox(boundings, this.boundingBox, gl);
 
-        //this.boundings[0] = createBoundingBox(this.minPoint, this.maxPoint);
-        this.boundingBox = WebGLBase.createBoundingBox(this.boundings, this.boundingBox , gl); 
 
         //Override the translationMatrix in the Shader because here the translation is applied
         //to the vertices directly
