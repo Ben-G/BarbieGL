@@ -1,18 +1,3 @@
-
-ShaderParameter.prototype = {
-	// the identifier of the parameter
-	identifier: "",
-	// the datatype (vec2, mat4, float, int etc.)
-	type: "",
-	// the modifier (uniform, attribute or varying)
-	modifier: "",
-	// a pointer to the parameters location in the GPU Memory (a WebGL specific object)
-	location: null,
-	getSrc: function() {
-		return this.modifier + " " + this.type + " " + this.identifier;
-	}
-};
-
 function Object3D(gl){
 	this.gl = gl;
 	this.buffer = new Object();
