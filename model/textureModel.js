@@ -58,9 +58,6 @@ TextureModel.prototype = {
 			        console.log("aktualisiereTextur");
 	        
 	       		}
-	       		if(obj.name == "triangle") {
-	       			console.log("nicht");
-	       		}
 	       		obj.shaderProgram.setParameter(newTexture.samplerParameter, newTexture.textureUnit);
 	       		obj.shaderProgram.setBuffer(newTexture.coordParameter, obj.texBuffer, new Float32Array(obj.texBuffer.buffer))
        		}

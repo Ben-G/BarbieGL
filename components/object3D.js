@@ -24,7 +24,7 @@ function Object3D(gl){
     this.normals[4] = Vector.create([-1,0,0]);
     
 
-
+	this.animations = new Array();
 
 
     this.xOffset = 0;
@@ -40,6 +40,10 @@ function Object3D(gl){
 	this.rotValue = 0;
 	this.rotation = 0;
 	this.animationspeed = 0;
+	
+	this.addAnimation= function (animation) {
+		this.animations.push(animation);
+	}
 	
 	this.setShaderProgram = function(program) {
 		this.shaderProgram = program;	     	
@@ -88,9 +92,15 @@ function Object3D(gl){
     
 		    if (this.rotation == true){
 			    this.rotValue += this.animationspeed;
+		   	 	this.rotationMatrix = WebGLBase.createRotationMatrix(this.rotationAxis, this.rotValue);
+		    	translationMatrix = translationMatrix.x(this.rotationMatrix);
 		    }
-		    this.rotationMatrix = WebGLBase.createRotationMatrix(this.rotationAxis, this.rotValue);
-		    translationMatrix = translationMatrix.x(this.rotationMatrix);
+
+
+			
+			for(var i = 0; i<this.animations.length; i++) {
+				this.animations[i].refresh(this);
+			}
 
             return this.lastTranslMatrix = translationMatrix;
     }

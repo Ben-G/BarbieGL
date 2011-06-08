@@ -8,6 +8,7 @@
 <script type="text/javascript" src="components/texture.js"></script>
 <script type="text/javascript" src="model/shaderModel.js"></script>
 <script type="text/javascript" src="shaders.js"></script>
+<script type="text/javascript" src="animation.js"></script>
 <script type="text/javascript" src="model/textureModel.js"></script>
 <script type="text/javascript" src="model/objectModel.js"></script>
 <script type="text/javascript" src="utils/sylvester.js"></script> 
@@ -75,7 +76,7 @@ function init() {
                     //thirdChild.xOffset = -30;
                     triangle.xOffset = 0;
                     triangle.zOffset = -40;
-                    triangle.startRotation(2,"y");
+                    //triangle.startRotation(2,"y");
                     triangle.onMyFirstEvent = function(event){
                                                 console.log( hitTest(event.clientX, event.clientY, myRoot) );
                                             };
@@ -90,7 +91,7 @@ function init() {
                     triangle2 = triangle.add(WebGLBase.createObjectFromFile(data, myGl));
                     triangle2.xOffset = 3;
                     triangle2.zOffset = -2;
-                   triangle2.startRotation(2,"y");
+                   //triangle2.startRotation(2,"y");
                     triangle2.onMyFirstEvent = function(data){alert("im triangle2: "+data);};
                     var myEventID = WebGLBase.event.register("a",triangle2.onMyFirstEvent);
                     WebGLBase.event.unregister("a", myEventID);
@@ -100,7 +101,7 @@ function init() {
                     triangle3 = triangle2.add(WebGLBase.createObjectFromFile(data, myGl));
                     triangle3.yOffset = 3;
                     triangle3.xOffset = 5;
-                    triangle3.startRotation(2,"x");
+                    //triangle3.startRotation(2,"x");
                 });
     myDefs[7] = WebGLBase.objectModel.find("pyramide").addCallback(
                 function(data){
@@ -108,7 +109,7 @@ function init() {
                     triangle4.yOffset = 10;
                     triangle4.xOffset = 5;
                     triangle4.zOffset = -30;
-                    triangle4.startRotation(2,"y");
+                  //  triangle4.startRotation(2,"y");
                 });
 
     def.finalCallback(function(){ 
@@ -124,6 +125,28 @@ function init() {
                 var myShaderProgram2 = ShaderProgramBuilder.buildShaderProgram(vertShader2, fragShader2);
                 var myShaderProgram3 = ShaderProgramBuilder.buildShaderProgram(vertShader3, fragShader3);
                    
+                   
+                var rotani = new RotationAnimation();
+                rotani.type = Animation.TYPE_ONCE;
+                rotani.duration = 1000;
+                rotani.end_offset_x = 360;
+                rotani.end_offset_z = 25;
+                rotani.name = "rotani";
+                
+                
+                var rotani2 = new RotationAnimation();
+                rotani2.type = Animation.TYPE_ONCE;
+                rotani2.duration = 1000;
+                rotani2.start_offset_x = 360;
+                rotani2.start_offset_z = 25;
+                rotani2.end_offset_x = 0;
+                rotani2.name = "rotani2";
+                
+
+                rotani.addSuccessor(rotani2);
+                rotani2.addSuccessor(rotani);
+                
+                   
                 myRoot.setShaderProgram(myShaderProgram2);
                 myRoot.name = "root";
                 triangle.setShaderProgram(myShaderProgram3);
@@ -132,6 +155,10 @@ function init() {
                 triangle2.name = "triangle2";
                 triangle3.setShaderProgram(myShaderProgram3);
                 triangle3.name = "triangle3";
+            
+                triangle3.addAnimation(rotani);
+                triangle3.addAnimation(rotani2);
+                rotani.start();
                 console.log(triangle3);
                 triangle4.setShaderProgram(myShaderProgram2);
                 triangle4.name = "triangle4";
@@ -163,6 +190,7 @@ function init() {
 </head>
 <body onload="init()">
 <canvas id="scene" onClick='WebGLBase.event.eventOccured("a",event);' width=512 height=512></canvas>
+<div id="fps" width=100></div>
 <button name="Klickmich" type="button"
       value="Überraschung" onclick='WebGLBase.event.eventOccured("moveLeft","blabla");'>
       <p>

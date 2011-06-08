@@ -171,7 +171,16 @@ Shader.prototype = {
 	binary: null,
 	// states wether the shader is compiled or not
 	isCompiled: false,
-
+	/**
+	 * returns the shaders ShaderParameter object with the given identifier, if there is one
+	 */
+	getParameterById: function(id) {
+		for(var i = 0;i<this.parts.length;i++) {
+			var p1 = this.parts[i].getParameterById(id);
+			if(p1 != null) return p1;		
+		}
+		return null;
+	},
 	/*
 	 * compiles this shader and saves the compiled program in this.binary
 	 * if the shader is not yet compiled yet
@@ -198,8 +207,16 @@ Shader.prototype = {
 	 */
 	addShaderPart: function(part) {
 		if(part.type != this.type) throw "Cannot add a different shader type";
-		this.parts.push(part);
-		this.isCompiled = false;
+		if(!this._partIsContained(part)) {
+			this.parts.push(part);
+			this.isCompiled = false;
+		}
+	},
+	_partIsContained: function(part) {
+		for(var i = 0;i<this.parts.length;i++) {
+			if(this.parts[i].name == part.name) return true;
+		}
+		return false;
 	},
 	getTextureSamplerNames: function() {
 		var names = new Array();
@@ -263,6 +280,16 @@ ShaderProgram.prototype = {
 	// a reference to the compiled and linked binary of the program
 	binary: null,
 	/**
+	 * returns the programs ShaderParameter object wipartsth the given identifier, if there is one
+	 */
+	getParameterById: function(id) {
+		var p1 = this.fragmentShader.getParameterById(id);
+		var p2 = this.vertexShader.getParameterById(id);
+		if(p1 != null) return p1;
+		if(p2 != null) return p2;
+		return null;
+	},
+	/**
 	 * sets a buffer
 	 * @param para a ShaderParameter object
 	 * @param values the array to be set
@@ -284,7 +311,10 @@ ShaderProgram.prototype = {
 	 * @param value the value to be set
 	 */
 	setParameter: function(para, value) {
+		
 		var location; 
+		
+		var anfang = new Date().getTime();
 		if(para.modifier.search("varying") >= 0) {
 			throw "Varying parameters can only be set inside shaders!"
 		} else if(para.modifier.search("uniform") >= 0) {
@@ -295,7 +325,29 @@ ShaderProgram.prototype = {
 		}
 		
 		
+		
 		switch(para.type) {
+			case "mat4":{
+				switch(para.modifier) {
+					case "uniform": {
+						this.gl.uniformMatrix4fv(location, false, value);
+						break;
+					}
+				}
+			}
+			case "vec3":{
+				switch(para.modifier) {
+					case "uniform": {
+						this.gl.uniform2fv(location, value);
+						break;
+					}
+					case "attribute": {
+						this.gl.vertexAttrib2f(location, value);
+						break;
+					}
+				}
+			break;
+			}
 			case "sampler2D":
 			case "int": {
 				switch(para.modifier) {
@@ -306,17 +358,7 @@ ShaderProgram.prototype = {
 					// attribute can not be int
 				}
 			break;
-			}			
-			case "bool": {
-				switch(para.modifier) {
-					case "uniform": {
-						this.gl.uniform1i(location, value);
-						break;
-					}
-					// attribute can not be bool
-				}
-			break;
-			}
+			}	
 			case "float": {
 				switch(para.modifier) {
 					case "uniform": {
@@ -330,21 +372,19 @@ ShaderProgram.prototype = {
 					}
 				}
 			break;
-			}
-			case "vec2": {
+			}		
+			case "bool": {
 				switch(para.modifier) {
 					case "uniform": {
-						this.gl.uniform2fv(location, value);
+						this.gl.uniform1i(location, value);
 						break;
 					}
-					case "attribute": {
-						this.gl.vertexAttrib2f(location, value);
-						break;
-					}
+					// attribute can not be bool
 				}
 			break;
 			}
-			case "vec3":{
+
+			case "vec2": {
 				switch(para.modifier) {
 					case "uniform": {
 						this.gl.uniform2fv(location, value);
@@ -420,14 +460,7 @@ ShaderProgram.prototype = {
 					}
 				}
 			}
-			case "mat4":{
-				switch(para.modifier) {
-					case "uniform": {
-						this.gl.uniformMatrix4fv(location, false, value);
-						break;
-					}
-				}
-			}
+
 		}
 	}
 }
@@ -472,6 +505,15 @@ ShaderPart.prototype = {
 		this.src_main = parseMainFunction(src);
 		this.functions = parseFunctions(src);
 		this.parameters = ShaderParameterFactory.createFromStringArray(parseParameters(src));
+	},
+	getParameterById: function(identifier) {
+		for(var i = 0; i < this.parameters.length; i++) {
+			var p = this.parameters[i];
+			if(p.identifier == identifier) {
+				return p;
+			}
+		}
+		return null;
 	},
 	getParameterSrc: function() {
 		var par_src = "";
