@@ -5,6 +5,7 @@ Animation = function(type, required_parts) {
 	}
 	this.successors = new Array();
 	this.predecessors = new Array();
+	this.parallels = new Array();
 	this.parts = new Array();
 	this.required_parts = required_parts;
 	
@@ -81,6 +82,10 @@ Animation.prototype = {
 	// endless animations must be stopped manually!
 	successors : new Array(),
 	
+	// this animation will start all animations in this array when it starts
+	// and pause / stop them when it's paused / stopped / finishes
+	parallels : new Array(),
+	
 	// all required ShaderPart objects
 	parts : new Array(),
 	
@@ -146,13 +151,11 @@ Animation.prototype = {
 		this._repetitionsCount = 1;
 		this.start_timestamp = new Date().getTime();
 		this.state = Animation.STATE_RUNNING;
+		this._startParallels();
 		this._startActions();
 	},
 	restart: function() {
-		this.state = Animation.STATE_RUNNING;
-		this.start_timestamp = new Date().getTime();
-		this._repetitionsCount = 0;
-		this._startActions();
+		this.start();
 	},
 	pause: function() {
 		this.pause_timestamp = new Date().getTime();
@@ -173,16 +176,28 @@ Animation.prototype = {
 		return;
 	},
 	_finish: function() {
+		console.log("Finishing " + this.name);
 		this.time_elapsed = this.duration;
 		this.state = Animation.STATE_FINISHED;
 		this._startSuccessors();
+		this._stopParallels();
 	},
 	_startSuccessors: function() {
 		for(var i = 0; i < this.successors.length; i++) {
 			console.log("starting " + this.successors[i].name);
 			this.successors[i].startAfterPredecessors();
-			
-			
+		}
+	},
+	_startParallels: function() {
+		for(var i = 0; i < this.parallels.length; i++) {
+			console.log("starting parallel " + this.parallels[i].name);
+			this.parallels[i].start();
+		}
+	},
+	_stopParallels: function() {
+		for(var i = 0; i < this.parallels.length; i++) {
+			console.log("stopping parallel " + this.parallels[i].name);
+			this.parallels[i].stop();
 		}
 	},
 	_allPredecessorsFinished: function() {
@@ -258,26 +273,44 @@ TranslationAnimation.prototype._calculateLength = function(start,end,time,durati
 	return start + ((end-start) * (time / duration));
 }
 
-TranslationAnimation.prototype._startActions = function() {
-	this.start_offset_x = this.predecessors[0].end_offset_x;
-	this.start_offset_y = this.predecessors[0].end_offset_y;
-	this.start_offset_z = this.predecessors[0].end_offset_z;
-	this.end_offset_x = Math.random()*22-11;
-	this.end_offset_y = Math.random()*22-11;
-	this.end_offset_z = Math.random()*60-30;
+TranslationAnimation.prototype.setNewEnd = function(x,y,z) {
+	this.start_offset_x = this._calculateLength(this.start_offset_x, this.end_offset_x, this.time_elapsed, this.duration);
+	this.start_offset_y = this._calculateLength(this.start_offset_y, this.end_offset_y, this.time_elapsed, this.duration);
+	this.start_offset_z = this._calculateLength(this.start_offset_z, this.end_offset_z, this.time_elapsed, this.duration);
+	
+	this.end_offset_x = x;
+	this.end_offset_y = y;
+	this.end_offset_z = z;
 }
 
-TranslationAnimation.prototype._refreshValues = function(obj) {
 
+TranslationAnimation.prototype._refreshValues = function(obj) {
  	var x = this._calculateLength(this.start_offset_x, this.end_offset_x, this.time_elapsed, this.duration);
 	var y = this._calculateLength(this.start_offset_y, this.end_offset_y, this.time_elapsed, this.duration);
 	var z = this._calculateLength(this.start_offset_z, this.end_offset_z, this.time_elapsed, this.duration);
-
 	this.transMatrix = this._calculateTranslationMatrix(x, y, z);
 }
 
 TranslationAnimation.prototype._passParameters = function(program) {
 	program.setParameter(program.getParameterById("transMatrix"), this.transMatrix.flatten());
 }
+
+
+
+AcceleratedTranslationAnimation = function(type) {
+	TranslationAnimation.call(this, type);
+}
+AcceleratedTranslationAnimation.prototype= new TranslationAnimation();
+
+AcceleratedTranslationAnimation.prototype._calculateLength = function(start,end,time,duration) {
+	return start + ((end-start) * (time / duration)* (time / duration)* (time / duration)* (time / duration));
+}
+
+
+AcceleratedRenewableTranslationAnimation = function(type) {
+	AcceleratedTranslationAnimation.call(this, type);
+}
+AcceleratedRenewableTranslationAnimation.prototype= new AcceleratedTranslationAnimation();
+
 
 
