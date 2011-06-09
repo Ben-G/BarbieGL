@@ -99,8 +99,8 @@ function init() {
     myDefs[6] = WebGLBase.objectModel.find("pyramide").addCallback(
                 function(data){
                     triangle3 = triangle2.add(WebGLBase.createObjectFromFile(data, myGl));
-                    triangle3.yOffset = 3;
-                    triangle3.xOffset = 5;
+                    triangle3.yOffset = 0;
+                    triangle3.xOffset = 0;
                     //triangle3.startRotation(2,"x");
                 });
     myDefs[7] = WebGLBase.objectModel.find("pyramide").addCallback(
@@ -120,6 +120,8 @@ function init() {
 	myDefs.push(rotani3.completed);
 	var rotani4 = new TranslationAnimation(Animation.TYPE_ONCE);
 	myDefs.push(rotani4.completed);	
+	var rotani5 = new TranslationAnimation(Animation.TYPE_ONCE);
+	myDefs.push(rotani4.completed);	
 		
     def.finalCallback(function(){ 
 
@@ -134,27 +136,31 @@ function init() {
                 var myShaderProgram2 = ShaderProgramBuilder.buildShaderProgram(vertShader, fragShader2);
                 var myShaderProgram3 = ShaderProgramBuilder.buildShaderProgram(vertShader3, fragShader3);
                    
-                rotani.duration = 1200;
+                rotani.duration = 3200;
                 rotani.end_offset_x = 360;
                 rotani.end_offset_z = 25;
                 rotani.name = "rotani";
                 
-                rotani2.duration = 1200;
+                rotani2.duration = 3200;
                 rotani2.start_offset_x = 360;
                 rotani2.start_offset_z = 25;
                 rotani2.end_offset_x = 0;
                 rotani2.name = "rotani2";
 
-				rotani3.repetitions = 5;
                 rotani3.duration = 2000;
                 rotani3.end_offset_y = 10;
                 rotani3.end_offset_x = -10;
-                rotani3.name = "rotani3";     
+                rotani3.name = "transAni1";     
                 
-                rotani4.repetitions = 5;
                 rotani4.duration = 2000;
                 rotani4.start_offset_y = 10;
-                rotani4.name = "rotani4";              
+                rotani4.start_offset_x = -10;
+                rotani4.end_offset_x = -10;
+                rotani4.name = "transAni2";     
+                
+                rotani5.duration = 2000;
+                rotani5.name = "transAni3";   
+                rotani5.start_offset_x = -10;
 
                 rotani.addSuccessor(rotani2);
                // rotani2.addSuccessor(rotani3);
@@ -162,8 +168,9 @@ function init() {
                 
                 rotani3.addSuccessor(rotani4);
                // rotani2.addSuccessor(rotani3);
-                rotani4.addSuccessor(rotani3);
+                rotani4.addSuccessor(rotani5);
                 
+                rotani5.addSuccessor(rotani3);
                 
 
                    
@@ -173,19 +180,30 @@ function init() {
                 triangle.name = "triangle";
                 triangle2.setShaderProgram(myShaderProgram3);
                 triangle2.name = "triangle2";
+                
+                triangle2.addAnimation(rotani);
+                triangle2.addAnimation(rotani2);
+                
                 triangle3.setShaderProgram(myShaderProgram3);
                 triangle3.name = "triangle3";
             
-                triangle3.addAnimation(rotani);
+               triangle3.addAnimation(rotani);
                 triangle3.addAnimation(rotani2);
                 triangle3.addAnimation(rotani3);
 				triangle3.addAnimation(rotani4);
+				triangle3.addAnimation(rotani5);
+
+
 
                 rotani.start();
                 rotani3.start();
+                
+                
                 console.log(triangle3);
                 triangle4.setShaderProgram(myShaderProgram);
                 triangle4.name = "triangle4";
+                
+                				
                 object3dCube.setShaderProgram(myShaderProgram);
                 object3dCube.name = "3dcude";
                 object3d3.setShaderProgram(myShaderProgram2);

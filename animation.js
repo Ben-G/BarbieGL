@@ -146,11 +146,13 @@ Animation.prototype = {
 		this._repetitionsCount = 1;
 		this.start_timestamp = new Date().getTime();
 		this.state = Animation.STATE_RUNNING;
+		this._startActions();
 	},
 	restart: function() {
 		this.state = Animation.STATE_RUNNING;
 		this.start_timestamp = new Date().getTime();
 		this._repetitionsCount = 0;
+		this._startActions();
 	},
 	pause: function() {
 		this.pause_timestamp = new Date().getTime();
@@ -162,6 +164,13 @@ Animation.prototype = {
 	},
 	stop: function() {
 		this._finish();
+		this._finishActions();
+	},
+	_finishActions: function() {
+		return;
+	},
+	_startActions: function() {
+		return;
 	},
 	_finish: function() {
 		this.time_elapsed = this.duration;
@@ -249,6 +258,14 @@ TranslationAnimation.prototype._calculateLength = function(start,end,time,durati
 	return start + ((end-start) * (time / duration));
 }
 
+TranslationAnimation.prototype._startActions = function() {
+	this.start_offset_x = this.predecessors[0].end_offset_x;
+	this.start_offset_y = this.predecessors[0].end_offset_y;
+	this.start_offset_z = this.predecessors[0].end_offset_z;
+	this.end_offset_x = Math.random()*22-11;
+	this.end_offset_y = Math.random()*22-11;
+	this.end_offset_z = Math.random()*60-30;
+}
 
 TranslationAnimation.prototype._refreshValues = function(obj) {
 
