@@ -1,12 +1,28 @@
-Animation = function(type) {
-	
+Animation = function(type, required_parts) {
+	if(required_parts == null) return;
 	if(type != null) {
 		this.type = type;
 	}
-	
 	this.successors = new Array();
 	this.predecessors = new Array();
-
+	this.parts = new Array();
+	this.required_parts = required_parts;
+	
+	var defs = new Array();
+	this.completed = new Deferrable();
+    var def = new DeferrableList();
+    var tmp_parts = new Array();
+    var closure = this;
+	for(var i = 0; i < required_parts.length; i++) {
+		defs[0] = WebGLBase.shaderPartFactory.createFromName(required_parts[i].toString());
+		defs[0].addCallback(function(data) { tmp_parts.push(data); });
+	}
+	def.finalCallback(function(){ 
+		closure._setShaderParts(tmp_parts);
+		closure.completed.callback();
+		
+	});
+	def.addDeferrables(defs);
 }
 
 // animation never ends
@@ -27,6 +43,8 @@ Animation.STATE_FINISHED = 3;
 
 
 Animation.prototype = {
+	completed: new Deferrable(),
+	
 	// type of the animation (endless, once, numbered)
 	type: Animation.TYPE_ONCE,
 	
@@ -51,7 +69,8 @@ Animation.prototype = {
 	// timestamp in milliseconds the animation was paused last
 	pause_timestamp : 0,
 	
-	// names of the shader parts the animation needs
+	// names of the shader parts the animation needs,
+	// used to load ShaderPart objects when the animation is constructed
 	required_parts : new Array(),
 	
 	// this animation will not start until all predecessors are finished
@@ -62,6 +81,18 @@ Animation.prototype = {
 	// endless animations must be stopped manually!
 	successors : new Array(),
 	
+	// all required ShaderPart objects
+	parts : new Array(),
+	
+	// bring the loaded parts in the right order an save them into this.parts
+	_setShaderParts: function(tmp_parts) {
+		
+		for(var j=0;j<tmp_parts.length;j++) {
+			for(var i=0;i<this.required_parts.length;i++) {
+				if(this.required_parts[i] == tmp_parts[j].name) this.parts[i] = tmp_parts[j];
+			}	
+		}
+	},
 	refresh: function(obj) {
 		if(this.state == Animation.STATE_RUNNING) {
 			if(this.time_elapsed > this.duration) {
@@ -105,11 +136,14 @@ Animation.prototype = {
 	},
 	startAfterPredecessors: function() {
 		if(this._allPredecessorsFinished()) {
-			this.start_timestamp = new Date().getTime();
-			this.state = Animation.STATE_RUNNING;
+			this.start();
+			console.log("Start: " + this.name)
+		} else {
+			console.log("Not all Predecessors have finished for " + this.name)
 		}
 	},
 	start: function() {
+		this._repetitionsCount = 1;
 		this.start_timestamp = new Date().getTime();
 		this.state = Animation.STATE_RUNNING;
 	},
@@ -136,7 +170,10 @@ Animation.prototype = {
 	},
 	_startSuccessors: function() {
 		for(var i = 0; i < this.successors.length; i++) {
+			console.log("starting " + this.successors[i].name);
 			this.successors[i].startAfterPredecessors();
+			
+			
 		}
 	},
 	_allPredecessorsFinished: function() {
@@ -149,17 +186,19 @@ Animation.prototype = {
 
 
 RotationAnimation = function(type) {
-	Animation.call(this, type);
+	var parts = new Array("rotation");
+	Animation.call(this, type, parts);
+	this.start_offset_x = 0;
+	this.start_offset_y = 0;
+	this.start_offset_z = 0;
+	this.end_offset_x = 0;
+	this.end_offset_y = 0;
+	this.end_offset_z = 0;
+	this.rotMatrix = null;
 }
 RotationAnimation.prototype= new Animation();
 
-RotationAnimation.prototype.start_offset_x = 0;
-RotationAnimation.prototype.start_offset_y = 0;
-RotationAnimation.prototype.start_offset_z = 0;
-RotationAnimation.prototype.end_offset_x = 0;
-RotationAnimation.prototype.end_offset_y = 0;
-RotationAnimation.prototype.end_offset_z = 0;
-RotationAnimation.prototype.rotMatrix = null;
+
 
 RotationAnimation.prototype._calculateRotationMatrix = function(x_deg, y_deg, z_deg) {
 	var rotX, rotY, rotZ, rotMat;
@@ -186,3 +225,42 @@ RotationAnimation.prototype._refreshValues = function(obj) {
 RotationAnimation.prototype._passParameters = function(program) {
 	program.setParameter(program.getParameterById("rotMatrix"), this.rotMatrix.flatten());
 }
+
+
+TranslationAnimation = function(type) {
+	var parts = new Array("translation");
+	Animation.call(this, type, parts);
+	this.start_offset_x = 0;
+	this.start_offset_y = 0;
+	this.start_offset_z = 0;
+	this.end_offset_x = 0;
+	this.end_offset_y = 0;
+	this.end_offset_z = 0;
+	this.transMatrix = null;
+}
+TranslationAnimation.prototype= new Animation();
+
+
+TranslationAnimation.prototype._calculateTranslationMatrix = function(x, y, z) {
+	return create3DTranslationMatrix(Vector.create([x,y,z])).ensure4x4();
+}
+
+TranslationAnimation.prototype._calculateLength = function(start,end,time,duration) {
+	return start + ((end-start) * (time / duration));
+}
+
+
+TranslationAnimation.prototype._refreshValues = function(obj) {
+
+ 	var x = this._calculateLength(this.start_offset_x, this.end_offset_x, this.time_elapsed, this.duration);
+	var y = this._calculateLength(this.start_offset_y, this.end_offset_y, this.time_elapsed, this.duration);
+	var z = this._calculateLength(this.start_offset_z, this.end_offset_z, this.time_elapsed, this.duration);
+
+	this.transMatrix = this._calculateTranslationMatrix(x, y, z);
+}
+
+TranslationAnimation.prototype._passParameters = function(program) {
+	program.setParameter(program.getParameterById("transMatrix"), this.transMatrix.flatten());
+}
+
+

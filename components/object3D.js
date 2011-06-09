@@ -41,8 +41,30 @@ function Object3D(gl){
 	this.rotation = 0;
 	this.animationspeed = 0;
 	
+	this._rebuildShaderProgram = function(){
+		var tmp_vert_parts = new Array();
+		var tmp_frag_parts = new Array();
+		
+		for(var i = 0; i<this.animations.length; i++) {
+			tmp_vert_parts = tmp_vert_parts.concat(this.animations[i].parts);
+		}
+		
+		tmp_vert_parts = tmp_vert_parts.concat(this.shaderProgram.vertexShader.parts);
+		tmp_frag_parts = tmp_frag_parts.concat(this.shaderProgram.fragmentShader.parts);
+		
+		
+		var vertShader = ShaderBuilder.buildShaderFromParts(tmp_vert_parts, Shader.TYPE_VERTEX_SHADER, this.gl);
+        var fragShader = ShaderBuilder.buildShaderFromParts(tmp_frag_parts, Shader.TYPE_FRAGMENT_SHADER, this.gl);
+        
+        var myShaderProgram = ShaderProgramBuilder.buildShaderProgram(vertShader, fragShader);
+        
+        this.setShaderProgram(myShaderProgram);   
+        console.log(this.shaderProgram.vertexShader.getSrc());
+		
+	}
 	this.addAnimation= function (animation) {
 		this.animations.push(animation);
+		this._rebuildShaderProgram();
 	}
 	
 	this.setShaderProgram = function(program) {

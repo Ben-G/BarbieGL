@@ -93,9 +93,14 @@ ShaderBuilder = function() {};
 ShaderBuilder.prototype = {
 	buildShaderFromParts: function(parts, type, gl) {
 		var s = new Shader(type, gl);
+		parts = eraseDuplicates(parts);
 		for(var i = 0; i < parts.length; i++) {
 			s.addShaderPart(parts[i]);
 		}
+		return s;
+	},
+	buildDefaultShader: function(type, gl) {
+		var s = new Shader(type, gl);
 		return s;
 	}
 }
@@ -232,15 +237,30 @@ Shader.prototype = {
 		var precomp_src = 	"#ifdef GL_ES\n" +
 							"precision highp float;\n" +
 							"precision highp int;\n" +
-							"#endif\n";
+							"#endif\n\n";
 		var para_src = "";
+		if(this.type == Shader.TYPE_VERTEX_SHADER) {
+			para_src = 	"attribute vec3 aVertexPosition;\n" +
+						"uniform mat4 uMVMatrix;\n"+
+						"uniform mat4 uPMatrix;\n\n";
+		}
 		var func_src = "";
 		var main_src = "void main(void) {\n";
+		
+		if(this.type == Shader.TYPE_VERTEX_SHADER) {
+			main_src += "vec4 originalPosition = vec4(aVertexPosition,1.0);\n";
+			main_src += "vec4 vertexPosition = vec4(aVertexPosition,1.0);\n";
+		}
+		
 		for(var i = 0; i < this.parts.length; i++) {
 			var part = this.parts[i];
 			para_src += part.getParameterSrc() + "\n\n";
 			func_src += part.getFunctionSrc() + "\n\n";
 			main_src += part.src_main + "\n";
+		}
+		
+		if(this.type == Shader.TYPE_VERTEX_SHADER) {
+			main_src += "gl_Position = uPMatrix * (uMVMatrix * vertexPosition);\n"
 		}
 		main_src += "}";
 		var src = precomp_src + para_src + func_src + main_src;
@@ -311,7 +331,7 @@ ShaderProgram.prototype = {
 	 * @param value the value to be set
 	 */
 	setParameter: function(para, value) {
-		
+		if(para == null) return;
 		var location; 
 		
 		var anfang = new Date().getTime();
@@ -334,19 +354,20 @@ ShaderProgram.prototype = {
 						break;
 					}
 				}
+				break;
 			}
 			case "vec3":{
 				switch(para.modifier) {
 					case "uniform": {
-						this.gl.uniform2fv(location, value);
+						this.gl.uniform3fv(location, value);
 						break;
 					}
 					case "attribute": {
-						this.gl.vertexAttrib2f(location, value);
+						this.gl.vertexAttrib3f(location, value);
 						break;
 					}
 				}
-			break;
+				break;
 			}
 			case "sampler2D":
 			case "int": {
@@ -459,6 +480,7 @@ ShaderProgram.prototype = {
 						break;
 					}
 				}
+			break;
 			}
 
 		}
