@@ -59,12 +59,19 @@ function Object3D(gl){
         var myShaderProgram = ShaderProgramBuilder.buildShaderProgram(vertShader, fragShader);
         
         this.setShaderProgram(myShaderProgram);   
-        console.log(this.shaderProgram.vertexShader.getSrc());
 		
 	}
 	this.addAnimation= function (animation) {
 		this.animations.push(animation);
 		this._rebuildShaderProgram();
+	}
+	
+	this.getRunningAnimations = function() {
+		var anis = new Array();
+		for(var i = 0; i<this.animations.length; i++) {
+			if(this.animations[i].state == Animation.STATE_RUNNING) anis.push(this.animations[i]);
+		}
+		return anis;
 	}
 	
 	this.setShaderProgram = function(program) {
@@ -74,7 +81,7 @@ function Object3D(gl){
 	}
 	
 	
-	this.addTexture = function(texture, shaderAttrib, samplerID, gl){
+	this.addTexture = function(texture, shaderAttrib, samplerID){
 		if (this.shaderProgram === null)
 			throw "ConnectWithoutShaderException";
 			

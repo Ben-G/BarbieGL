@@ -89,6 +89,8 @@ Animation.prototype = {
 	// all required ShaderPart objects
 	parts : new Array(),
 	
+	finishedStateWasDrawn : true,
+	
 	// bring the loaded parts in the right order an save them into this.parts
 	_setShaderParts: function(tmp_parts) {
 		
@@ -100,14 +102,15 @@ Animation.prototype = {
 	},
 	refresh: function(obj) {
 		if(this.state == Animation.STATE_RUNNING) {
+					
 			if(this.time_elapsed > this.duration) {
 				if(this.type == Animation.TYPE_ENDLESS) {
 					this.time_elapsed = 0;
 					this.start_timestamp = new Date().getTime();
 					
+					
 				} else if(this.type == Animation.TYPE_NUMBERED) {
 					if(this._repetitionsCount >= this.repetitions) {
-						
 						this._finish();
 					} else {
 						this.start_timestamp = new Date().getTime();
@@ -119,17 +122,21 @@ Animation.prototype = {
 				}
 			} else {
 				this.time_elapsed = new Date().getTime() - this.start_timestamp;
-
+				
 			}
 			
 			this._refreshValues(obj);
 			this._passParameters(obj.shaderProgram);
-		}
+		} else if (this.state == Animation.STATE_FINISHED && !this.finishedStateWasDrawn) {
+			this.finishedStateWasDrawn = true;
+			this._refreshValues(obj);
+			this._passParameters(obj.shaderProgram);
+		} 
 	},
-	_refreshValues: function() {
+	_refreshValues: function(obj) {
 
 	},
-	_passParameters: function() {
+	_passParameters: function(shaderProgram) {
 		
 	},
 	addPredecessor: function(ani) {
@@ -158,16 +165,23 @@ Animation.prototype = {
 		this.start();
 	},
 	pause: function() {
-		this.pause_timestamp = new Date().getTime();
-		this.state = Animation.STATE_PAUSED;
+		if(this.state == Animation.STATE_RUNNING) {
+			this.pause_timestamp = new Date().getTime();
+			this.state = Animation.STATE_PAUSED;
+		}
 	},
 	resume: function() {
-		this.start_timestamp = new Date().getTime() - this.time_elapsed;
-		this.state = Animation.STATE_PAUSED;
+		if(this.state == Animation.STATE_PAUSED) {
+			console.log("resuming " + this.name);
+			this.start_timestamp = new Date().getTime() - this.time_elapsed;
+			this.state = Animation.STATE_RUNNING;
+		}
 	},
-	stop: function() {
-		this._finish();
-		this._finishActions();
+	stop: function(startSuccessors) {
+		console.log("stop " + this.name);
+		if(startSuccessors == null) startSuccessors = true;
+		this._finish(startSuccessors);
+		this.finishedStateWasDrawn = false;
 	},
 	_finishActions: function() {
 		return;
@@ -175,12 +189,16 @@ Animation.prototype = {
 	_startActions: function() {
 		return;
 	},
-	_finish: function() {
+	_finish: function(startSuccessors) {
+		if(startSuccessors == null) startSuccessors = true;
 		console.log("Finishing " + this.name);
 		this.time_elapsed = this.duration;
 		this.state = Animation.STATE_FINISHED;
-		this._startSuccessors();
+		if(startSuccessors) {
+			this._startSuccessors();
+		}
 		this._stopParallels();
+		this._finishActions();
 	},
 	_startSuccessors: function() {
 		for(var i = 0; i < this.successors.length; i++) {
@@ -293,6 +311,7 @@ TranslationAnimation.prototype._refreshValues = function(obj) {
 
 TranslationAnimation.prototype._passParameters = function(program) {
 	program.setParameter(program.getParameterById("transMatrix"), this.transMatrix.flatten());
+	
 }
 
 
@@ -305,12 +324,6 @@ AcceleratedTranslationAnimation.prototype= new TranslationAnimation();
 AcceleratedTranslationAnimation.prototype._calculateLength = function(start,end,time,duration) {
 	return start + ((end-start) * (time / duration)* (time / duration)* (time / duration)* (time / duration));
 }
-
-
-AcceleratedRenewableTranslationAnimation = function(type) {
-	AcceleratedTranslationAnimation.call(this, type);
-}
-AcceleratedRenewableTranslationAnimation.prototype= new AcceleratedTranslationAnimation();
 
 
 
