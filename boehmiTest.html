@@ -120,7 +120,7 @@ function init() {
 	myDefs.push(rotani3.completed);
 	rotani4 = new TranslationAnimation(Animation.TYPE_ONCE);
 	myDefs.push(rotani4.completed);	
-	rotani5 = new AcceleratedTranslationAnimation(Animation.TYPE_ONCE);
+	rotani5 = new TranslationAnimation(Animation.TYPE_ONCE);
 	myDefs.push(rotani5.completed);	
 		
     def.finalCallback(function(){ 
@@ -148,29 +148,23 @@ function init() {
                 rotani2.name = "rotani2";
 
                 rotani3.duration = 2000;
-                rotani3.start_offset_x = 10;
-                rotani3.end_offset_x = 0;
+                rotani3.start_offset = Vector.create([10,0,0]);
+                rotani3.end_offset = Vector.create([0,0,0]);
                 rotani3.name = "transAni1";     
                 
                 rotani4.duration = 2000;
-                rotani4.start_offset_x = 0;
-                rotani4.end_offset_x = 10;
+                rotani4.start_offset = Vector.create([0,0,0]);
+                rotani4.end_offset = Vector.create([10,0,0]);
                 rotani4.name = "transAni2";     
                 
-                rotani5.duration = 300;
+                rotani5.duration = 500;
                 rotani5.name = "transAni3";   
-                rotani5.parallels[0] = rotani;
-                //rotani5.start_offset_x = -20;
+                //rotani5.parallels[0] = rotani;
 
-               // rotani.addSuccessor(rotani2);
-               // rotani2.addSuccessor(rotani3);
-               // rotani2.addSuccessor(rotani);
                 
                 rotani3.addSuccessor(rotani4);
-               // rotani2.addSuccessor(rotani3);
                 rotani4.addSuccessor(rotani3);
-                
-                //rotani5.addSuccessor(rotani3);
+
                 
 
                    
@@ -185,16 +179,10 @@ function init() {
                 triangle3.setShaderProgram(myShaderProgram3);
                 triangle3.name = "triangle3";
             
-               /* triangle3.addAnimation(rotani);
-                triangle3.addAnimation(rotani2);
-                triangle3.addAnimation(rotani3);
-				triangle3.addAnimation(rotani4);
-				*/
 				
 				
-				triangle3.addAnimation(rotani);
+				//triangle3.addAnimation(rotani);
 				triangle3.addAnimation(rotani5);
-				
 				triangle2.addAnimation(rotani3);
 				triangle2.addAnimation(rotani4);
 				
@@ -232,11 +220,12 @@ function init() {
 
 function updateAnimation(event) {
 	if(rotani5.state == Animation.STATE_RUNNING) {
-		rotani5.setNewEnd((event.offsetX-256)*16.5/256, -1*(event.offsetY-256)*16.5/256, 0);
-		rotani5.duration = 300 + rotani5.time_elapsed;
+		rotani5.setNewEnd(Vector.create([(event.offsetX-256)*16.5/256, -1*(event.offsetY-256)*16.5/256, 0]));
+		rotani5.duration = 500 + rotani5.time_elapsed;
 	} else {
-		rotani5.setNewEnd((event.offsetX-256)*16.5/256, -1*(event.offsetY-256)*16.5/256, 0);
-		rotani5.duration = 300;
+		rotani5.start_offset = rotani5.end_offset;
+		rotani5.setNewEnd(Vector.create([(event.offsetX-256)*16.5/256, -1*(event.offsetY-256)*16.5/256, 0]));
+		rotani5.duration = 500;
 		rotani5.restart();
 	}
 }
@@ -250,6 +239,7 @@ function pauseAnimation() {
 function resumeAnimation() {
 	rotani4.resume();
 	rotani3.resume();
+	console.log(rotani5._calculateLength())
 }
 function stopAnimation() {
 	triangle2.getRunningAnimations()[0].stop(false);

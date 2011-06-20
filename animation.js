@@ -1,7 +1,14 @@
-Animation = function(type, required_parts) {
+animationCount = 0;
+
+Animation = function(type, required_parts, name) {
 	if(required_parts == null) return;
 	if(type != null) {
 		this.type = type;
+	}
+	if(name != null) {
+		this.name = name;
+	} else {
+		this.name = "Animation" + animationCount++;
 	}
 	this.successors = new Array();
 	this.predecessors = new Array();
@@ -15,8 +22,8 @@ Animation = function(type, required_parts) {
     var tmp_parts = new Array();
     var closure = this;
 	for(var i = 0; i < required_parts.length; i++) {
-		defs[0] = WebGLBase.shaderPartFactory.createFromName(required_parts[i].toString());
-		defs[0].addCallback(function(data) { tmp_parts.push(data); });
+		defs[i] = WebGLBase.shaderPartFactory.createFromName(required_parts[i].toString());
+		defs[i].addCallback(function(data) { tmp_parts.push(data); });
 	}
 	def.finalCallback(function(){ 
 		closure._setShaderParts(tmp_parts);
@@ -91,6 +98,8 @@ Animation.prototype = {
 	
 	finishedStateWasDrawn : true,
 	
+	stopParallels : true,
+	
 	// bring the loaded parts in the right order an save them into this.parts
 	_setShaderParts: function(tmp_parts) {
 		
@@ -102,7 +111,8 @@ Animation.prototype = {
 	},
 	refresh: function(obj) {
 		if(this.state == Animation.STATE_RUNNING) {
-					
+			this.time_elapsed = new Date().getTime() - this.start_timestamp;
+				
 			if(this.time_elapsed > this.duration) {
 				if(this.type == Animation.TYPE_ENDLESS) {
 					this.time_elapsed = 0;
@@ -120,9 +130,6 @@ Animation.prototype = {
 				} else if(this.type == Animation.TYPE_ONCE) {
 						this._finish();
 				}
-			} else {
-				this.time_elapsed = new Date().getTime() - this.start_timestamp;
-				
 			}
 			
 			this._refreshValues(obj);
@@ -149,7 +156,7 @@ Animation.prototype = {
 	startAfterPredecessors: function() {
 		if(this._allPredecessorsFinished()) {
 			this.start();
-			console.log("Start: " + this.name)
+			//console.log("Start: " + this.name)
 		} else {
 			console.log("Not all Predecessors have finished for " + this.name)
 		}
@@ -164,23 +171,25 @@ Animation.prototype = {
 	restart: function() {
 		this.start();
 	},
-	pause: function() {
+	pause: function(pauseParals) {
 		if(this.state == Animation.STATE_RUNNING) {
 			this.pause_timestamp = new Date().getTime();
 			this.state = Animation.STATE_PAUSED;
+			if(pauseParals) this._pauseParallels();
 		}
 	},
 	resume: function() {
 		if(this.state == Animation.STATE_PAUSED) {
-			console.log("resuming " + this.name);
+			//console.log("resuming " + this.name);
 			this.start_timestamp = new Date().getTime() - this.time_elapsed;
 			this.state = Animation.STATE_RUNNING;
+			this._resumeParallels();
 		}
 	},
 	stop: function(startSuccessors) {
 		console.log("stop " + this.name);
 		if(startSuccessors == null) startSuccessors = true;
-		this._finish(startSuccessors);
+		this._finish(startSuccessors, stopParallels);
 		this.finishedStateWasDrawn = false;
 	},
 	_finishActions: function() {
@@ -191,30 +200,44 @@ Animation.prototype = {
 	},
 	_finish: function(startSuccessors) {
 		if(startSuccessors == null) startSuccessors = true;
-		console.log("Finishing " + this.name);
+		//console.log("Finishing " + this.name);
 		this.time_elapsed = this.duration;
 		this.state = Animation.STATE_FINISHED;
 		if(startSuccessors) {
 			this._startSuccessors();
 		}
-		this._stopParallels();
+		if(this.stopParallels) {
+			this._stopParallels();
+		}
 		this._finishActions();
 	},
 	_startSuccessors: function() {
 		for(var i = 0; i < this.successors.length; i++) {
-			console.log("starting " + this.successors[i].name);
+			//console.log("starting " + this.successors[i].name);
 			this.successors[i].startAfterPredecessors();
 		}
 	},
 	_startParallels: function() {
 		for(var i = 0; i < this.parallels.length; i++) {
-			console.log("starting parallel " + this.parallels[i].name);
+			//console.log("starting parallel " + this.parallels[i].name);
 			this.parallels[i].start();
+		}
+	},
+	_pauseParallels: function() {
+		for(var i = 0; i < this.parallels.length; i++) {
+			//console.log("starting parallel " + this.parallels[i].name);
+			this.parallels[i].pause();
+		}
+	},
+	_resumeParallels: function() {
+		for(var i = 0; i < this.parallels.length; i++) {
+			//console.log("starting parallel " + this.parallels[i].name);
+			this.parallels[i].resume();
 		}
 	},
 	_stopParallels: function() {
 		for(var i = 0; i < this.parallels.length; i++) {
-			console.log("stopping parallel " + this.parallels[i].name);
+			//console.log("stopping parallel " + this.parallels[i].name);
 			this.parallels[i].stop();
 		}
 	},
@@ -227,9 +250,9 @@ Animation.prototype = {
 }
 
 
-RotationAnimation = function(type) {
+RotationAnimation = function(type, name) {
 	var parts = new Array("rotation");
-	Animation.call(this, type, parts);
+	Animation.call(this, type, parts, name);
 	this.start_offset_x = 0;
 	this.start_offset_y = 0;
 	this.start_offset_z = 0;
@@ -269,61 +292,49 @@ RotationAnimation.prototype._passParameters = function(program) {
 }
 
 
-TranslationAnimation = function(type) {
+TranslationAnimation = function(type, name) {
 	var parts = new Array("translation");
-	Animation.call(this, type, parts);
-	this.start_offset_x = 0;
-	this.start_offset_y = 0;
-	this.start_offset_z = 0;
-	this.end_offset_x = 0;
-	this.end_offset_y = 0;
-	this.end_offset_z = 0;
+	Animation.call(this, type, parts, name);
+	this.start_offset = Vector.create([0,0,0]);
+	this.end_offset = Vector.create([0,0,0]);
 	this.transMatrix = null;
 }
 TranslationAnimation.prototype= new Animation();
 
 
-TranslationAnimation.prototype._calculateTranslationMatrix = function(x, y, z) {
-	return create3DTranslationMatrix(Vector.create([x,y,z])).ensure4x4();
+TranslationAnimation.prototype._calculateTranslationMatrix = function(transVector) {
+	return create3DTranslationMatrix(transVector).ensure4x4();
 }
 
-TranslationAnimation.prototype._calculateLength = function(start,end,time,duration) {
-	return start + ((end-start) * (time / duration));
+TranslationAnimation.prototype._calculatePosition = function(start,end,time,duration) {
+	return start.add(end.subtract(start).multiply(time / duration));
 }
 
-TranslationAnimation.prototype.setNewEnd = function(x,y,z) {
-	this.start_offset_x = this._calculateLength(this.start_offset_x, this.end_offset_x, this.time_elapsed, this.duration);
-	this.start_offset_y = this._calculateLength(this.start_offset_y, this.end_offset_y, this.time_elapsed, this.duration);
-	this.start_offset_z = this._calculateLength(this.start_offset_z, this.end_offset_z, this.time_elapsed, this.duration);
-	
-	this.end_offset_x = x;
-	this.end_offset_y = y;
-	this.end_offset_z = z;
+TranslationAnimation.prototype.setNewEnd = function(newEndVector) {
+	curPositionVector = this._calculatePosition(this.start_offset, this.end_offset, this.time_elapsed, this.duration);
+	this.start_offset = curPositionVector;
+	this.end_offset = newEndVector
 }
-
 
 TranslationAnimation.prototype._refreshValues = function(obj) {
- 	var x = this._calculateLength(this.start_offset_x, this.end_offset_x, this.time_elapsed, this.duration);
-	var y = this._calculateLength(this.start_offset_y, this.end_offset_y, this.time_elapsed, this.duration);
-	var z = this._calculateLength(this.start_offset_z, this.end_offset_z, this.time_elapsed, this.duration);
-	this.transMatrix = this._calculateTranslationMatrix(x, y, z);
+ 	var curPosition = this._calculatePosition(this.start_offset, this.end_offset, this.time_elapsed, this.duration);
+	
+	this.transMatrix = this._calculateTranslationMatrix(curPosition);
 }
+
 
 TranslationAnimation.prototype._passParameters = function(program) {
 	program.setParameter(program.getParameterById("transMatrix"), this.transMatrix.flatten());
-	
 }
 
 
 
-AcceleratedTranslationAnimation = function(type) {
-	TranslationAnimation.call(this, type);
+AcceleratedTranslationAnimation = function(type, name) {
+	TranslationAnimation.call(this, type, name);
 }
 AcceleratedTranslationAnimation.prototype= new TranslationAnimation();
 
 AcceleratedTranslationAnimation.prototype._calculateLength = function(start,end,time,duration) {
 	return start + ((end-start) * (time / duration)* (time / duration)* (time / duration)* (time / duration));
 }
-
-
 
