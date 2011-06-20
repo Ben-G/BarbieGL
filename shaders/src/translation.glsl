@@ -3,9 +3,9 @@
 	precision highp int;
 #endif
 
-uniform mat4 rotMatrix;
+uniform mat4 transMatrix;
 
 
 void main(void) {
-	vertexPosition = rotMatrix * vertexPosition;
+	vertexPosition = transMatrix * vertexPosition;
 }

@@ -24,7 +24,7 @@ function Object3D(gl){
     this.normals[4] = Vector.create([-1,0,0]);
     
 
-
+	this.animations = new Array();
 
 
     this.xOffset = 0;
@@ -41,6 +41,39 @@ function Object3D(gl){
 	this.rotation = 0;
 	this.animationspeed = 0;
 	
+	this._rebuildShaderProgram = function(){
+		var tmp_vert_parts = new Array();
+		var tmp_frag_parts = new Array();
+		
+		for(var i = 0; i<this.animations.length; i++) {
+			tmp_vert_parts = tmp_vert_parts.concat(this.animations[i].parts);
+		}
+		
+		tmp_vert_parts = tmp_vert_parts.concat(this.shaderProgram.vertexShader.parts);
+		tmp_frag_parts = tmp_frag_parts.concat(this.shaderProgram.fragmentShader.parts);
+		
+		
+		var vertShader = ShaderBuilder.buildShaderFromParts(tmp_vert_parts, Shader.TYPE_VERTEX_SHADER, this.gl);
+        var fragShader = ShaderBuilder.buildShaderFromParts(tmp_frag_parts, Shader.TYPE_FRAGMENT_SHADER, this.gl);
+        
+        var myShaderProgram = ShaderProgramBuilder.buildShaderProgram(vertShader, fragShader);
+        
+        this.setShaderProgram(myShaderProgram);   
+		
+	}
+	this.addAnimation= function (animation) {
+		this.animations.push(animation);
+		this._rebuildShaderProgram();
+	}
+	
+	this.getRunningAnimations = function() {
+		var anis = new Array();
+		for(var i = 0; i<this.animations.length; i++) {
+			if(this.animations[i].state == Animation.STATE_RUNNING) anis.push(this.animations[i]);
+		}
+		return anis;
+	}
+	
 	this.setShaderProgram = function(program) {
 		this.shaderProgram = program;	     	
 	    this.shaderProgram.vertexPositionAttribute = this.shaderProgram.gl.getAttribLocation(this.shaderProgram.binary, WebGLBase.stdParams["VERTEX_POSITION"].identifier);
@@ -48,7 +81,7 @@ function Object3D(gl){
 	}
 	
 	
-	this.addTexture = function(texture, shaderAttrib, samplerID, gl){
+	this.addTexture = function(texture, shaderAttrib, samplerID){
 		if (this.shaderProgram === null)
 			throw "ConnectWithoutShaderException";
 			
@@ -88,9 +121,15 @@ function Object3D(gl){
     
 		    if (this.rotation == true){
 			    this.rotValue += this.animationspeed;
+		   	 	this.rotationMatrix = WebGLBase.createRotationMatrix(this.rotationAxis, this.rotValue);
+		    	translationMatrix = translationMatrix.x(this.rotationMatrix);
 		    }
-		    this.rotationMatrix = WebGLBase.createRotationMatrix(this.rotationAxis, this.rotValue);
-		    translationMatrix = translationMatrix.x(this.rotationMatrix);
+
+
+			
+			for(var i = 0; i<this.animations.length; i++) {
+				this.animations[i].refresh(this);
+			}
 
             return this.lastTranslMatrix = translationMatrix;
     }

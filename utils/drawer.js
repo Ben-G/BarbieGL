@@ -4,7 +4,10 @@ function Drawer(){
     //this.currentShaderProgram
     this.shaders = new Array();
 }
-var last_frame;
+var last_frame = 0;
+var fpsUpdateTime = 500;
+var fpsFramesTime = 0;
+var fpsFramesCount = 0;
 
 Drawer.prototype = {
      startDrawing: function(object){
@@ -14,14 +17,25 @@ Drawer.prototype = {
         this.currentGl.clearDepth(1.0);
         this.currentGl.enable(this.currentGl.DEPTH_TEST);
         this.currentGl.depthFunc(this.currentGl.LEQUAL);
-        setInterval(function(){ myDrawer.drawScene() }, 25);
+        setInterval(function(){ myDrawer.drawScene() }, 10);
      },
 
     drawScene: function(){
-    	var last_frame = new Date().getTime();
+    	
     	this.currentGl.clear(this.currentGl.COLOR_BUFFER_BIT | this.currentGl.DEPTH_BUFFER_BIT);
     	this.currentShaderProgram = this.currentObject.shaderProgram;
     	this.drawElement(this.currentObject, this.currentGl, this.currentShaderProgram);
+    	if(fpsFramesTime > fpsUpdateTime) {
+    		var div = document.getElementById("fps");
+    		var fps = Math.round(1000.0 / (fpsFramesTime / fpsFramesCount) * 100)/100 + " fps";
+    		if(div != null) div.innerHTML = fps;
+    		fpsFramesTime = 0; 
+    		fpsFramesCount = 0;
+    	} else {
+    		fpsFramesTime += new Date().getTime() - last_frame;
+    		fpsFramesCount++;
+    	}
+    	last_frame = new Date().getTime();
     	//console.log("Frame:" + (new Date().getTime() - last_frame) + " ms");
     },
     drawElement : function(obj, gl, shaderProgram, transMat){

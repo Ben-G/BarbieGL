@@ -222,3 +222,28 @@ function parseSourceBetweenParenthethis(src, start) {
 		} else return null;
 }
 
+
+/**
+ * returns an array with all unique arrays of the given ShaderPart-Array
+ * compares by name
+ * 
+ * @param parts an array of ShaderPart objects
+ */
+function eraseDuplicates(parts) {
+	var unique = new Array();
+	for(var i = 0; i<parts.length; i++) {
+		if(!isContained(parts[i], unique)) unique.push(parts[i]);
+	}
+	return unique;
+}
+
+/**
+ * checks if a ShaderPart object is contained in an array
+ */
+function isContained(part,array) {
+	for(var i = 0; i<array.length; i++) {
+		if(array[i].name == part.name) return true;
+	}
+	return false;
+}
+

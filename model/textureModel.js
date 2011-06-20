@@ -8,6 +8,7 @@ function TextureModel(){
 	this.cache = new Object();
 	this.currentUnit = 0;
 	this.maxUnit = 2;
+
 	this.textureUnitsArray = new Array();
 }
 

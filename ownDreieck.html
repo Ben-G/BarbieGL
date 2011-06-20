@@ -57,7 +57,7 @@ function init() {
     myDefs[1] = WebGLBase.shaderPartFactory.createFromName("fragshader_benji").addCallback(function(data){myShaders[1] = data; });
     myDefs[2] = WebGLBase.shaderPartFactory.createFromName("vertshader_benji").addCallback(function(data){myShaders2[0] = data; });
     myDefs[3] = WebGLBase.shaderPartFactory.createFromName("fragshader2_benji").addCallback(function(data){myShaders2[1] = data; });
-    myDefs[8] = WebGLBase.shaderPartFactory.createFromName("rotation").addCallback(function(data){myShaders3[0] = data; });
+    myDefs[8] = WebGLBase.shaderPartFactory.createFromName("vertshader_texture").addCallback(function(data){myShaders3[0] = data; });
     myDefs[9] = WebGLBase.shaderPartFactory.createFromName("fragshader").addCallback(function(data){myShaders3[1] = data; });
     
     myDefs[4] = WebGLBase.objectModel.find("triangle3").addCallback(
@@ -114,9 +114,9 @@ function init() {
 
     def.finalCallback(function(){ 
 
-				var vertShader = ShaderBuilder.buildShaderFromParts(new Array(myShaders[0]), Shader.TYPE_VERTEX_SHADER, myGl);
+				var vertShader = ShaderBuilder.buildDefaultShader(Shader.TYPE_VERTEX_SHADER, myGl);
                 var fragShader = ShaderBuilder.buildShaderFromParts(new Array(myShaders[1]), Shader.TYPE_FRAGMENT_SHADER, myGl);
-                var vertShader2 = ShaderBuilder.buildShaderFromParts(new Array(myShaders2[0]), Shader.TYPE_VERTEX_SHADER, myGl);
+                var vertShader2 = ShaderBuilder.buildDefaultShader(Shader.TYPE_VERTEX_SHADER, myGl);
                 var fragShader2 = ShaderBuilder.buildShaderFromParts(new Array(myShaders2[1]), Shader.TYPE_FRAGMENT_SHADER, myGl);
                 var vertShader3 = ShaderBuilder.buildShaderFromParts(new Array(myShaders3[0]), Shader.TYPE_VERTEX_SHADER, myGl);
                 var fragShader3 = ShaderBuilder.buildShaderFromParts(new Array(myShaders3[1]), Shader.TYPE_FRAGMENT_SHADER, myGl);
@@ -129,7 +129,6 @@ function init() {
                 triangle.setShaderProgram(myShaderProgram2);
                 triangle2.setShaderProgram(myShaderProgram3);
                 triangle3.setShaderProgram(myShaderProgram3);
-                console.log(triangle3);
                 triangle4.setShaderProgram(myShaderProgram2);
                 object3dCube.setShaderProgram(myShaderProgram2);
                 object3d3.setShaderProgram(myShaderProgram2);
