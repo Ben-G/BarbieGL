@@ -24,7 +24,7 @@ function Object3D(gl){
     this.normals[4] = Vector.create([-1,0,0]);
     
 
-	this.animations = new Array();
+	this.animationMashs = new Array();
 
 
     this.xOffset = 0;
@@ -45,8 +45,10 @@ function Object3D(gl){
 		var tmp_vert_parts = new Array();
 		var tmp_frag_parts = new Array();
 		
-		for(var i = 0; i<this.animations.length; i++) {
-			tmp_vert_parts = tmp_vert_parts.concat(this.animations[i].parts);
+		for(var i = 0; i<this.animationMashs.length; i++) {
+			for(var j=0;j<this.animationMashs[i].getAnimations().length; j++) {
+				tmp_vert_parts = tmp_vert_parts.concat(this.animationMashs[i].getAnimations()[j].parts);
+			}
 		}
 		
 		tmp_vert_parts = tmp_vert_parts.concat(this.shaderProgram.vertexShader.parts);
@@ -62,7 +64,7 @@ function Object3D(gl){
 		
 	}
 	this.addAnimation= function (animation) {
-		this.animations.push(animation);
+		this.animationMashs.push(animation);
 		this._rebuildShaderProgram();
 	}
 	
@@ -127,8 +129,8 @@ function Object3D(gl){
 
 
 			
-			for(var i = 0; i<this.animations.length; i++) {
-				this.animations[i].refresh(this);
+			for(var i = 0; i<this.animationMashs.length; i++) {
+				this.animationMashs[i].refresh(this);
 			}
 
             return this.lastTranslMatrix = translationMatrix;

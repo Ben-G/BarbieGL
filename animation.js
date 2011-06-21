@@ -10,11 +10,9 @@ Animation = function(type, required_parts, name) {
 	} else {
 		this.name = "Animation" + animationCount++;
 	}
-	this.successors = new Array();
-	this.predecessors = new Array();
-	this.parallels = new Array();
 	this.parts = new Array();
 	this.required_parts = required_parts;
+	this.mash = null;
 	
 	var defs = new Array();
 	this.completed = new Deferrable();
@@ -184,13 +182,13 @@ Animation.prototype = {
 	},
 	_finish: function() {
 		this.time_elapsed = this.duration;
-		this._setState(this.state = Animation.STATE_FINISHED);
+		this._setState(Animation.STATE_FINISHED);
 		this._finishActions();
 	},
 	_setState: function(state) {
 		this.state = state;
 		if(mash != null) {
-			mash.updateAnimationState(this);
+			mash._updateAnimationState(this);
 		}
 	}
 }
@@ -286,7 +284,16 @@ AcceleratedTranslationAnimation.prototype._calculateLength = function(start,end,
 
 
 AnimationMash = function() {
-	
+	this._startAnimations = new Array();
+	this._successors = new Object();
+	this._predecessors = new Object();
+	this._parallels = new Object();
+	this._runningAnimations = new Array();
+	this._pausedAnimations = new Array();
+	this._animations = new Array();
+	this.context = new Object();
+	this.finishedInPause = new Array();
+	this.state = Animation.STATE_CREATED;
 }
 
 AnimationMash.prototype = {
@@ -296,27 +303,50 @@ AnimationMash.prototype = {
 	_predecessors: new Object(),
 	_parallels: new Object(),
 	_runningAnimations: new Array(),
+	_pausedAnimations: new Array(),
+	_animations: new Array(),
+	_finishedInPause: new Array(),
 	context: new Object(),
+	state: Animation.STATE_CREATED,
 	/**
 	 * adds an animation, that is started, when the animation mash is started
 	 */
 	addStartAnimation: function(ani) {
 		this._startAnimations.push(ani);
+		this._addAnimation(ani);
+	},
+	/**
+	 * adds an animation to the mash animation pool
+	 */
+	_addAnimation: function(ani) {
+		if(!isContained(ani,this._animations)) {
+			this._animations.push(ani);
+			ani.mash = this;
+		}
+	},
+	/**
+	 * adds an animation, that is started, when the animation mash is started
+	 */
+	getAnimations: function() {
+		return this._animations;
 	},
 	/**
 	 * connects a successor animation that is started, when a predecessor animation finishes
 	 */
 	connectSuccessor: function(predecessor, successor, time_offset) {
 		if(this._successors[predecessor.name] == null) {
-			this._successors[predecessor.name] == new Array(successor);	
+			this._addAnimation(successor);
+			this._successors[predecessor.name] = new Array(successor);	
 		} else {
+			this._addAnimation(successor);
 			this._successors[predecessor.name].push(successor);
 		}
 		if(this._predecessors[successor.name] == null) {
-			this._predecessors[successor.name] == new Array(predecessor);	
+			this._predecessors[successor.name] = new Array(predecessor);	
 		} else {
 			this._predecessors[successor.name].push(predecessor);
 		}
+		successor.mash = this;
 	},
 	/**
 	 * removes a successor animation from the predecessor animation
@@ -341,12 +371,15 @@ AnimationMash.prototype = {
 	 * connects a parallel animation2 to animation1
 	 */
 	connectParallel: function(animation1, animation2) {
+		this._addAnimation(ani);
 		if(this._parallels[animation1.name] == null) {
-			this._parallels[animation1.name] == new Array(animation2);	
+			this._parallels[animation1.name] = new Array(animation2);	
 		} else {
 			this._parallels[animation1.name].push(animation2);
 		}
+		animation2.mash = this;
 	},
+	
 	/**
 	 * removes the parallens animation2 from animation1
 	 */
@@ -363,8 +396,8 @@ AnimationMash.prototype = {
 	 * refreshes all running animations
 	 */
 	refresh: function(obj) {
-		for(var i = 0; i<_runningAnimations.length; i++) {
-			runningAnimations[i].refresh(obj, this.context);
+		for(var i = 0; i<this._runningAnimations.length; i++) {
+			this._runningAnimations[i].refresh(obj, this.context);
 		}
 	},
 	_getRunningAnimations: function() { 
@@ -375,14 +408,20 @@ AnimationMash.prototype = {
 			case Animation.STATE_CREATED: {break};
 			case Animation.STATE_RUNNING: {
 				this._runningAnimations.push(animation);
+				this._removePausedAnimation(animation);
 				break;
 			};
 			case Animation.STATE_PAUSED: {
 				this._removeRunningAnimation(animation);
+				this._pausedAnimations.push(animation);
 				break;
 			};
 			case Animation.STATE_FINISHED: {
-				this._startSuccessors(animation);
+				if(this.state == Animation.STATE_RUNNING) {
+					this._startSuccessors(animation);
+				} else if(this.state == Animation.STATE_PAUSED) {
+					this._finishedInPause.push(animation);
+				}
 				this._removeRunningAnimation(animation);
 				break;
 			};
@@ -395,33 +434,63 @@ AnimationMash.prototype = {
 		return this.context[name];
 	},
 	start: function() {
+		this.state = Animation.STATE_RUNNING;
 		for(var i=0; i<this._startAnimations.length; i++) {
-			this._startAnimations[i].start();
+			this._startAnimation(this._startAnimations[i]);
 		}
 	},
-	stop: function() {},
+	stop: function() {
+		this.state = Animation.STATE_FINISHED;
+		this.stopAnimations();
+	},
 	pause: function() {
 		// TODO: Parallels pause?
-		for(var i = 0; i<this._runningAnimations.length; i++) {
-			this._runningAnimations[i].pause(true);
-		}
+		if(this.state == Animation.STATE_RUNNING)
+			this.state = Animation.STATE_PAUSED;
 	},
 	resume: function() {
-		for(var i = 0; i<this._runningAnimations.length; i++) {
-			this._runningAnimations[i].resume();
+		if(this.state == Animation.STATE_PAUSED) {
+			this.state = Animation.STATE_RUNNING;
+			for(var i=0;i<this._finishedInPause.length;i++) {
+				this._startSuccessors(this._finishedInPause[i]);
+			}
+			this._finishedInPause = new Array();
 		}
 	},
 	restart: function() {
 		for(var i = 0; i<this._runningAnimations.length; i++) {
-			this._runningAnimations[i].restart();
+			this._runningAnimations[i].stop();
 		}
 		this.start();
 	},
-	globalRestart: function() {
+	restartAnimations: function() {
 		for(var i = 0; i<this._runningAnimations.length; i++) {
-			this._runningAnimations[i].stop(false);
+			this._runningAnimations[i].restart();
 		}
-		this.start();
+	},	
+	pauseAnimations: function() {
+		// TODO: Parallels pause?
+		for(var i = 0; i<this._runningAnimations.length; i++) {
+			this._runningAnimations[i].pause();
+		}
+	},
+	resumeAnimations: function() {
+		for(var i = 0; i<this._pausedAnimations.length; i++) {
+			this._pausedAnimations[i].resume();
+		}
+	},
+	stopRunningAnimations: function() {
+		for(var i = 0; i<this._runningAnimations.length; i++) {
+			this._runningAnimations[i].stop();
+		}
+	},
+	stopAnimations: function() {
+		for(var i = 0; i<this._runningAnimations.length; i++) {
+			this._runningAnimations[i].stop();
+		}
+		for(var i = 0; i<this._pausedAnimations.length; i++) {
+			this._pausedAnimations[i].stop();
+		}
 	},
 	_removeRunningAnimation: function(animation) {
 		for(var i = 0; i<this._runningAnimations.length; i++) {
@@ -430,22 +499,31 @@ AnimationMash.prototype = {
 			}
 		}
 	},
+	_removePausedAnimation: function(animation) {
+		for(var i = 0; i<this._pausedAnimations.length; i++) {
+			if(this._pausedAnimations[i].name == animation.name) {
+				this._pausedAnimations.splice(i,1);
+			}
+		}
+	},
 	_startAnimation: function(animation) {
 		animation.start();
 		this._startParallels(animation);
 	},
 	_startParallels: function(animation) {
-		for(var i = 0; i < this._parallels[animation.name].length; i++) {
-			if(this._allPredecessorsFinished(this._parallels[animation.name][i])) {
-				this._startAnimation(this._parallels[animation.name][i].start());
+		if(this._parallels[animation.name] != null) {
+			for(var i = 0; i < this._parallels[animation.name].length; i++) {
+				if(this._allPredecessorsFinished(this._parallels[animation.name][i])) {
+					this._startAnimation(this._parallels[animation.name][i]);
+				}
 			}
-		}			
+		}		
 	},
 	_startSuccessors: function(animation) {
 		if(this._successors[animation.name] != null) {
 			for(var i = 0; i < this._successors[animation.name].length; i++) {
 				if(this._allPredecessorsFinished(this._successors[animation.name][i])) {
-					this._startAnimation(this._successors[animation.name][i].start());
+					this._startAnimation(this._successors[animation.name][i]);
 				}
 			}	
 		}

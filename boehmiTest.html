@@ -122,6 +122,8 @@ function init() {
 	myDefs.push(rotani4.completed);	
 	rotani5 = new TranslationAnimation(Animation.TYPE_ONCE);
 	myDefs.push(rotani5.completed);	
+	
+	mash = new AnimationMash();
 		
     def.finalCallback(function(){ 
 
@@ -162,9 +164,9 @@ function init() {
                 //rotani5.parallels[0] = rotani;
 
                 
-                rotani3.addSuccessor(rotani4);
-                rotani4.addSuccessor(rotani3);
-
+                mash.addStartAnimation(rotani4);
+                mash.connectSuccessor(rotani4, rotani3);
+				mash.connectSuccessor(rotani3, rotani4);
                 
 
                    
@@ -180,11 +182,7 @@ function init() {
                 triangle3.name = "triangle3";
             
 				
-				
-				//triangle3.addAnimation(rotani);
-				triangle3.addAnimation(rotani5);
-				triangle2.addAnimation(rotani3);
-				triangle2.addAnimation(rotani4);
+				triangle2.addAnimation(mash);
 				
 
                 
@@ -231,18 +229,16 @@ function updateAnimation(event) {
 }
 
 function startAnimation() {
-	rotani4.start();
+	mash.start();
 }
 function pauseAnimation() {
-	triangle2.getRunningAnimations()[0].pause();
+	mash.pause();
 }
 function resumeAnimation() {
-	rotani4.resume();
-	rotani3.resume();
-	console.log(rotani5._calculateLength())
+	mash.resume();
 }
 function stopAnimation() {
-	triangle2.getRunningAnimations()[0].stop(false);
+	mash.stopAnimations();
 }
 
 
