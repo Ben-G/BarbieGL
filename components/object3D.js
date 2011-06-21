@@ -127,12 +127,9 @@ function Object3D(gl){
 		    	translationMatrix = translationMatrix.x(this.rotationMatrix);
 		    }
 
-
-			
 			for(var i = 0; i<this.animationMashs.length; i++) {
 				this.animationMashs[i].refresh(this);
 			}
-
             return this.lastTranslMatrix = translationMatrix;
     }
 

@@ -187,8 +187,8 @@ Animation.prototype = {
 	},
 	_setState: function(state) {
 		this.state = state;
-		if(mash != null) {
-			mash._updateAnimationState(this);
+		if(this.mash != null) {
+			this.mash._updateAnimationState(this);
 		}
 	}
 }
@@ -268,6 +268,7 @@ TranslationAnimation.prototype._refreshValues = function(obj, context) {
 
 
 TranslationAnimation.prototype._passParameters = function(program) {
+
 	program.setParameter(program.getParameterById("transMatrix"), this.transMatrix.flatten());
 }
 
@@ -482,14 +483,17 @@ AnimationMash.prototype = {
 	stopRunningAnimations: function() {
 		for(var i = 0; i<this._runningAnimations.length; i++) {
 			this._runningAnimations[i].stop();
+			this._runningAnimations[i].refresh();
 		}
 	},
 	stopAnimations: function() {
 		for(var i = 0; i<this._runningAnimations.length; i++) {
 			this._runningAnimations[i].stop();
+			this._runningAnimations[i].refresh();
 		}
 		for(var i = 0; i<this._pausedAnimations.length; i++) {
 			this._pausedAnimations[i].stop();
+			this._pausedAnimations[i].refresh();
 		}
 	},
 	_removeRunningAnimation: function(animation) {

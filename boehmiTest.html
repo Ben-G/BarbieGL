@@ -161,13 +161,12 @@ function init() {
                 
                 rotani5.duration = 500;
                 rotani5.name = "transAni3";   
-                //rotani5.parallels[0] = rotani;
 
                 
                 mash.addStartAnimation(rotani4);
                 mash.connectSuccessor(rotani4, rotani3);
 				mash.connectSuccessor(rotani3, rotani4);
-                
+                console.log(mash);
 
                    
                 myRoot.setShaderProgram(myShaderProgram2);
@@ -185,9 +184,6 @@ function init() {
 				triangle2.addAnimation(mash);
 				
 
-                
-                
-                console.log(triangle3);
                 triangle4.setShaderProgram(myShaderProgram);
                 triangle4.name = "triangle4";
                 
@@ -197,10 +193,6 @@ function init() {
                 object3d3.setShaderProgram(myShaderProgram2);
                 object3d3.name = "3d3";
                                 
-               /* triangle3.textures[0] = myTexture;
-                triangle2.textures[0] = myTexture2;
-                triangle2.textures[1] = myTexture3;
-                */
                 triangle3.addTexture(myTexture, "randomTextureCoord", "uSampler");
                 triangle2.addTexture(myTexture2, "randomTextureCoord", "uSampler");
                 triangle.addTexture(myTexture3, "randomTextureCoord", "uSampler");
@@ -208,8 +200,6 @@ function init() {
                 /*Here RootNode is declared as Node to start drawing.
                 Beginning here, all children of the Node will be drawn.                
                 */
-                //myDrawer.startDrawing(myRoot2, myGl, myShaderProgram2);  
-                //myDrawer.addShaderProgram(myShaderProgram, myGl);
                 myDrawer.startDrawing(myRoot);  
     });  
     def.addDeferrables(myDefs);
@@ -225,6 +215,7 @@ function updateAnimation(event) {
 		rotani5.setNewEnd(Vector.create([(event.offsetX-256)*16.5/256, -1*(event.offsetY-256)*16.5/256, 0]));
 		rotani5.duration = 500;
 		rotani5.restart();
+		
 	}
 }
 
