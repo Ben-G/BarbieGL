@@ -57,6 +57,8 @@ function init() {
 	var myTexture = WebGLBase.textureModel.find("texpyra.jpg", myGl);
 	var myTexture2 = WebGLBase.textureModel.find("grass.png", myGl);
 	var myTexture3 = WebGLBase.textureModel.find("brown.jpg", myGl);
+	var text_a = WebGLBase.textureModel.find("a.png", myGl);
+
 
     var triangle;
     var triangle2;
@@ -147,11 +149,13 @@ function init() {
                 triangle4.setShaderProgram(myShaderProgram2);
                 object3dCube.setShaderProgram(myShaderProgram2);
                 object3d3.setShaderProgram(myShaderProgram2);
-                tile.setShaderProgram(myShaderProgram2);
+                tile.setShaderProgram(myShaderProgram3);
 
                 
                 triangle3.addTexture(myTexture, "randomTextureCoord", "uSampler" ,myGl);
                 triangle2.addTexture(myTexture2, "randomTextureCoord", "uSampler" ,myGl);
+                tile.addTexture(text_a, "randomTextureCoord", "uSampler" ,myGl);
+
 
                 /*Here RootNode is declared as Node to start drawing.
                 Beginning here, all children of the Node will be drawn.                
