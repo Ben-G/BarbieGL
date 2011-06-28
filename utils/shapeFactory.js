@@ -20,6 +20,14 @@ function createRectangle(p1,p2,p3,p4) {
 		]	
 }
 
+function rectangleTextureCoordBuffer(){
+	return [
+		0.0,0.0,
+		1.0,0.0,
+		1.0,1.0,
+		0.0,1.0]	
+}
+
 function createCube() {
 	return [
     // Front face

@@ -51,9 +51,18 @@ function init() {
     console.log("Cube: "+cube[0]);
     var object3dCube = WebGLBase.createObject3D(triangles, myGl);
     var tile = WebGLBase.createObject3D(triangles2, myGl);
+    
+    tile.texBuffer = new Object();
+	tile.texBuffer.values = myGl.createBuffer();
+	myGl.bindBuffer(myGl.ARRAY_BUFFER, tile.texBuffer.values);
+	tile.texBuffer.buffer = rectangleTextureCoordBuffer();
+	myGl.bufferData(myGl.ARRAY_BUFFER, new Float32Array(tile.texBuffer.buffer), myGl.STATIC_DRAW);
+	tile.texBuffer.itemSize = 2;
+	tile.texBuffer.numItems = 4;
+	//TODO: TextureCoordBuffer anpassen; Textur muss auf 2 Dreiecke aufgespannt werden!
 
 
-
+	
 	var myTexture = WebGLBase.textureModel.find("texpyra.jpg", myGl);
 	var myTexture2 = WebGLBase.textureModel.find("grass.png", myGl);
 	var myTexture3 = WebGLBase.textureModel.find("brown.jpg", myGl);
@@ -149,7 +158,7 @@ function init() {
                 triangle4.setShaderProgram(myShaderProgram2);
                 object3dCube.setShaderProgram(myShaderProgram2);
                 object3d3.setShaderProgram(myShaderProgram2);
-                tile.setShaderProgram(myShaderProgram3);
+                tile.setShaderProgram(myShaderProgram);
 
                 
                 triangle3.addTexture(myTexture, "randomTextureCoord", "uSampler" ,myGl);
