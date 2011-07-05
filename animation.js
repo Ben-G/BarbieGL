@@ -110,7 +110,13 @@ Animation.prototype = {
 			}	
 		}
 	},
-	refresh: function(obj, context) {
+	_getPartByName: function(name) {
+		for(var i=0;i<this.parts.length;i++) {
+			if(this.parts[i].name == name) return this.parts[i];
+		}
+		return null;
+	},
+	refresh: function(obj) {
 		if(this.state == Animation.STATE_RUNNING) {
 			this.time_elapsed = new Date().getTime() - this.start_timestamp;
 				
@@ -133,12 +139,12 @@ Animation.prototype = {
 				}
 			}
 			
-			this._refreshValues(obj, context);
-			this._passParameters(obj.shaderProgram, context);
+			this._refreshValues(obj);
+			this._passParameters(obj.shaderProgram);
 		} else if (this.state == Animation.STATE_FINISHED && !this.finishedStateWasDrawn) {
 			this.finishedStateWasDrawn = true;
-			this._refreshValues(obj, context);
-			this._passParameters(obj.shaderProgram, context);
+			this._refreshValues(obj);
+			this._passParameters(obj.shaderProgram);
 		} 
 	},
 	_refreshValues: function(obj, context) {
@@ -222,7 +228,7 @@ RotationAnimation.prototype._calculateAngle = function(start,end,time,duration) 
 }
 
 
-RotationAnimation.prototype._refreshValues = function(obj, context) {
+RotationAnimation.prototype._refreshValues = function(obj) {
 
  	var x_deg = this._calculateAngle(this.start_offset_x, this.end_offset_x, this.time_elapsed, this.duration);
 	var y_deg = this._calculateAngle(this.start_offset_y, this.end_offset_y, this.time_elapsed, this.duration);
@@ -232,7 +238,7 @@ RotationAnimation.prototype._refreshValues = function(obj, context) {
 }
 
 RotationAnimation.prototype._passParameters = function(program) {
-	program.setParameter(program.getParameterById("rotMatrix"), this.rotMatrix.flatten());
+	program.setParameter(this._getPartByName("rotation").getParameterById("rotMatrix"), this.rotMatrix.flatten());
 }
 
 
@@ -269,7 +275,7 @@ TranslationAnimation.prototype._refreshValues = function(obj, context) {
 
 TranslationAnimation.prototype._passParameters = function(program) {
 
-	program.setParameter(program.getParameterById("transMatrix"), this.transMatrix.flatten());
+	program.setParameter(this._getPartByName("translation").getParameterById("transMatrix"), this.transMatrix.flatten());
 }
 
 

@@ -287,6 +287,7 @@ ShaderProgram = function(vertexShader, fragmentShader, gl) {
 	
 	this.fragmentShader = fragmentShader;
 
+	this.parameterLocations = new Object();
 }
 
 
@@ -299,6 +300,7 @@ ShaderProgram.prototype = {
 	fragmentShader: null,
 	// a reference to the compiled and linked binary of the program
 	binary: null,
+	parameterLocations: new Object(),
 	/**
 	 * returns the programs ShaderParameter object wipartsth the given identifier, if there is one
 	 */
@@ -318,7 +320,12 @@ ShaderProgram.prototype = {
 		if(buffer == null) return;
 		var location;
 		var gl = this.gl;
-		location = gl.getAttribLocation(this.binary, para.identifier);
+		if(this.parameterLocations[para.identifier] == null) {
+			location = gl.getAttribLocation(this.binary, para.identifier);
+			this.parameterLocations[para.identifier] = location;
+		} else {
+			location = this.parameterLocations[para.identifier];
+		}
 		if(location == -1) return;
 		gl.bindBuffer(gl.ARRAY_BUFFER, buffer.values);
 		gl.bufferData(gl.ARRAY_BUFFER, values, gl.STATIC_DRAW);
@@ -337,14 +344,21 @@ ShaderProgram.prototype = {
 		var anfang = new Date().getTime();
 		if(para.modifier.search("varying") >= 0) {
 			throw "Varying parameters can only be set inside shaders!"
-		} else if(para.modifier.search("uniform") >= 0) {
-					location = this.gl.getUniformLocation(this.binary, para.identifier);
-					
-		} else if (para.modifier.search("attribute") >= 0) {
-					location = this.gl.getAttribLocation(this.binary, para.identifier);
+		} 
+		if(this.parameterLocations[para.identifier] == null) {
+			if(para.modifier.search("uniform") >= 0) {
+				location = this.gl.getUniformLocation(this.binary, para.identifier);
+				this.parameterLocations[para.identifier] = location;
+						
+			} else if (para.modifier.search("attribute") >= 0) {
+				location = this.gl.getAttribLocation(this.binary, para.identifier);
+				this.parameterLocations[para.identifier] = location;
+			}	
+		} else {
+			location = this.parameterLocations[para.identifier];
 		}
 		
-		
+		if(location == -1) return;
 		
 		switch(para.type) {
 			case "mat4":{
