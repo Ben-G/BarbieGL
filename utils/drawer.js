@@ -17,6 +17,25 @@ Drawer.prototype = {
         this.currentGl.clearDepth(1.0);
         this.currentGl.enable(this.currentGl.DEPTH_TEST);
         this.currentGl.depthFunc(this.currentGl.LEQUAL);
+        
+        //TODO klären, warum Semi-Transparenz nicht funktioniert bzw. nur für Texturen funktioniert
+        
+        //new: blending
+    this.currentGl.blendColor(1.0, 1.0, 1.0, 0.0);  
+    //this.currentGl.blendEquation(this.currentGl.FUNC_ADD);
+    this.currentGl.blendFunc(this.currentGl.SRC_ALPHA, this.currentGl.ONE_MINUS_SRC_ALPHA);
+	this.currentGl.enable(this.currentGl.BLEND); 
+	
+	
+	/**this.currentGl.enable( this.currentGl.BLEND );
+	this.currentGl.blendEquationSeparate( this.currentGl.FUNC_ADD, this.currentGl.FUNC_ADD );
+	this.currentGl.blendFuncSeparate( this.currentGl.SRC_ALPHA, this.currentGl.ONE_MINUS_SRC_ALPHA, this.currentGl.ONE, this.currentGl.ONE_MINUS_SRC_ALPHA );	
+		**/
+		
+		
+		//this.currentGl.disable(this.currentGl.DEPTH_TEST);
+
+
         setInterval(function(){ myDrawer.drawScene() }, 10);
      },
 
