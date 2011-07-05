@@ -247,3 +247,17 @@ function isContained(part,array) {
 	return false;
 }
 
+
+function getDoubleIdentifiers(parameters) {
+	var doubles = new Array();
+	if(parameters.length == 1) return doubles;
+	
+	for(var i=0; i<parameters.length; i++) {
+		for(var j=i+1; j<parameters.length; j++) {
+			if(parameters[i].identifier == parameters[j].identifier) {
+				doubles.push(parameters[j]);
+			}
+		}
+	}
+	return doubles;
+}
