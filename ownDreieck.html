@@ -11,10 +11,13 @@
 <script type="text/javascript" src="model/textureModel.js"></script>
 <script type="text/javascript" src="model/objectModel.js"></script>
 <script type="text/javascript" src="utils/sylvester.js"></script> 
-<script type="text/javascript" src="utils/GlUtils.js"></script> 
+<script type="text/javascript" src="utils/GlUtils.js"></script>
+<script type="text/javascript" src="utils/shapeFactory.js"></script>  
 <script type="text/javascript" src="skeleton.js"></script>
 <script type="text/javascript" src="components/object3D.js"></script>
 <script type="text/javascript" src="components/texture.js"></script>
+<script type="text/javascript" src="components/textUnit.js"></script>
+
 
 <script type="text/javascript">
 
@@ -30,6 +33,10 @@ function init() {
     var myDefs = new Array();
     var def = new DeferrableList();
     triangles = new Array();
+    
+
+    
+   
 
 	triangles[0] = createTriangle(new Point3D(0,  1,  0), new Point3D(-1, -1,  0), new Point3D(1, -1,  0));
 	triangles[1] = createRectangle(new Point3D(-1,1,-1), new Point3D(1,1,-1), new Point3D(1,1,1), new Point3D(-1,1,1));
@@ -44,11 +51,21 @@ function init() {
     cube[0] = createBoundingBox(new Point3D(-1,-1,-1), new Point3D(1,1,1));
     console.log("Cube: "+cube[0]);
     var object3dCube = WebGLBase.createObject3D(triangles, myGl);
+    
+    
+    textUnit = new TextUnit(myGl); 
+    console.log(textUnit);
+    triangles2 = new Array();
+    triangles2[0] = createRectangle(new Point3D(-0.5,-1,1), new Point3D(0.5,-1,1), new Point3D(0.5,1,1), new Point3D(-0.5,1,1));
+    
 
 
+	
 	var myTexture = WebGLBase.textureModel.find("texpyra.jpg", myGl);
 	var myTexture2 = WebGLBase.textureModel.find("grass.png", myGl);
 	var myTexture3 = WebGLBase.textureModel.find("brown.jpg", myGl);
+	var text_a = WebGLBase.textureModel.find("bmfont.png", myGl); 
+
 
     var triangle;
     var triangle2;
@@ -67,16 +84,20 @@ function init() {
                     object3dCube.xOffset = -5;
                     object3dCube.yOffset = -5;
                     myRoot.add(object3d3);
+                    myRoot.add(textUnit);
+                    textUnit.zOffset = -30; 
                     object3d3.yOffset = 4;
                     object3d3.xOffset = 10;
-                    object3d3.zOffset = -30;    
+                    object3d3.zOffset = -40;
+
                     //var thirdChild = object3d3.add(WebGLBase.createObjectFromFile(data, myGl));
                     //thirdChild.xOffset = -30;
                     triangle.xOffset = 0;
                     triangle.zOffset = -40;
                     triangle.startRotation(2,"y");
                     triangle.onMyFirstEvent = function(event){
-                                                console.log( hitTest(event.clientX, event.clientY, myRoot) );
+                    							var hitObject = hitTest(event.clientX, event.clientY, myRoot);
+                                                console.log(hitObject);                                           
                                             };
                     triangle.onMoveRight = function(data){triangle.xOffset++;};
                     triangle.onMoveLeft = function(data){triangle.xOffset--;};
@@ -125,6 +146,8 @@ function init() {
                 var myShaderProgram2 = ShaderProgramBuilder.buildShaderProgram(vertShader2, fragShader2);
                 var myShaderProgram3 = ShaderProgramBuilder.buildShaderProgram(vertShader3, fragShader3);
                    
+                   
+                //TODO default setting for shaderPrograms   
                 myRoot.setShaderProgram(myShaderProgram2);
                 triangle.setShaderProgram(myShaderProgram2);
                 triangle2.setShaderProgram(myShaderProgram3);
@@ -132,15 +155,30 @@ function init() {
                 triangle4.setShaderProgram(myShaderProgram2);
                 object3dCube.setShaderProgram(myShaderProgram2);
                 object3d3.setShaderProgram(myShaderProgram2);
+
+				textUnit.setShaderProgram(myShaderProgram3);
+				textUnit.setBitmapFont(text_a);
+				
+				
+				//textUnit.children[0].setShaderProgram(myShaderProgram3);
+				//textUnit.children[1].setShaderProgram(myShaderProgram3);
+
                 
                 triangle3.addTexture(myTexture, "randomTextureCoord", "uSampler" ,myGl);
                 triangle2.addTexture(myTexture2, "randomTextureCoord", "uSampler" ,myGl);
+                //textUnit.children[0].addTexture(text_a, "randomTextureCoord", "uSampler" ,myGl);
+                //textUnit.children[1].addTexture(text_a, "randomTextureCoord", "uSampler" ,myGl); 
+
+				textUnit.addLetter("A");
+    			textUnit.addLetter("B");
 
                 /*Here RootNode is declared as Node to start drawing.
                 Beginning here, all children of the Node will be drawn.                
                 */
                 //myDrawer.startDrawing(myRoot2, myGl, myShaderProgram2);  
                 //myDrawer.addShaderProgram(myShaderProgram, myGl);
+
+                
                 myDrawer.startDrawing(myRoot);  
     });  
     
@@ -164,5 +202,7 @@ function init() {
         <b>Root nach rechts</b>
       </p>
  </button>
+ <input type="text" id="MyText" value="ABA" onkeyup='textUnit.setText(MyText.value);'/>
+ <div id="fps"></div>
 </body>
 </html>
