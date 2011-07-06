@@ -108,6 +108,7 @@ ShaderBuilder = function() {};
 
 ShaderBuilder.prototype = {
 	buildShaderFromParts: function(parts, type, gl, clone) {
+		if(clone == null) clone = true;
 		var s = new Shader(type, gl);
 		for(var i = 0; i < parts.length; i++) {
 			s.addShaderPart(parts[i], clone);
@@ -291,12 +292,9 @@ Shader.prototype = {
 		var doubles = getDoubleIdentifiers(this.getParameters());
 		var replaced = new Array();
 		for(var i = 0; i<doubles.length; i++) {
-			
-			if(doubles[i].modifier != "varying") {
-				if(!doubles[i].isStdParameter()) {
-					doubles[i].identifier = doubles[i].getUniqueIdentifier();
-					replaced.push(doubles[i]);
-				}
+			if(!doubles[i].isStdParameter()) {
+				doubles[i].identifier = doubles[i].getUniqueIdentifier();
+				replaced.push(doubles[i]);
 			}
 		}
 		var c = replaced.length;

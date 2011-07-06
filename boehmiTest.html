@@ -21,6 +21,7 @@
 <script type="text/javascript">
     var triangle;
     var triangle2;
+    var myShaderProgram3;
 function init() {
     object3d = new Array();
  	var myGl = WebGLBase.initGL(document.getElementById("scene"));
@@ -136,8 +137,9 @@ function init() {
                    
                 var myShaderProgram = ShaderProgramBuilder.buildShaderProgram(vertShader, fragShader);
                 var myShaderProgram2 = ShaderProgramBuilder.buildShaderProgram(vertShader, fragShader2);
-                var myShaderProgram3 = ShaderProgramBuilder.buildShaderProgram(vertShader3, fragShader3);
+                myShaderProgram3 = ShaderProgramBuilder.buildShaderProgram(vertShader3, fragShader3);
                    
+                   console.log(myShaders3[1]);
                 rotani.duration = 300;
                 rotani.end_offset_y = 360;
                 //rotani.end_offset_z = 0;
@@ -229,7 +231,9 @@ function resumeAnimation() {
 	mash.resume();
 }
 function stopAnimation() {
-	mash.stopAnimations();
+	
+	myShaderProgram3.fragmentShader.parts[0].isActive = !myShaderProgram3.fragmentShader.parts[0].isActive;
+	//mash.stopAnimations();
 }
 
 
