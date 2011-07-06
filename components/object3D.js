@@ -55,8 +55,8 @@ function Object3D(gl){
 		tmp_frag_parts = tmp_frag_parts.concat(this.shaderProgram.fragmentShader.parts);
 		
 		
-		var vertShader = ShaderBuilder.buildShaderFromParts(tmp_vert_parts, Shader.TYPE_VERTEX_SHADER, this.gl);
-        var fragShader = ShaderBuilder.buildShaderFromParts(tmp_frag_parts, Shader.TYPE_FRAGMENT_SHADER, this.gl);
+		var vertShader = ShaderBuilder.buildShaderFromParts(tmp_vert_parts, Shader.TYPE_VERTEX_SHADER, this.gl, false);
+        var fragShader = ShaderBuilder.buildShaderFromParts(tmp_frag_parts, Shader.TYPE_FRAGMENT_SHADER, this.gl, false);
         
         var myShaderProgram = ShaderProgramBuilder.buildShaderProgram(vertShader, fragShader);
         
@@ -77,9 +77,9 @@ function Object3D(gl){
 	}
 	
 	this.setShaderProgram = function(program) {
-		this.shaderProgram = program;	     	
-	    this.shaderProgram.vertexPositionAttribute = this.shaderProgram.gl.getAttribLocation(this.shaderProgram.binary, WebGLBase.stdParams["VERTEX_POSITION"].identifier);
-    	this.shaderProgram.gl.enableVertexAttribArray(this.shaderProgram.vertexPositionAttribute);
+		this.shaderProgram = program;	
+		this.shaderProgram.vertexPositionAttribute = this.shaderProgram.gl.getAttribLocation(this.shaderProgram.binary, WebGLBase.stdVertParams["VERTEX_POSITION"].identifier);
+    	this.shaderProgram.gl.enableVertexAttribArray(this.shaderProgram.vertexPositionAttribute);     	
 	}
 	
 	
@@ -130,7 +130,36 @@ function Object3D(gl){
 			for(var i = 0; i<this.animationMashs.length; i++) {
 				this.animationMashs[i].refresh(this);
 			}
+			this.refreshPartActivators();
             return this.lastTranslMatrix = translationMatrix;
+    }
+    
+    this.refreshPartActivators = function() {
+    	var act;
+    	var part;
+    	for(var i = 0;i<this.shaderProgram.vertexShader.parts.length;i++) {
+    		part = this.shaderProgram.vertexShader.parts[i];
+    		act = true;
+    		if(!part.isActive) act = false;
+    		this.shaderProgram.setParameter(new ShaderParameter("isActive_"+part.id, "bool", "uniform"), act);
+    	}
+    	for(var i = 0;i<this.shaderProgram.fragmentShader.parts.length;i++) {
+    		part = this.shaderProgram.fragmentShader.parts[i];
+    		act = true;
+    		if(!part.isActive) act = false;
+    		this.shaderProgram.setParameter(new ShaderParameter("isActive_"+part.id, "bool", "uniform"), act);
+    	}
+    	
+		
+		for(var i = 0; i<this.animationMashs.length; i++) {
+			for(var j=0;j<this.animationMashs[i].getAnimations().length; j++) {
+				for(var k=0;k<this.animationMashs[i].getAnimations()[j].parts.length; k++)
+				part = this.animationMashs[i].getAnimations()[j].parts[k];
+				act = true;
+    			if(!part.isActive) act = false;
+    			this.shaderProgram.setParameter(new ShaderParameter("isActive_"+part.id, "bool", "uniform"), act);
+			}
+		}
     }
 
 	/*  Will let the object rotate with specified angle speed, around the specified axis    

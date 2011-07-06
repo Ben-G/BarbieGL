@@ -89,7 +89,7 @@ function init() {
     myDefs[5] = WebGLBase.objectModel.find("triangle2").addCallback(
                 function(data){
                     triangle2 = triangle.add(WebGLBase.createObjectFromFile(data, myGl));
-                    triangle2.xOffset = 0;
+                    triangle2.yOffset = 3;
                     triangle2.zOffset = 0;
                    //triangle2.startRotation(2,"y");
                     triangle2.onMyFirstEvent = function(data){alert("im triangle2: "+data);};

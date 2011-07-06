@@ -107,6 +107,7 @@ Animation.prototype = {
 		for(var j=0;j<tmp_parts.length;j++) {
 			for(var i=0;i<this.required_parts.length;i++) {
 				if(this.required_parts[i] == tmp_parts[j].name) this.parts[i] = tmp_parts[j];
+				this.parts[i].isActive = false;
 			}	
 		}
 	},
@@ -115,6 +116,16 @@ Animation.prototype = {
 			if(this.parts[i].name == name) return this.parts[i];
 		}
 		return null;
+	},
+	_activateParts: function() {
+		for(var i=0;i<this.parts.length;i++) {
+			this.parts[i].isActive = true;
+		}
+	},
+	_deactivateParts: function() {
+		for(var i=0;i<this.parts.length;i++) {
+			this.parts[i].isActive = false;
+		}
 	},
 	refresh: function(obj) {
 		if(this.state == Animation.STATE_RUNNING) {
@@ -154,6 +165,7 @@ Animation.prototype = {
 		
 	},
 	start: function() {
+		this._activateParts();
 		this._repetitionsCount = 1;
 		this.start_timestamp = new Date().getTime();
 		this._setState(Animation.STATE_RUNNING);
@@ -188,6 +200,7 @@ Animation.prototype = {
 	},
 	_finish: function() {
 		this.time_elapsed = this.duration;
+		this._deactivateParts();
 		this._setState(Animation.STATE_FINISHED);
 		this._finishActions();
 	},

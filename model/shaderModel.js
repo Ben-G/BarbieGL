@@ -2,8 +2,20 @@ function ShaderPartFactory(){
     this.cache = new Object();
 }
 
+var ShaderPartCount = new Object();
+
 ShaderPartFactory.prototype = {
-      
+    clone: function(part, shader) {
+    	var tmp = new ShaderPart();
+    	for(var i in part) {
+    		tmp[i] = part[i];
+    	}
+    	tmp.shader = shader;
+    	if(ShaderPartCount[tmp.name] == null) ShaderPartCount[tmp.name] = 0;
+    	tmp.id = tmp.name + ShaderPartCount[tmp.name]++;
+    	tmp.parameters = ShaderParameterFactory.cloneArray(part.parameters, tmp);
+    	return tmp;
+    },
     createFromName: function(shaderName){
             if (this.cache[shaderName] == null) {
                 var def_load_json = deferredLoadFile("shaders/"+shaderName+".json");
@@ -34,6 +46,8 @@ ShaderPartFactory.prototype = {
     		var part = new ShaderPart(src);
 
     		part.name = shaderName;
+    		if(ShaderPartCount[part.name] == null) ShaderPartCount[part.name] = 0;
+    		part.id = part.name + ShaderPartCount[part.name]++;
     		
     		if(newShaderPart.type == "fragment_shader") {
     			part.type = Shader.TYPE_FRAGMENT_SHADER;
