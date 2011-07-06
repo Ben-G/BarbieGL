@@ -65,6 +65,7 @@ function Object3D(gl){
 	}
 	this.addAnimation= function (animation) {
 		this.animationMashs.push(animation);
+		animation.object = this;
 		this._rebuildShaderProgram();
 	}
 	

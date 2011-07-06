@@ -314,6 +314,7 @@ AnimationMash = function() {
 	this.context = new Object();
 	this.finishedInPause = new Array();
 	this.state = Animation.STATE_CREATED;
+	this.object = null;
 }
 
 AnimationMash.prototype = {
@@ -326,6 +327,7 @@ AnimationMash.prototype = {
 	_pausedAnimations: new Array(),
 	_animations: new Array(),
 	_finishedInPause: new Array(),
+	object: null,
 	context: new Object(),
 	state: Animation.STATE_CREATED,
 	/**
@@ -531,6 +533,7 @@ AnimationMash.prototype = {
 	},
 	_startAnimation: function(animation) {
 		animation.start();
+		animation.refresh(this.object);
 		this._startParallels(animation);
 	},
 	_startParallels: function(animation) {
