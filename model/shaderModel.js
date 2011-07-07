@@ -31,7 +31,7 @@ ShaderPartFactory.prototype = {
                 return def_final;     
             } else{
                 var d = new Deferrable();
-                d.data = this.cache[shaderName];
+                d.data = this.clone(this.cache[shaderName]);
                 d.completed = true;
                 return d;
             }

@@ -139,7 +139,6 @@ function init() {
                 var myShaderProgram2 = ShaderProgramBuilder.buildShaderProgram(vertShader, fragShader2);
                 myShaderProgram3 = ShaderProgramBuilder.buildShaderProgram(vertShader3, fragShader3);
                    
-                   console.log(myShaders3[1]);
                 rotani.duration = 300;
                 rotani.end_offset_y = 360;
                 //rotani.end_offset_z = 0;
@@ -182,6 +181,12 @@ function init() {
                 triangle3.setShaderProgram(myShaderProgram3);
                 triangle3.name = "triangle3";
             
+				var path = new AnimationPath();
+				path.addPoint(new Point3D(0.0,0.0,0.0));
+				path.addPoint(new Point3D(1.0,1.0,1.0));
+				path.addPoint(new Point3D(2.0,2.0,2.0));
+				path.addPoint(new Point3D(3.0,3.0,3.0));
+				console.log(path.getLength());
 				
 				triangle2.addAnimation(mash);
 				

@@ -34,7 +34,7 @@ Drawer.prototype = {
 				//this.currentGl.disable(this.currentGl.DEPTH_TEST);
 
 
-        setInterval(function(){ myDrawer.drawScene() }, 25);
+        setInterval(function(){ myDrawer.drawScene() }, 15);
      },
 
     drawScene: function(){

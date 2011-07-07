@@ -19,6 +19,7 @@ Animation = function(type, required_parts, name) {
     var def = new DeferrableList();
     var tmp_parts = new Array();
     var closure = this;
+    
 	for(var i = 0; i < required_parts.length; i++) {
 		defs[i] = WebGLBase.shaderPartFactory.createFromName(required_parts[i].toString());
 		defs[i].addCallback(function(data) { tmp_parts.push(data); });
@@ -264,38 +265,30 @@ TranslationAnimation = function(type, name) {
 }
 TranslationAnimation.prototype= new Animation();
 
-
 TranslationAnimation.prototype._calculateTranslationMatrix = function(transVector) {
-	return create3DTranslationMatrix(transVector).ensure4x4();
+		return create3DTranslationMatrix(transVector).ensure4x4();
 }
-
 TranslationAnimation.prototype._calculatePosition = function(start,end,time,duration) {
-	return start.add(end.subtract(start).multiply(time / duration));
+		return start.add(end.subtract(start).multiply(time / duration));
 }
-
 TranslationAnimation.prototype.setNewEnd = function(newEndVector) {
-	curPositionVector = this._calculatePosition(this.start_offset, this.end_offset, this.time_elapsed, this.duration);
-	this.start_offset = curPositionVector;
-	this.end_offset = newEndVector
+		curPositionVector = this._calculatePosition(this.start_offset, this.end_offset, this.time_elapsed, this.duration);
+		this.start_offset = curPositionVector;
+		this.end_offset = newEndVector
 }
-
 TranslationAnimation.prototype._refreshValues = function(obj, context) {
- 	var curPosition = this._calculatePosition(this.start_offset, this.end_offset, this.time_elapsed, this.duration);
-	
-	this.transMatrix = this._calculateTranslationMatrix(curPosition);
+	 	var curPosition = this._calculatePosition(this.start_offset, this.end_offset, this.time_elapsed, this.duration);
+		this.transMatrix = this._calculateTranslationMatrix(curPosition);
 }
-
-
 TranslationAnimation.prototype._passParameters = function(program) {
-
-	program.setParameter(this._getPartByName("translation").getParameterById("transMatrix"), this.transMatrix.flatten());
+		program.setParameter(this._getPartByName("translation").getParameterById("transMatrix"), this.transMatrix.flatten());
 }
-
 
 
 AcceleratedTranslationAnimation = function(type, name) {
 	TranslationAnimation.call(this, type, name);
 }
+
 AcceleratedTranslationAnimation.prototype= new TranslationAnimation();
 
 AcceleratedTranslationAnimation.prototype._calculateLength = function(start,end,time,duration) {
@@ -466,7 +459,6 @@ AnimationMash.prototype = {
 		this.stopAnimations();
 	},
 	pause: function() {
-		// TODO: Parallels pause?
 		if(this.state == Animation.STATE_RUNNING)
 			this.state = Animation.STATE_PAUSED;
 	},
@@ -563,4 +555,33 @@ AnimationMash.prototype = {
 		return true;
 	}
 	
+}
+
+
+
+AnimationPath = function() {
+	this.points = new Array();
+}
+
+AnimationPath.prototype = {
+	points: new Array(),
+	setPoints: function(points) {
+		this.points = points;
+	},
+	getPoints: function() {
+		return this.points;
+	},
+	addPoint: function(point) {
+		this.points.push(point);
+	},
+	getPoint: function(index) {
+		return this.points[index];
+	},
+	getLength: function() {
+		var len = 0;
+		for(var i=1; i<this.points.length; i++) {
+			len += this.points[i].toVector().distanceFrom(this.points[i-1].toVector());
+		}
+		return len;
+	}
 }
