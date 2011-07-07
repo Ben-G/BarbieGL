@@ -111,44 +111,83 @@ function Object3D(gl){
         objects
     */
 	
-	this.refresh = function(gl, shaderProgram, transMat) {
-		    var translationMatrix = Matrix.I(4);
-            //translationMatrix = WebGLBase.pMatrix;
+	this.refresh = function(transMat) {
+			var aniRotMats = new Array();
+			var aniTransMats = new Array();
+			var aniScaleMats = new Array();
+			for(var i = 0; i<this.animationMashs.length; i++) {
+				var mash = this.animationMashs[i];
+				mash.refresh(this);
+				aniRotMats = aniRotMats.concat(mash.rotationMatrices);
+				aniTransMats = aniTransMats.concat(mash.translationMatrices);
+				aniScaleMats = aniScaleMats.concat(mash.scalingMatrices);
+			}
 
-            if (transMat == null)
+			/**
+			 * compose the global translation matrix
+			 */
+		    var translationMatrix = Matrix.I(4);
+
+            if (transMat == null) {
 		        translationMatrix = translationMatrix.x(create3DTranslationMatrix(Vector.create([this.currentX, this.currentY, this.currentZ])).ensure4x4());
-            else{
+            }
+            else {
                 translationMatrix = transMat;
                 translationMatrix = translationMatrix.x(create3DTranslationMatrix(Vector.create([this.xOffset, this.yOffset, this.zOffset])).ensure4x4());
             }
-    
+            
+            for(var i = 0;i<aniTransMats.length;i++) {
+		    	translationMatrix = translationMatrix.x(aniTransMats[i]);
+		    }
+			/**
+			 * compose the global rotation matrix
+			 */
+			var rotationMatrix = Matrix.I(4);
+			
 		    if (this.rotation == true){
 			    this.rotValue += this.animationspeed;
 		   	 	this.rotationMatrix = WebGLBase.createRotationMatrix(this.rotationAxis, this.rotValue);
-		    	translationMatrix = translationMatrix.x(this.rotationMatrix);
+		    	rotationMatrix = rotationMatrix.x(this.rotationMatrix);
 		    }
-
-			for(var i = 0; i<this.animationMashs.length; i++) {
-				this.animationMashs[i].refresh(this);
-			}
+		    
+			for(var i = 0;i<aniRotMats.length;i++) {
+		    	rotationMatrix = rotationMatrix.x(aniRotMats[i]);
+		    }
+		    
+		    /**
+			 * compose the global scaling matrix
+			 */
+			var scalingMatrix = Matrix.I(4);
+			
+			for(var i = 0;i<aniScaleMats.length;i++) {
+		    	scalingMatrix = scalingMatrix.x(aniScaleMats[i]);
+		    }
+			
 			this.refreshPartActivators();
-            return this.lastTranslMatrix = translationMatrix;
+            return this.lastTranslMatrix = translationMatrix.x(rotationMatrix).x(scalingMatrix);
     }
+    
+    this.partStateCache = new Object();
     
     this.refreshPartActivators = function() {
     	var act;
     	var part;
+    	var cache;
     	for(var i = 0;i<this.shaderProgram.vertexShader.parts.length;i++) {
     		part = this.shaderProgram.vertexShader.parts[i];
-    		act = true;
-    		if(!part.isActive) act = false;
-    		this.shaderProgram.setParameter(new ShaderParameter("isActive_"+part.id, "bool", "uniform"), act);
+    		cache = this.partStateCache[part.id];
+    		if(cache != part.isActive || cache == null) {
+    			this.partStateCache[part.id] = part.isActive;
+    			this.shaderProgram.setParameter(new ShaderParameter("isActive_"+part.id, "bool", "uniform"), part.isActive);
+    		}
     	}
     	for(var i = 0;i<this.shaderProgram.fragmentShader.parts.length;i++) {
     		part = this.shaderProgram.fragmentShader.parts[i];
-    		act = true;
-    		if(!part.isActive) act = false;
-    		this.shaderProgram.setParameter(new ShaderParameter("isActive_"+part.id, "bool", "uniform"), act);
+    		cache = this.partStateCache[part.id];
+    		if(cache != part.isActive || cache == null) {
+    			this.partStateCache[part.id] = part.isActive;
+    			this.shaderProgram.setParameter(new ShaderParameter("isActive_"+part.id, "bool", "uniform"), part.isActive);
+    		}
     	}
     	
 		
@@ -156,10 +195,11 @@ function Object3D(gl){
 			for(var j=0;j<this.animationMashs[i].getAnimations().length; j++) {
 				for(var k=0;k<this.animationMashs[i].getAnimations()[j].parts.length; k++)
 				part = this.animationMashs[i].getAnimations()[j].parts[k];
-				act = true;
-    			if(!part.isActive) act = false;
-    			this.shaderProgram.setParameter(new ShaderParameter("isActive_"+part.id, "bool", "uniform"), act);
-			}
+				cache = this.partStateCache[part.id];
+    			if(cache != part.isActive || cache == null) {
+    				this.partStateCache[part.id] = part.isActive;
+    				this.shaderProgram.setParameter(new ShaderParameter("isActive_"+part.id, "bool", "uniform"), part.isActive);
+    		}}
 		}
     }
 

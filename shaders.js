@@ -434,7 +434,6 @@ ShaderProgram.prototype = {
 		if(para == null) return;
 		var location; 
 		
-		var anfang = new Date().getTime();
 		if(para.modifier.search("varying") >= 0) {
 			throw "Varying parameters can only be set inside shaders!"
 		} 

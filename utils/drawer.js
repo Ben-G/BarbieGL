@@ -3,11 +3,13 @@ function Drawer(){
     //this.currentGl
     //this.currentShaderProgram
     this.shaders = new Array();
+    this.fpsLimit = 60;
 }
 var last_frame = 0;
 var fpsUpdateTime = 500;
 var fpsFramesTime = 0;
 var fpsFramesCount = 0;
+
 
 Drawer.prototype = {
      startDrawing: function(object){
@@ -34,7 +36,7 @@ Drawer.prototype = {
 				//this.currentGl.disable(this.currentGl.DEPTH_TEST);
 
 
-        setInterval(function(){ myDrawer.drawScene() }, 15);
+        setInterval(function(){ myDrawer.drawScene() }, 1.0/this.fpsLimit*1000);
      },
 
     drawScene: function(){
@@ -55,11 +57,10 @@ Drawer.prototype = {
     	last_frame = new Date().getTime();
     	//console.log("Frame:" + (new Date().getTime() - last_frame) + " ms");
     },
-    drawElement : function(obj, gl, shaderProgram, transMat){
-    	
-    	var anfang = new Date().getTime();
+    drawElement: function(obj, gl, shaderProgram, transMat){
+    	//aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
     	gl.useProgram(shaderProgram.binary);
-    	var translationMat = obj.refresh(gl,shaderProgram, transMat);	
+    	var translationMat = obj.refresh(transMat);	
     	
     	if (obj.buffer.itemSize != null) {
 	     	shaderProgram.setParameter(WebGLBase.stdVertParams["P_MATRIX"], new Float32Array(WebGLBase.pMatrix.flatten()));

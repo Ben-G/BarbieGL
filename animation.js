@@ -13,6 +13,14 @@ Animation = function(type, required_parts, name) {
 	this.parts = new Array();
 	this.required_parts = required_parts;
 	this.mash = null;
+	this.rotationMatrix = null;
+	this.translationMatrix = null;
+	this.scalingMatrix = null;
+	this.changesRotationMatrix = false;
+	this.changesTranslationMatrix = false;
+	this.changesScalingMatrix = false;
+	
+	
 	
 	var defs = new Array();
 	this.completed = new Deferrable();
@@ -50,6 +58,13 @@ Animation.STATE_FINISHED = 3;
 
 
 Animation.prototype = {
+	rotationMatrix: null,
+	translationMatrix: null,
+	scalingMatrix: null,
+	changesRotationMatrix: false,
+	changesTranslationMatrix: false,
+	changesScalingMatrix: false,
+	
 	completed: new Deferrable(),
 	
 	// type of the animation (endless, once, numbered)
@@ -223,6 +238,7 @@ RotationAnimation = function(type, name) {
 	this.end_offset_x = 0;
 	this.end_offset_y = 0;
 	this.end_offset_z = 0;
+	this.changesRotationMatrix = true;
 	this.rotMatrix = null;
 }
 RotationAnimation.prototype= new Animation();
@@ -248,20 +264,21 @@ RotationAnimation.prototype._refreshValues = function(obj) {
 	var y_deg = this._calculateAngle(this.start_offset_y, this.end_offset_y, this.time_elapsed, this.duration);
 	var z_deg = this._calculateAngle(this.start_offset_z, this.end_offset_z, this.time_elapsed, this.duration);
 
-	this.rotMatrix = this._calculateRotationMatrix(x_deg, y_deg, z_deg);
+	this.rotationMatrix = this._calculateRotationMatrix(x_deg, y_deg, z_deg);
 }
 
 RotationAnimation.prototype._passParameters = function(program) {
-	program.setParameter(this._getPartByName("rotation").getParameterById("rotMatrix"), this.rotMatrix.flatten());
+	//program.setParameter(this._getPartByName("rotation").getParameterById("rotMatrix"), this.rotMatrix.flatten());
 }
 
 
 TranslationAnimation = function(type, name) {
-	var parts = new Array("translation");
+	var parts = new Array();
 	Animation.call(this, type, parts, name);
 	this.start_offset = Vector.create([0,0,0]);
 	this.end_offset = Vector.create([0,0,0]);
 	this.transMatrix = null;
+	this.changesTranslationMatrix = true;
 }
 TranslationAnimation.prototype= new Animation();
 
@@ -278,10 +295,10 @@ TranslationAnimation.prototype.setNewEnd = function(newEndVector) {
 }
 TranslationAnimation.prototype._refreshValues = function(obj, context) {
 	 	var curPosition = this._calculatePosition(this.start_offset, this.end_offset, this.time_elapsed, this.duration);
-		this.transMatrix = this._calculateTranslationMatrix(curPosition);
+		this.translationMatrix = this._calculateTranslationMatrix(curPosition);
 }
 TranslationAnimation.prototype._passParameters = function(program) {
-		program.setParameter(this._getPartByName("translation").getParameterById("transMatrix"), this.transMatrix.flatten());
+		//program.setParameter(this._getPartByName("translation").getParameterById("transMatrix"), this.transMatrix.flatten());
 }
 
 
@@ -304,6 +321,9 @@ AnimationMash = function() {
 	this._runningAnimations = new Array();
 	this._pausedAnimations = new Array();
 	this._animations = new Array();
+	this.rotationMatrices = new Array();
+	this.translationMatrices = new Array();
+	this.scalingMatrices = new Array();
 	this.context = new Object();
 	this.finishedInPause = new Array();
 	this.state = Animation.STATE_CREATED;
@@ -411,8 +431,24 @@ AnimationMash.prototype = {
 	 * refreshes all running animations
 	 */
 	refresh: function(obj) {
+		this.translationMatrices = new Array();
+		this.rotationMatrices = new Array();
+		this.scalingMatrices = new Array();
 		for(var i = 0; i<this._runningAnimations.length; i++) {
-			this._runningAnimations[i].refresh(obj, this.context);
+			var ani = this._runningAnimations[i];
+			ani.refresh(obj, this.context);
+			if(ani.changesTranslationMatrix) {
+				if(ani.translationMatrix == null) throw ani.name + " changes translation matrix, but does not provide one";
+				this.translationMatrices.push(ani.translationMatrix);
+			}
+			if(ani.changesRotationMatrix) {
+				if(ani.rotationMatrix == null) throw ani.name + " changes rotation matrix, but does not provide one";
+				this.rotationMatrices.push(ani.rotationMatrix);
+			} 
+			if(ani.changesScalingMatrix) { 
+				if(ani.scalingMatrix == null) throw ani.name + " changes scaling matrix, but does not provide one";
+				this.scalingMatrices.push(ani.scalingMatrix);
+			}
 		}
 	},
 	_getRunningAnimations: function() { 
