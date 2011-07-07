@@ -31,12 +31,10 @@ Drawer.prototype = {
 	this.currentGl.blendEquationSeparate( this.currentGl.FUNC_ADD, this.currentGl.FUNC_ADD );
 	this.currentGl.blendFuncSeparate( this.currentGl.SRC_ALPHA, this.currentGl.ONE_MINUS_SRC_ALPHA, this.currentGl.ONE, this.currentGl.ONE_MINUS_SRC_ALPHA );	
 		**/
-		
-		
-		//this.currentGl.disable(this.currentGl.DEPTH_TEST);
+				//this.currentGl.disable(this.currentGl.DEPTH_TEST);
 
 
-        setInterval(function(){ myDrawer.drawScene() }, 10);
+        setInterval(function(){ myDrawer.drawScene() }, 15);
      },
 
     drawScene: function(){
@@ -64,9 +62,9 @@ Drawer.prototype = {
     	var translationMat = obj.refresh(gl,shaderProgram, transMat);	
     	
     	if (obj.buffer.itemSize != null) {
-	     	shaderProgram.setParameter(WebGLBase.stdParams["P_MATRIX"], new Float32Array(WebGLBase.pMatrix.flatten()));
-			shaderProgram.setParameter(WebGLBase.stdParams["MV_MATRIX"], new Float32Array(translationMat.flatten()));
-			shaderProgram.setBuffer(WebGLBase.stdParams["VERTEX_POSITION"], obj.buffer, new Float32Array(obj.vertices));
+	     	shaderProgram.setParameter(WebGLBase.stdVertParams["P_MATRIX"], new Float32Array(WebGLBase.pMatrix.flatten()));
+			shaderProgram.setParameter(WebGLBase.stdVertParams["MV_MATRIX"], new Float32Array(translationMat.flatten()));
+			shaderProgram.setBuffer(WebGLBase.stdVertParams["VERTEX_POSITION"], obj.buffer, new Float32Array(obj.vertices));
 
 		    if (obj.texBuffer != null){
 		    	//obj has a texture in use COMMIT TEST
@@ -75,7 +73,6 @@ Drawer.prototype = {
 		    }
 		    
 		    gl.drawArrays(gl.TRIANGLES, 0, obj.buffer.numItems);
-        	
         }
         
         //console.log("  " +   obj.name + " " + (new Date().getTime() - anfang) + " ms");

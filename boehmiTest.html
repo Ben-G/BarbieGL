@@ -21,6 +21,7 @@
 <script type="text/javascript">
     var triangle;
     var triangle2;
+    var myShaderProgram3;
 function init() {
     object3d = new Array();
  	var myGl = WebGLBase.initGL(document.getElementById("scene"));
@@ -89,7 +90,7 @@ function init() {
     myDefs[5] = WebGLBase.objectModel.find("triangle2").addCallback(
                 function(data){
                     triangle2 = triangle.add(WebGLBase.createObjectFromFile(data, myGl));
-                    triangle2.xOffset = 0;
+                    triangle2.yOffset = 3;
                     triangle2.zOffset = 0;
                    //triangle2.startRotation(2,"y");
                     triangle2.onMyFirstEvent = function(data){alert("im triangle2: "+data);};
@@ -136,7 +137,7 @@ function init() {
                    
                 var myShaderProgram = ShaderProgramBuilder.buildShaderProgram(vertShader, fragShader);
                 var myShaderProgram2 = ShaderProgramBuilder.buildShaderProgram(vertShader, fragShader2);
-                var myShaderProgram3 = ShaderProgramBuilder.buildShaderProgram(vertShader3, fragShader3);
+                myShaderProgram3 = ShaderProgramBuilder.buildShaderProgram(vertShader3, fragShader3);
                    
                 rotani.duration = 300;
                 rotani.end_offset_y = 360;
@@ -180,6 +181,12 @@ function init() {
                 triangle3.setShaderProgram(myShaderProgram3);
                 triangle3.name = "triangle3";
             
+				var path = new AnimationPath();
+				path.addPoint(new Point3D(0.0,0.0,0.0));
+				path.addPoint(new Point3D(1.0,1.0,1.0));
+				path.addPoint(new Point3D(2.0,2.0,2.0));
+				path.addPoint(new Point3D(3.0,3.0,3.0));
+				console.log(path.getLength());
 				
 				triangle2.addAnimation(mash);
 				
@@ -229,7 +236,9 @@ function resumeAnimation() {
 	mash.resume();
 }
 function stopAnimation() {
-	mash.stopAnimations();
+	
+	myShaderProgram3.fragmentShader.parts[0].isActive = !myShaderProgram3.fragmentShader.parts[0].isActive;
+	//mash.stopAnimations();
 }
 
 

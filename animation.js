@@ -19,6 +19,7 @@ Animation = function(type, required_parts, name) {
     var def = new DeferrableList();
     var tmp_parts = new Array();
     var closure = this;
+    
 	for(var i = 0; i < required_parts.length; i++) {
 		defs[i] = WebGLBase.shaderPartFactory.createFromName(required_parts[i].toString());
 		defs[i].addCallback(function(data) { tmp_parts.push(data); });
@@ -107,10 +108,27 @@ Animation.prototype = {
 		for(var j=0;j<tmp_parts.length;j++) {
 			for(var i=0;i<this.required_parts.length;i++) {
 				if(this.required_parts[i] == tmp_parts[j].name) this.parts[i] = tmp_parts[j];
+				this.parts[i].isActive = false;
 			}	
 		}
 	},
-	refresh: function(obj, context) {
+	_getPartByName: function(name) {
+		for(var i=0;i<this.parts.length;i++) {
+			if(this.parts[i].name == name) return this.parts[i];
+		}
+		return null;
+	},
+	_activateParts: function() {
+		for(var i=0;i<this.parts.length;i++) {
+			this.parts[i].isActive = true;
+		}
+	},
+	_deactivateParts: function() {
+		for(var i=0;i<this.parts.length;i++) {
+			this.parts[i].isActive = false;
+		}
+	},
+	refresh: function(obj) {
 		if(this.state == Animation.STATE_RUNNING) {
 			this.time_elapsed = new Date().getTime() - this.start_timestamp;
 				
@@ -133,12 +151,12 @@ Animation.prototype = {
 				}
 			}
 			
-			this._refreshValues(obj, context);
-			this._passParameters(obj.shaderProgram, context);
+			this._refreshValues(obj);
+			this._passParameters(obj.shaderProgram);
 		} else if (this.state == Animation.STATE_FINISHED && !this.finishedStateWasDrawn) {
 			this.finishedStateWasDrawn = true;
-			this._refreshValues(obj, context);
-			this._passParameters(obj.shaderProgram, context);
+			this._refreshValues(obj);
+			this._passParameters(obj.shaderProgram);
 		} 
 	},
 	_refreshValues: function(obj, context) {
@@ -148,6 +166,7 @@ Animation.prototype = {
 		
 	},
 	start: function() {
+		this._activateParts();
 		this._repetitionsCount = 1;
 		this.start_timestamp = new Date().getTime();
 		this._setState(Animation.STATE_RUNNING);
@@ -182,6 +201,7 @@ Animation.prototype = {
 	},
 	_finish: function() {
 		this.time_elapsed = this.duration;
+		this._deactivateParts();
 		this._setState(Animation.STATE_FINISHED);
 		this._finishActions();
 	},
@@ -222,7 +242,7 @@ RotationAnimation.prototype._calculateAngle = function(start,end,time,duration) 
 }
 
 
-RotationAnimation.prototype._refreshValues = function(obj, context) {
+RotationAnimation.prototype._refreshValues = function(obj) {
 
  	var x_deg = this._calculateAngle(this.start_offset_x, this.end_offset_x, this.time_elapsed, this.duration);
 	var y_deg = this._calculateAngle(this.start_offset_y, this.end_offset_y, this.time_elapsed, this.duration);
@@ -232,7 +252,7 @@ RotationAnimation.prototype._refreshValues = function(obj, context) {
 }
 
 RotationAnimation.prototype._passParameters = function(program) {
-	program.setParameter(program.getParameterById("rotMatrix"), this.rotMatrix.flatten());
+	program.setParameter(this._getPartByName("rotation").getParameterById("rotMatrix"), this.rotMatrix.flatten());
 }
 
 
@@ -245,38 +265,30 @@ TranslationAnimation = function(type, name) {
 }
 TranslationAnimation.prototype= new Animation();
 
-
 TranslationAnimation.prototype._calculateTranslationMatrix = function(transVector) {
-	return create3DTranslationMatrix(transVector).ensure4x4();
+		return create3DTranslationMatrix(transVector).ensure4x4();
 }
-
 TranslationAnimation.prototype._calculatePosition = function(start,end,time,duration) {
-	return start.add(end.subtract(start).multiply(time / duration));
+		return start.add(end.subtract(start).multiply(time / duration));
 }
-
 TranslationAnimation.prototype.setNewEnd = function(newEndVector) {
-	curPositionVector = this._calculatePosition(this.start_offset, this.end_offset, this.time_elapsed, this.duration);
-	this.start_offset = curPositionVector;
-	this.end_offset = newEndVector
+		curPositionVector = this._calculatePosition(this.start_offset, this.end_offset, this.time_elapsed, this.duration);
+		this.start_offset = curPositionVector;
+		this.end_offset = newEndVector
 }
-
 TranslationAnimation.prototype._refreshValues = function(obj, context) {
- 	var curPosition = this._calculatePosition(this.start_offset, this.end_offset, this.time_elapsed, this.duration);
-	
-	this.transMatrix = this._calculateTranslationMatrix(curPosition);
+	 	var curPosition = this._calculatePosition(this.start_offset, this.end_offset, this.time_elapsed, this.duration);
+		this.transMatrix = this._calculateTranslationMatrix(curPosition);
 }
-
-
 TranslationAnimation.prototype._passParameters = function(program) {
-
-	program.setParameter(program.getParameterById("transMatrix"), this.transMatrix.flatten());
+		program.setParameter(this._getPartByName("translation").getParameterById("transMatrix"), this.transMatrix.flatten());
 }
-
 
 
 AcceleratedTranslationAnimation = function(type, name) {
 	TranslationAnimation.call(this, type, name);
 }
+
 AcceleratedTranslationAnimation.prototype= new TranslationAnimation();
 
 AcceleratedTranslationAnimation.prototype._calculateLength = function(start,end,time,duration) {
@@ -295,6 +307,7 @@ AnimationMash = function() {
 	this.context = new Object();
 	this.finishedInPause = new Array();
 	this.state = Animation.STATE_CREATED;
+	this.object = null;
 }
 
 AnimationMash.prototype = {
@@ -307,6 +320,7 @@ AnimationMash.prototype = {
 	_pausedAnimations: new Array(),
 	_animations: new Array(),
 	_finishedInPause: new Array(),
+	object: null,
 	context: new Object(),
 	state: Animation.STATE_CREATED,
 	/**
@@ -445,7 +459,6 @@ AnimationMash.prototype = {
 		this.stopAnimations();
 	},
 	pause: function() {
-		// TODO: Parallels pause?
 		if(this.state == Animation.STATE_RUNNING)
 			this.state = Animation.STATE_PAUSED;
 	},
@@ -512,6 +525,7 @@ AnimationMash.prototype = {
 	},
 	_startAnimation: function(animation) {
 		animation.start();
+		animation.refresh(this.object);
 		this._startParallels(animation);
 	},
 	_startParallels: function(animation) {
@@ -541,4 +555,33 @@ AnimationMash.prototype = {
 		return true;
 	}
 	
+}
+
+
+
+AnimationPath = function() {
+	this.points = new Array();
+}
+
+AnimationPath.prototype = {
+	points: new Array(),
+	setPoints: function(points) {
+		this.points = points;
+	},
+	getPoints: function() {
+		return this.points;
+	},
+	addPoint: function(point) {
+		this.points.push(point);
+	},
+	getPoint: function(index) {
+		return this.points[index];
+	},
+	getLength: function() {
+		var len = 0;
+		for(var i=1; i<this.points.length; i++) {
+			len += this.points[i].toVector().distanceFrom(this.points[i-1].toVector());
+		}
+		return len;
+	}
 }

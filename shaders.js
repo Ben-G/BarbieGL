@@ -8,20 +8,36 @@ ShaderParameterFactory = function() {
 }
 
 ShaderParameterFactory.prototype = {
-	createFromStringArray: function(array) {
+	clone: function(parameter, part) {
+		var tmp = new ShaderParameter();
+    	for(var i in parameter) {
+    		tmp[i] = parameter[i];
+    	}
+    	tmp.shaderPart = part;
+    	return tmp;
+	},
+	cloneArray: function(parameters, part) {
+		var tmp = new Array();
+		for(var i = 0;i < parameters.length; i++) {
+			tmp.push(this.clone(parameters[i], part));
+		}
+		return tmp;
+	},
+	createFromStringArray: function(array, part) {
 		var res = new Array();
 		for(var i = 0; i<array.length; i++) {
-			res.push(this.createFromString(array[i]));
+			res.push(this.createFromString(array[i], part));
 		}
 		return res;
 	},
-	createFromString: function(string) {
+	createFromString: function(string, part) {
 		var split = string.split(" ");
 		var id=split[2];
 		if(id.search(";") >= 0) {
 			id = id.substring(0,id.length-1);
 		}
 		var para = new ShaderParameter(id, split[1], split[0]);
+		para.shaderPart = part;
 		return para;
 	},	
 }
@@ -91,11 +107,12 @@ ShaderProgramBuilder = new ShaderProgramBuilder();
 ShaderBuilder = function() {};
 
 ShaderBuilder.prototype = {
-	buildShaderFromParts: function(parts, type, gl) {
+	buildShaderFromParts: function(parts, type, gl, clone) {
+		if(clone == null) clone = true;
 		var s = new Shader(type, gl);
-		parts = eraseDuplicates(parts);
 		for(var i = 0; i < parts.length; i++) {
-			s.addShaderPart(parts[i]);
+			s.addShaderPart(parts[i], clone);
+			
 		}
 		return s;
 	},
@@ -113,14 +130,19 @@ ShaderBuilder = new ShaderBuilder();
  * Represents a parameter of a shader program or program parts
  */
 ShaderParameter = function(identifier, type, modifier) {
-	// the identifier of the parameter
+	// the internal identifier of the parameter
 	this.identifier = identifier;
+	
+	// the identifier in the original source code
+	this.originalIdentifier = identifier;
 	
 	// the datatype (vec2, mat4, float, int etc.)
 	this.type = type;
 	
 	// the modifier (uniform, attribute or varying)
 	this.modifier = modifier;
+	
+	this.shaderPart = null;
 }
 
 
@@ -132,10 +154,22 @@ ShaderParameter.prototype = {
 	type: "",
 	// the modifier (uniform, attribute or varying)
 	modifier: "",
-	// a pointer to the parameters location in the GPU Memory (a WebGL specific object)
-	location: null,
+	part: null,
 	getSrc: function() {
 		return this.modifier + " " + this.type + " " + this.identifier;
+	},
+	getUniqueIdentifier: function() {
+		return this.shaderPart.id + this.originalIdentifier;
+	},
+	isStdParameter: function(shaderType) {
+		var map;
+		if(shaderType == Shader.TYPE_FRAGMENT_SHADER) map = WebGLBase.stdFragParams;
+		else if(shaderType == Shader.TYPE_VERTEX_SHADER) map = WebGLBase.stdVertParams;  
+		else return false;
+		for(var i in map) {
+			if(map[i].identifier == this.identifier) return true;
+		}
+		return false;
 	}
 };
 
@@ -157,8 +191,22 @@ Shader = function(type, gl) {
 	this.parts = new Array();
 	if(type != null) {
 		this.type = type;
+	} else (this.type = 0);
+
+/*
+	var tmp = new Array();	
+	if(this.type == Shader.TYPE_VERTEX_SHADER) {
+		for (var i in WebGLBase.stdVertParams) {
+			tmp.push(WebGLBase.stdVertParams[i]);
+		}
+	} else if(this.type == Shader.TYPE_FRAGMENT_SHADER) {
+		for (var i in WebGLBase.stdFragParams) {
+			tmp.push(WebGLBase.stdFragParams[i]);
+		}
 	}
 	
+	this._defaultParameters = ShaderParameterFactory.cloneArray(tmp, null);
+	*/
 }
 
 // Constants for the 2 possible types of a Shader
@@ -176,13 +224,26 @@ Shader.prototype = {
 	binary: null,
 	// states wether the shader is compiled or not
 	isCompiled: false,
+	
+	_defaultParameters: new Array(),
 	/**
 	 * returns the shaders ShaderParameter object with the given identifier, if there is one
 	 */
+	getParameters: function() {
+		var tmp = new Array();
+		for(var i = 0; i<this.parts.length; i++) {
+			tmp = tmp.concat(this.parts[i].parameters);
+		}
+		tmp = tmp.concat(this._defaultParameters);
+		return tmp;
+	},
 	getParameterById: function(id) {
 		for(var i = 0;i<this.parts.length;i++) {
 			var p1 = this.parts[i].getParameterById(id);
 			if(p1 != null) return p1;		
+		}
+		for(var i = 0;i<this._defaultParameters.length;i++) {
+			if(this._defaultParameters[i].identifier == id) return this._defaultParameters[i];
 		}
 		return null;
 	},
@@ -209,12 +270,38 @@ Shader.prototype = {
 	 * The sources will be merged
 	 * 
 	 * @param ShaderPart part : the part to be added  
+	 * @param boolean clone: states if the part have to be cloned, default is true
 	 */
-	addShaderPart: function(part) {
+	addShaderPart: function(part, clone) {
 		if(part.type != this.type) throw "Cannot add a different shader type";
-		if(!this._partIsContained(part)) {
-			this.parts.push(part);
-			this.isCompiled = false;
+		
+		if(clone == null || clone == true) {
+			var id = part.id;
+			part = ShaderPartFactory.clone(part, this);
+			//console.log("cloned ", id, " to ", part.id);
+		} else {
+			part.shader = this;
+			//console.log("not cloned ", part.id);
+			//console.trace();
+		}
+		this.parts.push(part);
+		this.renameDoubleIdentifiers();
+		this.isCompiled = false;
+	},
+	renameDoubleIdentifiers: function() {
+		var doubles = getDoubleIdentifiers(this.getParameters());
+		var replaced = new Array();
+		for(var i = 0; i<doubles.length; i++) {
+			if(!doubles[i].isStdParameter()) {
+				doubles[i].identifier = doubles[i].getUniqueIdentifier();
+				replaced.push(doubles[i]);
+			}
+		}
+		var c = replaced.length;
+		for(var i = 0; i<c; i++) {
+			var pos = getLongestIdentifierPosition(replaced);
+			replaced[pos].shaderPart.replaceIdentifier(replaced[pos]);
+			replaced.splice(pos,1);
 		}
 	},
 	_partIsContained: function(part) {
@@ -248,19 +335,24 @@ Shader.prototype = {
 		var main_src = "void main(void) {\n";
 		
 		if(this.type == Shader.TYPE_VERTEX_SHADER) {
-			main_src += "vec4 originalPosition = vec4(aVertexPosition,1.0);\n";
-			main_src += "vec4 vertexPosition = vec4(aVertexPosition,1.0);\n";
+			main_src += "\tvec4 originalPosition = vec4(aVertexPosition,1.0);\n";
+			main_src += "\tvec4 vertexPosition = vec4(aVertexPosition,1.0);\n";
+		} else {
+			main_src += "\tvec4 fragColor = vec4(1.0,1.0,1.0,1.0);\n"
 		}
 		
 		for(var i = 0; i < this.parts.length; i++) {
 			var part = this.parts[i];
-			para_src += part.getParameterSrc() + "\n\n";
-			func_src += part.getFunctionSrc() + "\n\n";
-			main_src += part.src_main + "\n";
+			para_src += "uniform bool isActive_" + part.id + ";\n";
+			para_src += part.getParameterSrc() + "\n";
+			func_src += part.getFunctionSrc() + "\n";
+			main_src += "\tif(isActive_" + part.id + ") {\n\t" + part.src_main + "\t}\n";
 		}
-		
+
 		if(this.type == Shader.TYPE_VERTEX_SHADER) {
-			main_src += "gl_Position = uPMatrix * (uMVMatrix * vertexPosition);\n"
+			main_src += "\tgl_Position = uPMatrix * (uMVMatrix * vertexPosition);\n"
+		} else {
+			main_src += "\tgl_FragColor = fragColor;\n"
 		}
 		main_src += "}";
 		var src = precomp_src + para_src + func_src + main_src;
@@ -287,6 +379,7 @@ ShaderProgram = function(vertexShader, fragmentShader, gl) {
 	
 	this.fragmentShader = fragmentShader;
 
+	this.parameterLocations = new Object();
 }
 
 
@@ -299,6 +392,7 @@ ShaderProgram.prototype = {
 	fragmentShader: null,
 	// a reference to the compiled and linked binary of the program
 	binary: null,
+	parameterLocations: new Object(),
 	/**
 	 * returns the programs ShaderParameter object wipartsth the given identifier, if there is one
 	 */
@@ -318,7 +412,13 @@ ShaderProgram.prototype = {
 		if(buffer == null) return;
 		var location;
 		var gl = this.gl;
-		location = gl.getAttribLocation(this.binary, para.identifier);
+		if(this.parameterLocations[para.identifier] == null) {
+			location = gl.getAttribLocation(this.binary, para.identifier);
+			this.parameterLocations[para.identifier] = location;
+		} else {
+			location = this.parameterLocations[para.identifier];
+		}
+		
 		if(location == -1) return;
 		gl.bindBuffer(gl.ARRAY_BUFFER, buffer.values);
 		gl.bufferData(gl.ARRAY_BUFFER, values, gl.STATIC_DRAW);
@@ -337,14 +437,20 @@ ShaderProgram.prototype = {
 		var anfang = new Date().getTime();
 		if(para.modifier.search("varying") >= 0) {
 			throw "Varying parameters can only be set inside shaders!"
-		} else if(para.modifier.search("uniform") >= 0) {
-					location = this.gl.getUniformLocation(this.binary, para.identifier);
-					
-		} else if (para.modifier.search("attribute") >= 0) {
-					location = this.gl.getAttribLocation(this.binary, para.identifier);
+		} 
+		if(this.parameterLocations[para.identifier] == null) {
+			if(para.modifier.search("uniform") >= 0) {
+				location = this.gl.getUniformLocation(this.binary, para.identifier);
+				this.parameterLocations[para.identifier] = location;
+						
+			} else if (para.modifier.search("attribute") >= 0) {
+				location = this.gl.getAttribLocation(this.binary, para.identifier);
+				this.parameterLocations[para.identifier] = location;
+			}	
+		} else {
+			location = this.parameterLocations[para.identifier];
 		}
-		
-		
+		if(location == -1) return;
 		
 		switch(para.type) {
 			case "mat4":{
@@ -500,6 +606,14 @@ ShaderProgram.prototype = {
  */
 
 ShaderPart = function(src, type) {
+	
+	this.shader = null;
+	this.type = Shader.TYPE_VERTEX_SHADER;
+	this.parameters = new Array();
+	this.functions = new Array();
+	this.src_main = "";
+	this.isActive = true;
+	
 	if(type != null) {
 		this.type = type;
 	}
@@ -507,6 +621,8 @@ ShaderPart = function(src, type) {
 	if(src != null) {
 		this._initializeFromSource(src);
 	}
+	
+
 }
 
 
@@ -523,18 +639,21 @@ ShaderPart.prototype = {
 	type: Shader.TYPE_VERTEX_SHADER,
 	
 	parameters: new Array(),
+	
+	shader: null,
 	_initializeFromSource: function(src) {
 		this.src_main = parseMainFunction(src);
 		this.functions = parseFunctions(src);
-		this.parameters = ShaderParameterFactory.createFromStringArray(parseParameters(src));
+		this.parameters = ShaderParameterFactory.createFromStringArray(parseParameters(src), this);
 	},
 	getParameterById: function(identifier) {
 		for(var i = 0; i < this.parameters.length; i++) {
 			var p = this.parameters[i];
-			if(p.identifier == identifier) {
+			if(p.originalIdentifier == identifier) {
 				return p;
 			}
 		}
+		console.log(this);
 		return null;
 	},
 	getParameterSrc: function() {
@@ -560,6 +679,10 @@ ShaderPart.prototype = {
 			}
 		}
 		return names;
+	},
+	replaceIdentifier: function(para) {
+		var regexp = new RegExp(para.originalIdentifier, "g");
+		this.src_main = this.src_main.replace(regexp, para.identifier)
 	},
 	/*
 	 * Generates and returns the source code

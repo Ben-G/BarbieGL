@@ -232,7 +232,7 @@ function findClosingParenthethis(src, opening_position) {
 function parseSourceBetweenParenthethis(src, start) {
 		var end = findClosingParenthethis(src, start);
 		if(end >= 0) {
-			return src.substring(start+1, end);
+			return src.substring(start+2, end);
 		} else return null;
 }
 
@@ -261,3 +261,25 @@ function isContained(part,array) {
 	return false;
 }
 
+function getLongestIdentifierPosition(parameters) {
+	var max = 0;
+	var pos = 0;
+	for(var i = 0; i<parameters.length; i++) {
+		if(parameters[i].identifier.length > max) pos = i;
+	}
+	return pos;
+}
+
+function getDoubleIdentifiers(parameters) {
+	var doubles = new Array();
+	if(parameters.length == 1) return doubles;
+	
+	for(var i=0; i<parameters.length; i++) {
+		for(var j=i+1; j<parameters.length; j++) {
+			if(parameters[i].identifier == parameters[j].identifier) {
+				doubles.push(parameters[j]);
+			}
+		}
+	}
+	return doubles;
+}
