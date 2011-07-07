@@ -1,6 +1,8 @@
 <html>
 <head>
 <title>Bier</title>
+<script type="text/javascript" src="utils/dojo.js"></script>
+<script type="text/javascript" src="utils/xpath.js"></script>
 <script type="text/javascript" src="utils/utils.js"></script>
 <script type="text/javascript" src="utils/sort.js"></script>
 <script type="text/javascript" src="utils/drawer.js"></script>
@@ -17,6 +19,7 @@
 <script type="text/javascript" src="components/object3D.js"></script>
 <script type="text/javascript" src="components/texture.js"></script>
 <script type="text/javascript" src="components/textUnit.js"></script>
+<script type="text/javascript" src="text/bmFont.js"></script>
 
 
 <script type="text/javascript">
@@ -34,8 +37,10 @@ function init() {
     var def = new DeferrableList();
     triangles = new Array();
     
-
-    
+	//instantiate a bitmapFont
+	var newFont = new BitmapFontDescriptor();
+	newFont.instantiate("arialLarge"); 
+	console.log(newFont); 
    
 
 	triangles[0] = createTriangle(new Point3D(0,  1,  0), new Point3D(-1, -1,  0), new Point3D(1, -1,  0));
@@ -64,7 +69,7 @@ function init() {
 	var myTexture = WebGLBase.textureModel.find("texpyra.jpg", myGl);
 	var myTexture2 = WebGLBase.textureModel.find("grass.png", myGl);
 	var myTexture3 = WebGLBase.textureModel.find("brown.jpg", myGl);
-	var text_a = WebGLBase.textureModel.find("bmfont.png", myGl); 
+	var text_a = WebGLBase.textureModel.find("arialLargeTransparent.png", myGl);  
 
 
     var triangle;
@@ -85,7 +90,8 @@ function init() {
                     object3dCube.yOffset = -5;
                     myRoot.add(object3d3);
                     myRoot.add(textUnit);
-                    textUnit.zOffset = -30; 
+                    textUnit.zOffset = -50; 
+                    textUnit.xOffset = -10;
                     object3d3.yOffset = 4;
                     object3d3.xOffset = 10;
                     object3d3.zOffset = -40;
@@ -95,9 +101,13 @@ function init() {
                     triangle.xOffset = 0;
                     triangle.zOffset = -40;
                     triangle.startRotation(2,"y");
+                    //textUnit.startRotation(2,"y");
                     triangle.onMyFirstEvent = function(event){
                     							var hitObject = hitTest(event.clientX, event.clientY, myRoot);
-                                                console.log(hitObject);                                           
+                                                console.log(hitObject);    
+                                                if (hitObject.clicked != null){ 
+                                                	hitObject.clicked();           
+                                                }                           
                                             };
                     triangle.onMoveRight = function(data){triangle.xOffset++;};
                     triangle.onMoveLeft = function(data){triangle.xOffset--;};
@@ -157,7 +167,11 @@ function init() {
                 object3d3.setShaderProgram(myShaderProgram2);
 
 				textUnit.setShaderProgram(myShaderProgram3);
-				textUnit.setBitmapFont(text_a);
+				textUnit.setBitmapFont(text_a,newFont);
+				textUnit.setMaxWidth(20);
+				textUnit.setFontSize(0.7);
+				textUnit.addLetter("A");
+    			textUnit.addLetter("B");
 				
 				
 				//textUnit.children[0].setShaderProgram(myShaderProgram3);
@@ -169,8 +183,7 @@ function init() {
                 //textUnit.children[0].addTexture(text_a, "randomTextureCoord", "uSampler" ,myGl);
                 //textUnit.children[1].addTexture(text_a, "randomTextureCoord", "uSampler" ,myGl); 
 
-				textUnit.addLetter("A");
-    			textUnit.addLetter("B");
+				
 
                 /*Here RootNode is declared as Node to start drawing.
                 Beginning here, all children of the Node will be drawn.                
