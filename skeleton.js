@@ -165,6 +165,14 @@ WebGLBase.prototype = {
         var object3d = this.createObject3DFromFile(obj, gl);
         return object3d;          
     },
+
+   	/**
+        Creates and returns a Scaling matrix, which describes a up/downscale by a factor
+    */
+    createScalingMatrix: function(x_factor, y_factor, z_factor) {
+    	var m = Matrix.I(4);
+        return m.x(Matrix.create([[x_factor,0,0], [0,y_factor,0], [0,0,z_factor]]).ensure4x4());
+	},   
     /**
         Creates and returns a Rotation matrix, which describes a rotation around the defined axis.
     */
@@ -179,7 +187,7 @@ WebGLBase.prototype = {
         if(axis == "z") {
 		return mvMatrix.x(Matrix.Rotation(degrees*Math.PI / 180.0, Vector.create([0,0,1])).ensure4x4());
         }
-	},    
+	},     
     perspective: function(fovy, aspect, znear, zfar) {
         this.pMatrix = makePerspective(fovy, aspect, znear, zfar);
     }

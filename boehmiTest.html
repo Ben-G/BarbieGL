@@ -75,11 +75,12 @@ function init() {
                     object3d3.zOffset = -40;    
                     //var thirdChild = object3d3.add(WebGLBase.createObjectFromFile(data, myGl));
                     //thirdChild.xOffset = -30;
-                    triangle.xOffset = 0;
+                    triangle.xOffset = -5;
                     triangle.zOffset = -40;
                     //triangle.startRotation(2,"y");
                     triangle.onMyFirstEvent = function(event){
-                                                console.log( hitTest(event.clientX, event.clientY, myRoot) );
+                                                var hit =( hitTest(event.clientX, event.clientY, myRoot) );
+                                                hit.animationMashs["bump"].start();
                                             };
                     triangle.onMoveRight = function(data){triangle.xOffset++;};
                     triangle.onMoveLeft = function(data){triangle.xOffset--;};
@@ -90,7 +91,7 @@ function init() {
     myDefs[5] = WebGLBase.objectModel.find("triangle2").addCallback(
                 function(data){
                     triangle2 = triangle.add(WebGLBase.createObjectFromFile(data, myGl));
-                    triangle2.yOffset = 3;
+                    triangle2.xOffset = 5;
                     triangle2.zOffset = 0;
                    //triangle2.startRotation(2,"y");
                     triangle2.onMyFirstEvent = function(data){alert("im triangle2: "+data);};
@@ -100,8 +101,8 @@ function init() {
     myDefs[6] = WebGLBase.objectModel.find("pyramide").addCallback(
                 function(data){
                     triangle3 = triangle2.add(WebGLBase.createObjectFromFile(data, myGl));
-                    triangle3.yOffset = 0;
-                    triangle3.xOffset =0;
+                    triangle3.yOffset = 3;
+                    triangle3.xOffset =5;
                     //triangle3.startRotation(2,"x");
                 });
     myDefs[7] = WebGLBase.objectModel.find("pyramide").addCallback(
@@ -113,16 +114,22 @@ function init() {
                   //  triangle4.startRotation(2,"y");
                 });
 
-	rotani = new RotationAnimation(Animation.TYPE_ENDLESS);
+	rotani = new RotationAnimation(Animation.TYPE_ONCE);
 	myDefs.push(rotani.completed);
 	rotani2 = new RotationAnimation(Animation.TYPE_ONCE);
 	myDefs.push(rotani2.completed);
-	rotani3 = new TranslationAnimation(Animation.TYPE_ONCE);
+	rotani3 = new ScalingAnimation(Animation.TYPE_ONCE);
 	myDefs.push(rotani3.completed);
-	rotani4 = new TranslationAnimation(Animation.TYPE_ONCE);
+	rotani4 = new ScalingAnimation(Animation.TYPE_ONCE);
 	myDefs.push(rotani4.completed);	
 	rotani5 = new TranslationAnimation(Animation.TYPE_ONCE);
 	myDefs.push(rotani5.completed);	
+	rotani6 = new TranslationAnimation(Animation.TYPE_ONCE);
+	myDefs.push(rotani6.completed);	
+	rotani7 = new ScalingAnimation(Animation.TYPE_ONCE);
+	myDefs.push(rotani7.completed);
+	rotani8 = new ScalingAnimation(Animation.TYPE_ONCE);
+	myDefs.push(rotani8.completed);	
 	
 	mash = new AnimationMash();
 		
@@ -130,7 +137,6 @@ function init() {
 
 				var vertShader = ShaderBuilder.buildDefaultShader(Shader.TYPE_VERTEX_SHADER, myGl);
                 var fragShader = ShaderBuilder.buildShaderFromParts(new Array(myShaders[1]), Shader.TYPE_FRAGMENT_SHADER, myGl);
-                //var vertShader2 = ShaderBuilder.buildShaderFromParts(new Array(), Shader.TYPE_VERTEX_SHADER, myGl);
                 var fragShader2 = ShaderBuilder.buildShaderFromParts(new Array(myShaders2[1]), Shader.TYPE_FRAGMENT_SHADER, myGl);
                 var vertShader3 = ShaderBuilder.buildShaderFromParts(new Array(myShaders3[0]), Shader.TYPE_VERTEX_SHADER, myGl);
                 var fragShader3 = ShaderBuilder.buildShaderFromParts(new Array(myShaders3[1]), Shader.TYPE_FRAGMENT_SHADER, myGl);
@@ -139,34 +145,69 @@ function init() {
                 var myShaderProgram2 = ShaderProgramBuilder.buildShaderProgram(vertShader, fragShader2);
                 myShaderProgram3 = ShaderProgramBuilder.buildShaderProgram(vertShader3, fragShader3);
                    
-                rotani.duration = 300;
-                rotani.end_offset_y = 360;
-                //rotani.end_offset_z = 0;
-                rotani.name = "rotani";
+                rotani.duration = 2000;
+                rotani.start_offset = Vector.create([0,0,0]);
+                rotani.end_offset = Vector.create([360,0,0]);
+                rotani.name = "rotAni1";  
                 
-                rotani2.duration = 3200;
-                rotani2.start_offset_x = 360;
-                rotani2.start_offset_z = 25;
-                rotani2.end_offset_x = 0;
-                rotani2.name = "rotani2";
+                rotani2.duration = 2000;
+                rotani2.start_offset = Vector.create([360,0,0]);
+                rotani2.end_offset = Vector.create([0,0,0]);
+                rotani2.name = "rotAni2";  
 
                 rotani3.duration = 2000;
-                rotani3.start_offset = Vector.create([10,0,0]);
-                rotani3.end_offset = Vector.create([0,0,0]);
-                rotani3.name = "transAni1";     
+                rotani3.start_offset = Vector.create([5,1,1]);
+                rotani3.end_offset = Vector.create([1,1,1]);
+                rotani3.name = "scaleAni1";     
                 
                 rotani4.duration = 2000;
-                rotani4.start_offset = Vector.create([0,0,0]);
-                rotani4.end_offset = Vector.create([10,0,0]);
-                rotani4.name = "transAni2";     
+                rotani4.start_offset = Vector.create([1,1,1]);
+                rotani4.end_offset = Vector.create([5,1,1]);
+                rotani4.name = "scaleAni2";    
                 
-                rotani5.duration = 500;
-                rotani5.name = "transAni3";   
 
                 
-                mash.addStartAnimation(rotani4);
+                rotani5.duration = 2000;
+                rotani5.start_offset = Vector.create([0,0,0]);
+                rotani5.end_offset = Vector.create([10,0,0]);
+                rotani5.name = "transAni1";     
+                
+                rotani6.duration = 2000;
+                rotani6.start_offset = Vector.create([10,0,0]);
+                rotani6.end_offset = Vector.create([0,0,0]);
+                rotani6.name = "transAni2";     
+                
+
+                rotani7.duration = 80;
+                rotani7.start_offset = Vector.create([1,1,1]);
+                rotani7.end_offset = Vector.create([0.8,0.8,0.8]);
+                rotani7.name = "scaleAni3";     
+                
+                rotani8.duration = 80;
+                rotani8.start_offset = Vector.create([0.8,0.8,0.8]);
+                rotani8.end_offset = Vector.create([1,1,1]);
+                rotani8.name = "scaleAni4";  
+                
+                
+
+				var mash2 = new AnimationMash();
+				mash2.name = "bump";
+				mash2.addStartAnimation(rotani7);
+				mash2.connectSuccessor(rotani7, rotani8);
+				//mash2.connectSuccessor(rotani8, rotani7);
+				
+				
+                
+                //mash.addStartAnimation(rotani4);
+                //mash.addStartAnimation(rotani);
+                mash.addStartAnimation(rotani5);
+                
+                mash.connectSuccessor(rotani, rotani2);
+				mash.connectSuccessor(rotani2, rotani);
                 mash.connectSuccessor(rotani4, rotani3);
 				mash.connectSuccessor(rotani3, rotani4);
+				mash.connectSuccessor(rotani5, rotani6);
+				mash.connectSuccessor(rotani6, rotani5);
                 console.log(mash);
 
                    
@@ -183,13 +224,14 @@ function init() {
             
 				var path = new AnimationPath();
 				path.addPoint(new Point3D(0.0,0.0,0.0));
-				path.addPoint(new Point3D(1.0,1.0,1.0));
-				path.addPoint(new Point3D(2.0,2.0,2.0));
-				path.addPoint(new Point3D(3.0,3.0,3.0));
-				console.log(path.getLength());
+				path.addPoint(new Point3D(1.0,0.0,0.0));
+				path.addPoint(new Point3D(2.0,0.0,0.0));
+				path.addPoint(new Point3D(3.0,0.0,0.0));
 				
-				triangle2.addAnimation(mash);
+				triangle2.addAnimationMash(mash);
+				triangle3.addAnimationMash(mash2);
 				
+				//mash2.start();
 
                 triangle4.setShaderProgram(myShaderProgram);
                 triangle4.name = "triangle4";
@@ -214,6 +256,7 @@ function init() {
 }
 
 function updateAnimation(event) {
+	return;
 	if(rotani5.state == Animation.STATE_RUNNING) {
 		rotani5.setNewEnd(Vector.create([(event.offsetX-256)*16.5/256, -1*(event.offsetY-256)*16.5/256, 0]));
 		rotani5.duration = 500 + rotani5.time_elapsed;

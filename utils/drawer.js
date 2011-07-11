@@ -64,6 +64,8 @@ Drawer.prototype = {
     	
     	if (obj.buffer.itemSize != null) {
 	     	shaderProgram.setParameter(WebGLBase.stdVertParams["P_MATRIX"], new Float32Array(WebGLBase.pMatrix.flatten()));
+			//if(obj.name == "triangle2") console.log(translationMat.inspect());
+			
 			shaderProgram.setParameter(WebGLBase.stdVertParams["MV_MATRIX"], new Float32Array(translationMat.flatten()));
 			shaderProgram.setBuffer(WebGLBase.stdVertParams["VERTEX_POSITION"], obj.buffer, new Float32Array(obj.vertices));
 

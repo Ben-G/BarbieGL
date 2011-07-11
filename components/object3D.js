@@ -24,7 +24,7 @@ function Object3D(gl){
     this.normals[4] = Vector.create([-1,0,0]);
     
 
-	this.animationMashs = new Array();
+	this.animationMashs = new Object();
 
 
     this.xOffset = 0;
@@ -45,7 +45,7 @@ function Object3D(gl){
 		var tmp_vert_parts = new Array();
 		var tmp_frag_parts = new Array();
 		
-		for(var i = 0; i<this.animationMashs.length; i++) {
+		for(var i in this.animationMashs) {
 			for(var j=0;j<this.animationMashs[i].getAnimations().length; j++) {
 				tmp_vert_parts = tmp_vert_parts.concat(this.animationMashs[i].getAnimations()[j].parts);
 			}
@@ -63,10 +63,14 @@ function Object3D(gl){
         this.setShaderProgram(myShaderProgram);   
 		
 	}
-	this.addAnimation= function (animation) {
-		this.animationMashs.push(animation);
+	this.addAnimationMash= function (animation) {
+		this.animationMashs[animation.name] = animation;
 		animation.object = this;
 		this._rebuildShaderProgram();
+	}
+	
+	this.removeAnimationMash = function (name) {
+		delete this.animationMashs[name];
 	}
 	
 	this.getRunningAnimations = function() {
@@ -115,7 +119,7 @@ function Object3D(gl){
 			var aniRotMats = new Array();
 			var aniTransMats = new Array();
 			var aniScaleMats = new Array();
-			for(var i = 0; i<this.animationMashs.length; i++) {
+			for(var i in this.animationMashs) {
 				var mash = this.animationMashs[i];
 				mash.refresh(this);
 				aniRotMats = aniRotMats.concat(mash.rotationMatrices);
@@ -162,9 +166,12 @@ function Object3D(gl){
 			for(var i = 0;i<aniScaleMats.length;i++) {
 		    	scalingMatrix = scalingMatrix.x(aniScaleMats[i]);
 		    }
-			
+		    
+		    
+		    this.lastTranslMatrix = translationMatrix.x(rotationMatrix).x(scalingMatrix);
+		    
 			this.refreshPartActivators();
-            return this.lastTranslMatrix = translationMatrix.x(rotationMatrix).x(scalingMatrix);
+            return this.lastTranslMatrix;
     }
     
     this.partStateCache = new Object();
@@ -191,7 +198,7 @@ function Object3D(gl){
     	}
     	
 		
-		for(var i = 0; i<this.animationMashs.length; i++) {
+		for(var i in this.animationMashs) {
 			for(var j=0;j<this.animationMashs[i].getAnimations().length; j++) {
 				for(var k=0;k<this.animationMashs[i].getAnimations()[j].parts.length; k++)
 				part = this.animationMashs[i].getAnimations()[j].parts[k];

@@ -230,41 +230,34 @@ Animation.prototype = {
 
 
 RotationAnimation = function(type, name) {
-	var parts = new Array("rotation");
+	var parts = new Array();
 	Animation.call(this, type, parts, name);
-	this.start_offset_x = 0;
-	this.start_offset_y = 0;
-	this.start_offset_z = 0;
-	this.end_offset_x = 0;
-	this.end_offset_y = 0;
-	this.end_offset_z = 0;
+	this.start_offset = Vector.create([0,0,0]);
+	this.current_offset = Vector.create([0,0,0]);
+	this.end_offset = Vector.create([0,0,0]);
 	this.changesRotationMatrix = true;
-	this.rotMatrix = null;
+	this.rotationMatrix = null;
 }
 RotationAnimation.prototype= new Animation();
 
 
 
-RotationAnimation.prototype._calculateRotationMatrix = function(x_deg, y_deg, z_deg) {
+RotationAnimation.prototype._calculateRotationMatrix = function(curRotation) {
 	var rotX, rotY, rotZ, rotMat;
-	rotX = WebGLBase.createRotationMatrix("x", x_deg);
-	rotY = WebGLBase.createRotationMatrix("y", y_deg);
-	rotZ = WebGLBase.createRotationMatrix("z", z_deg);
+	rotX = WebGLBase.createRotationMatrix("x", curRotation.e(1));
+	rotY = WebGLBase.createRotationMatrix("y", curRotation.e(2));
+	rotZ = WebGLBase.createRotationMatrix("z", curRotation.e(3));
 	return rotX.x(rotY.x(rotZ));
 }
 
-RotationAnimation.prototype._calculateAngle = function(start,end,time,duration) {
-	return start + ((end-start) * (time / duration));
+RotationAnimation.prototype._calculateAngles = function(start,end,time,duration) {
+	return start.add(end.subtract(start).multiply(time / duration));
 }
 
 
 RotationAnimation.prototype._refreshValues = function(obj) {
-
- 	var x_deg = this._calculateAngle(this.start_offset_x, this.end_offset_x, this.time_elapsed, this.duration);
-	var y_deg = this._calculateAngle(this.start_offset_y, this.end_offset_y, this.time_elapsed, this.duration);
-	var z_deg = this._calculateAngle(this.start_offset_z, this.end_offset_z, this.time_elapsed, this.duration);
-
-	this.rotationMatrix = this._calculateRotationMatrix(x_deg, y_deg, z_deg);
+ 	this.current_offset = this._calculateAngles(this.start_offset, this.end_offset, this.time_elapsed, this.duration);
+	this.rotationMatrix = this._calculateRotationMatrix(this.current_offset);
 }
 
 RotationAnimation.prototype._passParameters = function(program) {
@@ -272,12 +265,45 @@ RotationAnimation.prototype._passParameters = function(program) {
 }
 
 
+ScalingAnimation = function(type, name) {
+	var parts = new Array();
+	Animation.call(this, type, parts, name);
+	this.start_offset = Vector.create([0,0,0]);
+	this.current_offset = Vector.create([0,0,0]);
+	this.end_offset = Vector.create([0,0,0]);
+	this.scalingMatrix = null;
+	this.changesScalingMatrix = true;
+}
+
+ScalingAnimation.prototype= new Animation();
+
+ScalingAnimation.prototype._calculateScalingMatrix = function(scaleVector) {
+		return WebGLBase.createScalingMatrix(scaleVector.e(1), scaleVector.e(2), scaleVector.e(3));
+}
+ScalingAnimation.prototype._calculateScale = function(start,end,time,duration) {
+		return start.add(end.subtract(start).multiply(time / duration));
+}
+ScalingAnimation.prototype.setNewEnd = function(newEndVector) {
+		curScaleVector = this._calculateScale(this.start_offset, this.end_offset, this.time_elapsed, this.duration);
+		this.start_offset = curScaleVector;
+		this.end_offset = newEndVector
+}
+ScalingAnimation.prototype._refreshValues = function(obj) {
+	 	this.current_offset = this._calculateScale(this.start_offset, this.end_offset, this.time_elapsed, this.duration);
+		this.scalingMatrix = this._calculateScalingMatrix(this.current_offset);
+}
+ScalingAnimation.prototype._passParameters = function(program) {
+		//program.setParameter(this._getPartByName("translation").getParameterById("transMatrix"), this.transMatrix.flatten());
+}
+
+
 TranslationAnimation = function(type, name) {
 	var parts = new Array();
 	Animation.call(this, type, parts, name);
 	this.start_offset = Vector.create([0,0,0]);
+	this.current_offset = Vector.create([0,0,0]);
 	this.end_offset = Vector.create([0,0,0]);
-	this.transMatrix = null;
+	this.translationMatrix = null;
 	this.changesTranslationMatrix = true;
 }
 TranslationAnimation.prototype= new Animation();
@@ -294,8 +320,8 @@ TranslationAnimation.prototype.setNewEnd = function(newEndVector) {
 		this.end_offset = newEndVector
 }
 TranslationAnimation.prototype._refreshValues = function(obj, context) {
-	 	var curPosition = this._calculatePosition(this.start_offset, this.end_offset, this.time_elapsed, this.duration);
-		this.translationMatrix = this._calculateTranslationMatrix(curPosition);
+	 	this.current_offset = this._calculatePosition(this.start_offset, this.end_offset, this.time_elapsed, this.duration);
+		this.translationMatrix = this._calculateTranslationMatrix(this.current_offset);
 }
 TranslationAnimation.prototype._passParameters = function(program) {
 		//program.setParameter(this._getPartByName("translation").getParameterById("transMatrix"), this.transMatrix.flatten());
@@ -313,6 +339,8 @@ AcceleratedTranslationAnimation.prototype._calculateLength = function(start,end,
 }
 
 
+var AnimationMashCount = 0;
+
 AnimationMash = function() {
 	this._startAnimations = new Array();
 	this._successors = new Object();
@@ -328,6 +356,7 @@ AnimationMash = function() {
 	this.finishedInPause = new Array();
 	this.state = Animation.STATE_CREATED;
 	this.object = null;
+	this.name = "AnimationMash" + AnimationMashCount++;
 }
 
 AnimationMash.prototype = {
@@ -613,9 +642,17 @@ AnimationPath.prototype = {
 	getPoint: function(index) {
 		return this.points[index];
 	},
-	getLength: function() {
-		var len = 0;
+	getLastPointIndex: function(length) {
 		for(var i=1; i<this.points.length; i++) {
+			if(this.getLength(i) >= length) return i-1;
+			if(i == this.points.length-1) return i;
+		}
+		
+	},
+	getLength: function(index) {
+		if(index == null || index >= this.points.length) var index = this.points.length-1;
+		var len = 0;
+		for(var i=1; i<=index; i++) {
 			len += this.points[i].toVector().distanceFrom(this.points[i-1].toVector());
 		}
 		return len;
