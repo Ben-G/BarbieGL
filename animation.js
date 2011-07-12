@@ -229,6 +229,16 @@ Animation.prototype = {
 }
 
 
+AnimationUtilities = function() {}
+AnimationUtilities.prototype = {
+	calculateLinearValues: function(start,end,time,duration) {
+		return start.add(end.subtract(start).multiply(time / duration));
+	}
+}
+
+AnimationUtilities = new AnimationUtilities();
+
+
 RotationAnimation = function(type, name) {
 	var parts = new Array();
 	Animation.call(this, type, parts, name);
@@ -237,10 +247,9 @@ RotationAnimation = function(type, name) {
 	this.end_offset = Vector.create([0,0,0]);
 	this.changesRotationMatrix = true;
 	this.rotationMatrix = null;
+	this.passToChildren = true;
 }
 RotationAnimation.prototype= new Animation();
-
-
 
 RotationAnimation.prototype._calculateRotationMatrix = function(curRotation) {
 	var rotX, rotY, rotZ, rotMat;
@@ -250,18 +259,9 @@ RotationAnimation.prototype._calculateRotationMatrix = function(curRotation) {
 	return rotX.x(rotY.x(rotZ));
 }
 
-RotationAnimation.prototype._calculateAngles = function(start,end,time,duration) {
-	return start.add(end.subtract(start).multiply(time / duration));
-}
-
-
 RotationAnimation.prototype._refreshValues = function(obj) {
- 	this.current_offset = this._calculateAngles(this.start_offset, this.end_offset, this.time_elapsed, this.duration);
+ 	this.current_offset = AnimationUtilities.calculateLinearValues(this.start_offset, this.end_offset, this.time_elapsed, this.duration);
 	this.rotationMatrix = this._calculateRotationMatrix(this.current_offset);
-}
-
-RotationAnimation.prototype._passParameters = function(program) {
-	//program.setParameter(this._getPartByName("rotation").getParameterById("rotMatrix"), this.rotMatrix.flatten());
 }
 
 
@@ -273,6 +273,7 @@ ScalingAnimation = function(type, name) {
 	this.end_offset = Vector.create([0,0,0]);
 	this.scalingMatrix = null;
 	this.changesScalingMatrix = true;
+	this.passToChildren = true;
 }
 
 ScalingAnimation.prototype= new Animation();
@@ -280,21 +281,16 @@ ScalingAnimation.prototype= new Animation();
 ScalingAnimation.prototype._calculateScalingMatrix = function(scaleVector) {
 		return WebGLBase.createScalingMatrix(scaleVector.e(1), scaleVector.e(2), scaleVector.e(3));
 }
-ScalingAnimation.prototype._calculateScale = function(start,end,time,duration) {
-		return start.add(end.subtract(start).multiply(time / duration));
-}
 ScalingAnimation.prototype.setNewEnd = function(newEndVector) {
 		curScaleVector = this._calculateScale(this.start_offset, this.end_offset, this.time_elapsed, this.duration);
 		this.start_offset = curScaleVector;
 		this.end_offset = newEndVector
 }
 ScalingAnimation.prototype._refreshValues = function(obj) {
-	 	this.current_offset = this._calculateScale(this.start_offset, this.end_offset, this.time_elapsed, this.duration);
+	 	this.current_offset = AnimationUtilities.calculateLinearValues(this.start_offset, this.end_offset, this.time_elapsed, this.duration);
 		this.scalingMatrix = this._calculateScalingMatrix(this.current_offset);
 }
-ScalingAnimation.prototype._passParameters = function(program) {
-		//program.setParameter(this._getPartByName("translation").getParameterById("transMatrix"), this.transMatrix.flatten());
-}
+
 
 
 TranslationAnimation = function(type, name) {
@@ -305,26 +301,22 @@ TranslationAnimation = function(type, name) {
 	this.end_offset = Vector.create([0,0,0]);
 	this.translationMatrix = null;
 	this.changesTranslationMatrix = true;
+	this.passToChildren = true;
 }
 TranslationAnimation.prototype= new Animation();
 
 TranslationAnimation.prototype._calculateTranslationMatrix = function(transVector) {
 		return create3DTranslationMatrix(transVector).ensure4x4();
 }
-TranslationAnimation.prototype._calculatePosition = function(start,end,time,duration) {
-		return start.add(end.subtract(start).multiply(time / duration));
-}
+
 TranslationAnimation.prototype.setNewEnd = function(newEndVector) {
 		curPositionVector = this._calculatePosition(this.start_offset, this.end_offset, this.time_elapsed, this.duration);
 		this.start_offset = curPositionVector;
 		this.end_offset = newEndVector
 }
 TranslationAnimation.prototype._refreshValues = function(obj, context) {
-	 	this.current_offset = this._calculatePosition(this.start_offset, this.end_offset, this.time_elapsed, this.duration);
+	 	this.current_offset = AnimationUtilities.calculateLinearValues(this.start_offset, this.end_offset, this.time_elapsed, this.duration);
 		this.translationMatrix = this._calculateTranslationMatrix(this.current_offset);
-}
-TranslationAnimation.prototype._passParameters = function(program) {
-		//program.setParameter(this._getPartByName("translation").getParameterById("transMatrix"), this.transMatrix.flatten());
 }
 
 

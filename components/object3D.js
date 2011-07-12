@@ -26,7 +26,6 @@ function Object3D(gl){
 
 	this.animationMashs = new Object();
 
-
     this.xOffset = 0;
     this.yOffset = 0;
     this.zOffset = 0;
@@ -40,6 +39,7 @@ function Object3D(gl){
 	this.rotValue = 0;
 	this.rotation = 0;
 	this.animationspeed = 0;
+	
 	
 	this._rebuildShaderProgram = function(){
 		var tmp_vert_parts = new Array();
@@ -64,12 +64,14 @@ function Object3D(gl){
 		
 	}
 	this.addAnimationMash= function (animation) {
+		if(animation.object != null) throw "This AnimationMash (" + animation.name + ") is already bound to another Object3D (" + animation.object.name + ")";
 		this.animationMashs[animation.name] = animation;
 		animation.object = this;
 		this._rebuildShaderProgram();
 	}
 	
 	this.removeAnimationMash = function (name) {
+		this.animationMashs[name].object = null;
 		delete this.animationMashs[name];
 	}
 	
