@@ -338,7 +338,7 @@ Shader.prototype = {
 			main_src += "\tvec4 originalPosition = vec4(aVertexPosition,1.0);\n";
 			main_src += "\tvec4 vertexPosition = vec4(aVertexPosition,1.0);\n";
 		} else {
-			main_src += "\tvec4 fragColor = vec4(1.0,1.0,1.0,1.0);\n"
+			main_src += "\tvec4 fragColor = vec4(0.0,0.0,0.0,1.0);\n"
 		}
 		
 		for(var i = 0; i < this.parts.length; i++) {
@@ -526,11 +526,11 @@ ShaderProgram.prototype = {
 			case "vec4": {
 				switch(para.modifier) {
 					case "uniform": {
-						this.gl.uniform1fv(location, value);
+						this.gl.uniform4fv(location, value);
 						break;
 					}
 					case "attribute": {
-						this.gl.vertexAttrib1f(location, value);
+						this.gl.vertexAttrib4f(location, value);
 						break;
 					}
 				}

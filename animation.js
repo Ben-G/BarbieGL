@@ -172,7 +172,7 @@ Animation.prototype = {
 			this.finishedStateWasDrawn = true;
 			this._refreshValues(obj);
 			this._passParameters(obj.shaderProgram);
-		} 
+		}
 	},
 	_refreshValues: function(obj, context) {
 
@@ -184,6 +184,7 @@ Animation.prototype = {
 		this._activateParts();
 		this._repetitionsCount = 1;
 		this.start_timestamp = new Date().getTime();
+		
 		this._setState(Animation.STATE_RUNNING);
 		this._startActions();
 	},
@@ -198,8 +199,6 @@ Animation.prototype = {
 	},
 	resume: function() {
 		if(this.state == Animation.STATE_PAUSED) {
-			//console.log("resuming " + this.name);
-			this.start_timestamp = new Date().getTime() - this.time_elapsed;
 			this._setState(Animation.STATE_RUNNING);
 		}
 	},
@@ -216,14 +215,17 @@ Animation.prototype = {
 	},
 	_finish: function() {
 		this.time_elapsed = this.duration;
+		this._refreshValues(this.mash.object);
+		this._passParameters(this.mash.object.shaderProgram);
 		this._deactivateParts();
 		this._setState(Animation.STATE_FINISHED);
 		this._finishActions();
 	},
 	_setState: function(state) {
+		var last = this.state;
 		this.state = state;
 		if(this.mash != null) {
-			this.mash._updateAnimationState(this);
+			this.mash._updateAnimationState(this, last);
 		}
 	}
 }
@@ -237,6 +239,27 @@ AnimationUtilities.prototype = {
 }
 
 AnimationUtilities = new AnimationUtilities();
+
+
+ColorGradientAnimation = function(type, name) {
+	var parts = new Array("fragshader_color");
+	Animation.call(this, type, parts, name);
+	this.start_offset = Vector.create([0,0,0,0]);
+	this.current_offset = Vector.create([0,0,0,0]);
+	this.end_offset = Vector.create([0,0,0,0]);
+	this.passToChildren = true;
+}
+ColorGradientAnimation.prototype= new Animation();
+
+ColorGradientAnimation.prototype._refreshValues = function(obj) {
+ 	this.current_offset = AnimationUtilities.calculateLinearValues(this.start_offset, this.end_offset, this.time_elapsed, this.duration);
+	console.log(this.name, this.current_offset.inspect());
+}
+
+ColorGradientAnimation.prototype._passParameters = function(program) {
+	program.setParameter(this._getPartByName("fragshader_color").getParameterById("color"), new Float32Array(this.current_offset.flatten()));
+ 	this.current_offset = AnimationUtilities.calculateLinearValues(this.start_offset, this.end_offset, this.time_elapsed, this.duration);
+}
 
 
 RotationAnimation = function(type, name) {
@@ -344,6 +367,9 @@ AnimationMash = function() {
 	this.rotationMatrices = new Array();
 	this.translationMatrices = new Array();
 	this.scalingMatrices = new Array();
+	this._pausedRotationMatrices = new Array();
+	this._pausedTranslationMatrices = new Array();
+	this._pausedScalingMatrices = new Array();
 	this.context = new Object();
 	this.finishedInPause = new Array();
 	this.state = Animation.STATE_CREATED;
@@ -361,6 +387,9 @@ AnimationMash.prototype = {
 	_pausedAnimations: new Array(),
 	_animations: new Array(),
 	_finishedInPause: new Array(),
+	_pausedRotationMatrices: new Array(),
+	_pausedTranslationMatrices: new Array(),
+	_pausedScalingMatrices: new Array(),
 	object: null,
 	context: new Object(),
 	state: Animation.STATE_CREATED,
@@ -458,7 +487,26 @@ AnimationMash.prototype = {
 		for(var i = 0; i<this._runningAnimations.length; i++) {
 			var ani = this._runningAnimations[i];
 			ani.refresh(obj, this.context);
+			if(ani.state == Animation.STATE_RUNNING) {
+				if(ani.changesTranslationMatrix) {
+					if(ani.translationMatrix == null) throw ani.name + " changes translation matrix, but does not provide one";
+					this.translationMatrices.push(ani.translationMatrix);
+				}
+				if(ani.changesRotationMatrix) {
+					if(ani.rotationMatrix == null) throw ani.name + " changes rotation matrix, but does not provide one";
+					this.rotationMatrices.push(ani.rotationMatrix);
+				} 
+				if(ani.changesScalingMatrix) { 
+					if(ani.scalingMatrix == null) throw ani.name + " changes scaling matrix, but does not provide one";
+					this.scalingMatrices.push(ani.scalingMatrix);
+				}
+			}
+		}
+		for(var i = 0; i<this._pausedAnimations.length; i++) {
+			var ani = this._runningAnimations[i];
+			ani.refresh(obj, this.context);
 			if(ani.changesTranslationMatrix) {
+				
 				if(ani.translationMatrix == null) throw ani.name + " changes translation matrix, but does not provide one";
 				this.translationMatrices.push(ani.translationMatrix);
 			}
@@ -471,14 +519,20 @@ AnimationMash.prototype = {
 				this.scalingMatrices.push(ani.scalingMatrix);
 			}
 		}
+		if(this.state == Animation.STATE_PAUSED) {
+			this.translationMatrices = this.translationMatrices.concat(this._pausedTranslationMatrices);
+			this.rotationMatrices = this.rotationMatrices.concat(this._pausedRotationMatrices);
+			this.scalingMatrices = this.scalingMatrices.concat(this._pausedScalingMatrices);
+		}
 	},
 	_getRunningAnimations: function() { 
 		return this._runningAnimations;
 	},
-	_updateAnimationState: function(animation) {
+	_updateAnimationState: function(animation, last_state) {
 		switch(animation.state) {
 			case Animation.STATE_CREATED: {break};
 			case Animation.STATE_RUNNING: {
+				this._removeRunningAnimation(animation);
 				this._runningAnimations.push(animation);
 				this._removePausedAnimation(animation);
 				break;
@@ -492,11 +546,27 @@ AnimationMash.prototype = {
 				if(this.state == Animation.STATE_RUNNING) {
 					this._startSuccessors(animation);
 				} else if(this.state == Animation.STATE_PAUSED) {
+					animation._activateParts();
 					this._finishedInPause.push(animation);
+					this._saveMatrices(animation);
 				}
 				this._removeRunningAnimation(animation);
 				break;
 			};
+		}
+	},
+	_saveMatrices: function(ani) {
+		if(ani.changesTranslationMatrix) {
+			if(ani.translationMatrix == null) throw ani.name + " changes translation matrix, but does not provide one";
+			this._pausedTranslationMatrices.push(ani.translationMatrix);
+		}
+		if(ani.changesRotationMatrix) {
+			if(ani.rotationMatrix == null) throw ani.name + " changes rotation matrix, but does not provide one";
+			this._pausedRotationMatrices.push(ani.rotationMatrix);
+		} 
+		if(ani.changesScalingMatrix) { 
+			if(ani.scalingMatrix == null) throw ani.name + " changes scaling matrix, but does not provide one";
+			this._pausedScalingMatrices.push(ani.scalingMatrix);
 		}
 	},
 	setContextValue: function (name, value) {
@@ -524,8 +594,12 @@ AnimationMash.prototype = {
 			this.state = Animation.STATE_RUNNING;
 			for(var i=0;i<this._finishedInPause.length;i++) {
 				this._startSuccessors(this._finishedInPause[i]);
+				this._finishedInPause[i]._deactivateParts();
 			}
 			this._finishedInPause = new Array();
+			this._pausedRotationMatrices = new Array();
+			this._pausedTranslationMatrices = new Array();
+			this._pausedScalingMatrices = new Array();
 		}
 	},
 	restart: function() {

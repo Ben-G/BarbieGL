@@ -2,26 +2,28 @@ function Object3D(gl){
 	this.gl = gl;
 	this.buffer = new Object();
 	this.texBuffer = null;
+	this.normalsBuffer = null;
     this.children = new Array();
     this.vertices = new Array();
+    this.textureCoords = new Array();
     this.textures = new Array();
     //this.boundingBox
     //this.lastTranslMatrix
     //this.minPoint;
     //this.maxPoint;
-    this.normals = new Array();
+    this.boundingNormals = new Array();
     //Front Face
-    this.normals[0] = Vector.create([0,0,1]);
+    this.boundingNormals[0] = Vector.create([0,0,1]);
     //Back Face
-    this.normals[1] = Vector.create([0,0,-1]);
+    this.boundingNormals[1] = Vector.create([0,0,-1]);
     //Top 
-    this.normals[2] = Vector.create([0,1,0]);
+    this.boundingNormals[2] = Vector.create([0,1,0]);
     //Bottom
-    this.normals[3] = Vector.create([0,-1,0]);
+    this.boundingNormals[3] = Vector.create([0,-1,0]);
     //Right
-    this.normals[5] = Vector.create([1,0,0]);
+    this.boundingNormals[5] = Vector.create([1,0,0]);
     //Left
-    this.normals[4] = Vector.create([-1,0,0]);
+    this.boundingNormals[4] = Vector.create([-1,0,0]);
     
 
 	this.animationMashs = new Object();
@@ -33,6 +35,8 @@ function Object3D(gl){
     this.currentX = 0;
     this.currentY = 0;
     this.currentZ = 0;
+    
+    this.visible = true;
 	
 	this.rotationMatrix;
     this.rotationAxis = "y";
@@ -47,7 +51,11 @@ function Object3D(gl){
 		
 		for(var i in this.animationMashs) {
 			for(var j=0;j<this.animationMashs[i].getAnimations().length; j++) {
-				tmp_vert_parts = tmp_vert_parts.concat(this.animationMashs[i].getAnimations()[j].parts);
+				var parts = this.animationMashs[i].getAnimations()[j].parts;
+				for(var k=0; k<parts.length; k++) {
+					if(parts[k].type == Shader.TYPE_VERTEX_SHADER) tmp_vert_parts.push(parts[k]);
+					else tmp_frag_parts.push(parts[k]);
+				}
 			}
 		}
 		
@@ -171,7 +179,6 @@ function Object3D(gl){
 		    
 		    
 		    this.lastTranslMatrix = translationMatrix.x(rotationMatrix).x(scalingMatrix);
-		    
 			this.refreshPartActivators();
             return this.lastTranslMatrix;
     }
@@ -252,6 +259,7 @@ function Object3D(gl){
                 */
                 var Vvertice = $V([ this.vertices[i*3],this.vertices[i*3+1],this.vertices[i*3+2],1 ]);
                 Vvertice = this.lastTranslMatrix.x(Vvertice);
+                //Deactivate next row, to display bounding boxes
                 Vvertice = WebGLBase.pMatrix.x(Vvertice);                      
           
                 //for each coordinate of all of the points: check if they are the new smallest/largest points                
@@ -299,7 +307,8 @@ function Object3D(gl){
 
             }
                    
-                 
+        
+        
         this.minPoint = new Point3D(VMin.elements[0],VMin.elements[1],VMin.elements[2]);
         this.maxPoint = new Point3D(VMax.elements[0],VMax.elements[1],VMax.elements[2]);
 		
@@ -311,7 +320,7 @@ function Object3D(gl){
         //Override the translationMatrix in the Shader because here the translation is applied
         //to the vertices directly
         
-        //var mvUniform = gl.getUniformLocation(shaderProgram.binary, "uMVMatrix");
-        //gl.uniformMatrix4fv(mvUniform, false, new Float32Array(Matrix.I(4).flatten()));
+       var mvUniform = gl.getUniformLocation(shaderProgram.binary, "uMVMatrix");
+       gl.uniformMatrix4fv(mvUniform, false, new Float32Array(Matrix.I(4).flatten()));
     }
 }

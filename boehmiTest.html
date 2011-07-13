@@ -8,6 +8,7 @@
 <script type="text/javascript" src="components/texture.js"></script>
 <script type="text/javascript" src="model/shaderModel.js"></script>
 <script type="text/javascript" src="shaders.js"></script>
+<script type="text/javascript" src="utils/shapeFactory.js"></script>
 
 <script type="text/javascript" src="model/textureModel.js"></script>
 <script type="text/javascript" src="model/objectModel.js"></script>
@@ -53,8 +54,8 @@ function init() {
 	var myTexture = WebGLBase.textureModel.find("texpyra.jpg", myGl);
 	var myTexture2 = WebGLBase.textureModel.find("grass.png", myGl);
 	var myTexture3 = WebGLBase.textureModel.find("brown.jpg", myGl);
-
-
+	var windowTexture = WebGLBase.textureModel.find("window.png", myGl);
+	var buttonTexture = WebGLBase.textureModel.find("button.png", myGl);
  
     myDefs[0] = WebGLBase.shaderPartFactory.createFromName("vertshader_texture").addCallback(function(data){myShaders[0] = data; });
     myDefs[1] = WebGLBase.shaderPartFactory.createFromName("fragshader_benji").addCallback(function(data){myShaders[1] = data; });
@@ -71,8 +72,8 @@ function init() {
                     object3dCube.yOffset = -5;
                     myRoot.add(object3d3);
                     object3d3.yOffset = 4;
-                    object3d3.xOffset = 10;
-                    object3d3.zOffset = -40;    
+                    object3d3.xOffset = 2;
+                    object3d3.zOffset = -20;    
                     //var thirdChild = object3d3.add(WebGLBase.createObjectFromFile(data, myGl));
                     //thirdChild.xOffset = -30;
                     triangle.xOffset = -5;
@@ -80,7 +81,24 @@ function init() {
                     //triangle.startRotation(2,"y");
                     triangle.onMyFirstEvent = function(event){
                                                 var hit =( hitTest(event.clientX, event.clientY, myRoot) );
-                                                hit.animationMashs["bump"].start();
+                                                if(hit.name == "area") {
+                                                	var effect = "windowFlip";
+                                                	if(hit.animationMashs[effect].state == Animation.STATE_PAUSED) {
+                                                		hit.animationMashs[effect].resume();
+                                                	} else {
+                                                		hit.animationMashs[effect].start();
+                                                	}
+                                                	hit.animationMashs[effect].pause();
+                                                } 
+                                                else if(hit.name == "button") {
+                                                	console.log(hit);
+                                                	if(hit.animationMashs["hover"].state == Animation.STATE_PAUSED) {
+                                                		hit.animationMashs["hover"].resume();
+                                                	} else {
+                                                		hit.animationMashs["hover"].start();
+                                                	}
+                                                	//hit.animationMashs["hover"].pause();
+                                                } 
                                             };
                     triangle.onMoveRight = function(data){triangle.xOffset++;};
                     triangle.onMoveLeft = function(data){triangle.xOffset--;};
@@ -122,14 +140,18 @@ function init() {
 	myDefs.push(rotani3.completed);
 	rotani4 = new ScalingAnimation(Animation.TYPE_ONCE);
 	myDefs.push(rotani4.completed);	
-	rotani5 = new TranslationAnimation(Animation.TYPE_ONCE);
+	rotani5 = new ColorGradientAnimation(Animation.TYPE_ONCE);
 	myDefs.push(rotani5.completed);	
-	rotani6 = new TranslationAnimation(Animation.TYPE_ONCE);
+	rotani6 = new ColorGradientAnimation(Animation.TYPE_ONCE);
 	myDefs.push(rotani6.completed);	
 	rotani7 = new ScalingAnimation(Animation.TYPE_ONCE);
 	myDefs.push(rotani7.completed);
 	rotani8 = new ScalingAnimation(Animation.TYPE_ONCE);
 	myDefs.push(rotani8.completed);	
+	rotani9 = new TranslationAnimation(Animation.TYPE_ONCE);
+	myDefs.push(rotani9.completed);
+	rotani10 = new TranslationAnimation(Animation.TYPE_ONCE);
+	myDefs.push(rotani10.completed);	
 	
 	mash = new AnimationMash();
 		
@@ -145,82 +167,123 @@ function init() {
                 var myShaderProgram2 = ShaderProgramBuilder.buildShaderProgram(vertShader, fragShader2);
                 myShaderProgram3 = ShaderProgramBuilder.buildShaderProgram(vertShader3, fragShader3);
                    
-                rotani.duration = 2000;
+                rotani.duration = 500;
                 rotani.start_offset = Vector.create([0,0,0]);
-                rotani.end_offset = Vector.create([360,0,0]);
+                rotani.end_offset = Vector.create([0,0,180]);
                 rotani.name = "rotAni1";  
                 
-                rotani2.duration = 2000;
-                rotani2.start_offset = Vector.create([360,0,0]);
+                rotani2.duration = 500;
+                rotani2.start_offset = Vector.create([0,0,180]);
                 rotani2.end_offset = Vector.create([0,0,0]);
                 rotani2.name = "rotAni2";  
 
-                rotani3.duration = 2000;
-                rotani3.start_offset = Vector.create([5,1,1]);
-                rotani3.end_offset = Vector.create([1,1,1]);
+                rotani3.duration = 80;
+                rotani3.start_offset = Vector.create([1,1,1]);
+                rotani3.end_offset = Vector.create([0.8,0.8,0.8]);
                 rotani3.name = "scaleAni1";     
                 
-                rotani4.duration = 2000;
-                rotani4.start_offset = Vector.create([1,1,1]);
-                rotani4.end_offset = Vector.create([5,1,1]);
+                rotani4.duration = 80;
+                rotani4.start_offset = Vector.create([0.8,0.8,0.8]);
+                rotani4.end_offset = Vector.create([1.0,1,1]);
                 rotani4.name = "scaleAni2";    
                 
 
                 
-                rotani5.duration = 2000;
-                rotani5.start_offset = Vector.create([0,0,0]);
-                rotani5.end_offset = Vector.create([10,0,0]);
-                rotani5.name = "transAni1";     
+                rotani5.duration = 100;
+                rotani5.start_offset = Vector.create([0,0,0,0]);
+                rotani5.end_offset = Vector.create([0.5,0,0,0]);
+                rotani5.name = "colorAni1";     
                 
-                rotani6.duration = 2000;
-                rotani6.start_offset = Vector.create([10,0,0]);
-                rotani6.end_offset = Vector.create([0,0,0]);
-                rotani6.name = "transAni2";     
+                rotani6.duration = 100;
+                rotani6.start_offset = Vector.create([0.5,0,0,0]);
+                rotani6.end_offset = Vector.create([0,0,0,0]);
+                rotani6.name = "colorAni2";     
                 
 
-                rotani7.duration = 80;
+                rotani7.duration = 200;
                 rotani7.start_offset = Vector.create([1,1,1]);
-                rotani7.end_offset = Vector.create([0.8,0.8,0.8]);
+                rotani7.end_offset = Vector.create([0.1,0.1,0.1]);
                 rotani7.name = "scaleAni3";     
                 
-                rotani8.duration = 80;
-                rotani8.start_offset = Vector.create([0.8,0.8,0.8]);
+                rotani8.duration = 200;
+                rotani8.start_offset = Vector.create([0.1,0.1,0.1]);
                 rotani8.end_offset = Vector.create([1,1,1]);
                 rotani8.name = "scaleAni4";  
                 
+                rotani9.duration = 200;
+                rotani9.start_offset = Vector.create([0,0,0]);
+                rotani9.end_offset = Vector.create([-13.5,-13.5,0.0]);
+                rotani9.name = "transAni3";     
                 
+                rotani10.duration = 200;
+                rotani10.start_offset = Vector.create([-13.5,-13.5,0.0]);
+                rotani10.end_offset = Vector.create([0,0,0]);
+                rotani10.name = "transAni4";  
+                
+                var mash4 = new AnimationMash();
+                mash4.name = "hover";
+                mash4.addStartAnimation(rotani5);
+                mash4.addStartAnimation(rotani3);
+				mash4.connectSuccessor(rotani5, rotani6);
+				mash4.connectSuccessor(rotani3, rotani4);
+				//mash4.connectSuccessor(rotani5, rotani6);
 
 				var mash2 = new AnimationMash();
-				mash2.name = "bump";
+				mash2.name = "minimize";
 				mash2.addStartAnimation(rotani7);
+				mash2.addStartAnimation(rotani9);
 				mash2.connectSuccessor(rotani7, rotani8);
+				mash2.connectSuccessor(rotani9, rotani10);
+				
+				
+				var mash3 = new AnimationMash();
+				mash3.name = "windowFlip";
+				mash3.addStartAnimation(rotani);
+				mash3.connectSuccessor(rotani, rotani2);
+				mash3.connectSuccessor(rotani2, rotani);
 				//mash2.connectSuccessor(rotani8, rotani7);
 				
-				
+				var button = createMash(5.3,1.5,1,myGl);
+				button.setShaderProgram(myShaderProgram3);
+				button.name = "button";
+				button.xOffset = 12.3;
+				button.yOffset = 0.01;    
+				button.zOffset = 9.6;
+				button.addAnimationMash(mash4);
+                   
+                var area = createMash(30,30,1,myGl);
+                area.setShaderProgram(myShaderProgram3);
+                area.name = "area";
+                area.rotation = true;
+                area.rotValue = 90;
+                //area.animationSpeed = 1;
+                area.rotationAxis = "x";
                 
-                //mash.addStartAnimation(rotani4);
-                mash.addStartAnimation(rotani);
-                mash.addStartAnimation(rotani5);
+                area.add(button);
                 
-                mash.connectSuccessor(rotani, rotani2);
-				mash.connectSuccessor(rotani2, rotani);
-                mash.connectSuccessor(rotani4, rotani3);
-				mash.connectSuccessor(rotani3, rotani4);
-				mash.connectSuccessor(rotani5, rotani6);
-				mash.connectSuccessor(rotani6, rotani5);
-                console.log(mash);
+                myRoot.add(area);
+
+                area.zOffset = -45;
+                area.addAnimationMash(mash3);
+                area.addAnimationMash(mash2);
+                
+                
+
 
                    
                 myRoot.setShaderProgram(myShaderProgram2);
                 myRoot.name = "root";
                 triangle.setShaderProgram(myShaderProgram);
                 triangle.name = "triangle";
+                triangle.visible = false;
                 triangle2.setShaderProgram(myShaderProgram3);
                 triangle2.name = "triangle2";
-                
+                triangle2.visible = false;
+
                 
                 triangle3.setShaderProgram(myShaderProgram3);
                 triangle3.name = "triangle3";
+                triangle3.visible = false;
             
 				var path = new AnimationPath();
 				path.addPoint(new Point3D(0.0,0.0,0.0));
@@ -228,19 +291,26 @@ function init() {
 				path.addPoint(new Point3D(2.0,0.0,0.0));
 				path.addPoint(new Point3D(3.0,0.0,0.0));
 				
-				triangle2.addAnimationMash(mash);
-				triangle3.addAnimationMash(mash2);
+
+				//triangle2.addAnimationMash(mash);
+				//triangle3.addAnimationMash(mash2);
 				//mash2.start();
 
                 triangle4.setShaderProgram(myShaderProgram);
+                triangle4.visible = false;
                 triangle4.name = "triangle4";
                 
                 				
                 object3dCube.setShaderProgram(myShaderProgram);
                 object3dCube.name = "3dcude";
+                object3dCube.visible = false;
                 object3d3.setShaderProgram(myShaderProgram2);
                 object3d3.name = "3d3";
+                object3d3.visible = false;
                                 
+                area.addTexture(windowTexture, "randomTextureCoord", "uSampler");
+                button.addTexture(buttonTexture, "randomTextureCoord", "uSampler");
+                console.log(area);
                 triangle3.addTexture(myTexture, "randomTextureCoord", "uSampler");
                 triangle2.addTexture(myTexture2, "randomTextureCoord", "uSampler");
                 triangle.addTexture(myTexture3, "randomTextureCoord", "uSampler");

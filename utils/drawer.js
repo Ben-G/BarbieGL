@@ -62,22 +62,24 @@ Drawer.prototype = {
     	gl.useProgram(shaderProgram.binary);
     	var translationMat = obj.refresh(transMat);	
     	
-    	if (obj.buffer.itemSize != null) {
-	     	shaderProgram.setParameter(WebGLBase.stdVertParams["P_MATRIX"], new Float32Array(WebGLBase.pMatrix.flatten()));
-			//if(obj.name == "triangle2") console.log(translationMat.inspect());
-			
-			shaderProgram.setParameter(WebGLBase.stdVertParams["MV_MATRIX"], new Float32Array(translationMat.flatten()));
-			shaderProgram.setBuffer(WebGLBase.stdVertParams["VERTEX_POSITION"], obj.buffer, new Float32Array(obj.vertices));
-
-		    if (obj.texBuffer != null){
-		    	//obj has a texture in use COMMIT TEST
-		    	//request texture to be hold in place by textureModel
-		    	TextureModel.activate(obj);      	              	
-		    }
-		    
-		    gl.drawArrays(gl.TRIANGLES, 0, obj.buffer.numItems);
-        }
-        
+    	if(obj.visible) {
+	    	if (obj.buffer.itemSize != null) {
+		     	shaderProgram.setParameter(WebGLBase.stdVertParams["P_MATRIX"], new Float32Array(WebGLBase.pMatrix.flatten()));
+				//if(obj.name == "triangle2") console.log(translationMat.inspect());
+				
+				shaderProgram.setParameter(WebGLBase.stdVertParams["MV_MATRIX"], new Float32Array(translationMat.flatten()));
+				shaderProgram.setBuffer(WebGLBase.stdVertParams["VERTEX_POSITION"], obj.buffer, new Float32Array(obj.vertices));
+	
+			    if (obj.texBuffer != null){
+			    	//obj has a texture in use COMMIT TEST
+			    	//request texture to be hold in place by textureModel
+			    	TextureModel.activate(obj);      	              	
+			    }
+			    // DEBUGGING OUTPUT for webgl inspector
+			    gl.getUniformLocation(shaderProgram.binary, "drawing " + obj.name);
+			    gl.drawArrays(gl.TRIANGLES, 0, obj.buffer.numItems);
+	        }
+       }
         //console.log("  " +   obj.name + " " + (new Date().getTime() - anfang) + " ms");
         if (obj.children.length > 0){
             for (var i=0; i<obj.children.length;i++){

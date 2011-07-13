@@ -7,7 +7,7 @@ function TextureUnit(unitID, texUnit){
 function TextureModel(){
 	this.cache = new Object();
 	this.currentUnit = 0;
-	this.maxUnit = 4;
+	this.maxUnit = 6;
 
 	this.textureUnitsArray = new Array();
 }
@@ -98,6 +98,27 @@ TextureModel.prototype = {
 		  	this.textureUnitsArray[3].textureUnit = null;
 		  }	
 		  returnUnit = new TextureUnit(3,gl.TEXTURE3);
+		break;
+		case 4:
+		  if (this.textureUnitsArray[4]!= null){
+		  	console.log("replacing Texture");
+		  	this.textureUnitsArray[4].textureUnit = null;
+		  }	
+		  returnUnit = new TextureUnit(4,gl.TEXTURE4);
+		break;
+		case 5:
+		  if (this.textureUnitsArray[5]!= null){
+		  	console.log("replacing Texture");
+		  	this.textureUnitsArray[5].textureUnit = null;
+		  }	
+		  returnUnit = new TextureUnit(5,gl.TEXTURE5);
+		break;
+		case 6:
+		  if (this.textureUnitsArray[6]!= null){
+		  	console.log("replacing Texture");
+		  	this.textureUnitsArray[6].textureUnit = null;
+		  }	
+		  returnUnit = new TextureUnit(6,gl.TEXTURE6);
 		break;
 		}
 		
