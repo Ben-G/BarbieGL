@@ -17,6 +17,18 @@ Texture.prototype = {
 		case gl.TEXTURE2:
 		  this.textureUnit = 2;
 		  break;
+		case gl.TEXTURE3:
+		  this.textureUnit = 3;
+		  break;
+		case gl.TEXTURE4:
+		  this.textureUnit = 4;
+		  break;
+		case gl.TEXTURE5:
+		  this.textureUnit = 5;
+		  break;
+		case gl.TEXTURE6:
+		  this.textureUnit = 6;
+		  break;
 		}
 	 }
 }

@@ -16,9 +16,9 @@ function TextUnit(gl){
 	this.text = "";
 	this.tiles = new Object();
 	
-    var tileRect = new Array();
-    tileRect[0] = createRectangle(new Point3D(-0.1,-1,1), new Point3D(0.1,-1,1), new Point3D(0.1,0,1), new Point3D(-0.1,0,1));
-    this.cursor = WebGLBase.createObject3D(tileRect, this.gl);
+    var cursorRect = new Array();
+    cursorRect[0] = createRectangle(new Point3D(-0.05,-1,1), new Point3D(0.05,-1,1), new Point3D(0.05,0,1), new Point3D(-0.05,0,1));
+    this.cursor = WebGLBase.createObject3D(cursorRect, this.gl);
     this.add(this.cursor);
 }
 
@@ -52,6 +52,7 @@ TextUnit.prototype = {
     		
     		
     	var tile = WebGLBase.createObject3D(triangles2, this.gl);
+
     	//Create and fill a textureCoordBuffer
     	tile.texBuffer = new Object();
 		tile.texBuffer.values = this.gl.createBuffer();
@@ -71,6 +72,7 @@ TextUnit.prototype = {
 		//tile.yOffset = this.currentyOffset+letterInfo.yoffset; 
 		//tile.xOffset = this.currentxOffset+letterInfo.xoffset; 
 
+    	
 		
 		if (this.currentxOffset+xoffset > this.maxWidth && this.maxWidth != 0){
 			//start new line

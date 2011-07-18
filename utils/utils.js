@@ -127,7 +127,8 @@ Deferrable.prototype = {
         }
         //if deferrable completed allready, execute the callback directly
         else
-            return callbackPassed(this.data);
+        	callbackPassed(this.data)
+            return this;
     }
 }
 
@@ -283,3 +284,6 @@ function getDoubleIdentifiers(parameters) {
 	}
 	return doubles;
 }
+
+
+

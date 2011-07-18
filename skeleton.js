@@ -61,12 +61,13 @@ WebGLBase.prototype = {
         //factor
         var a = 1;
         var h = camera.subtract(Vector.create([object.boundingBox.vertices[surfaceID*12],object.boundingBox.vertices[(surfaceID*12)+1],object.boundingBox.vertices[(surfaceID*12)+2]]));
-        var zaehler = - (h.dot(object.normals[surfaceID]));
-		var nenner  = (directionVector.dot(object.normals[surfaceID]));
+        var zaehler = - (h.dot(object.boundingNormals[surfaceID]));
+		var nenner  = (directionVector.dot(object.boundingNormals[surfaceID]));
         a = zaehler/nenner;
 
         //p = o+a*r --> a is chosen in a way, that p will lie on the mesh
         var hitPoint =  camera.add(directionVector.x(a));   
+        hitPoint.elements[2] = -hitPoint.e(3);
         return hitPoint;
     },
  
@@ -97,7 +98,9 @@ WebGLBase.prototype = {
         return newObject;
     },
     createBoundingBox: function(polygons, boundingBox ,gl){
-    	if(boundingBox == null) return this.createObject3D(polygons, gl);    	        
+    	if(boundingBox == null){ 
+    			return this.createObject3D(polygons, gl);    	  
+    	}      
 	    gl.bindBuffer(gl.ARRAY_BUFFER, boundingBox.buffer.values);  
 	    boundingBox.vertices = polygons;
 	    var totalItemSize = polygons.length;                     
@@ -163,6 +166,14 @@ WebGLBase.prototype = {
         var object3d = this.createObject3DFromFile(obj, gl);
         return object3d;          
     },
+
+   	/**
+        Creates and returns a Scaling matrix, which describes a up/downscale by a factor
+    */
+    createScalingMatrix: function(x_factor, y_factor, z_factor) {
+    	var m = Matrix.I(4);
+        return m.x(Matrix.create([[x_factor,0,0], [0,y_factor,0], [0,0,z_factor]]).ensure4x4());
+	},   
     /**
         Creates and returns a Rotation matrix, which describes a rotation around the defined axis.
     */
@@ -177,7 +188,7 @@ WebGLBase.prototype = {
         if(axis == "z") {
 		return mvMatrix.x(Matrix.Rotation(degrees*Math.PI / 180.0, Vector.create([0,0,1])).ensure4x4());
         }
-	},    
+	},     
     perspective: function(fovy, aspect, znear, zfar) {
         this.pMatrix = makePerspective(fovy, aspect, znear, zfar);
     }
@@ -212,6 +223,7 @@ function hitTest(x,y, object){
         */        
 
         var hitPoint = WebGLBase.calculateClickVector(x,y, object,0);//last Parameter is SurfaceID
+        object.lastHitpoint = hitPoint;
         
         if ( (hitPoint.e(1) > object.minPoint.x && hitPoint.e(1) < object.maxPoint.x) && (hitPoint.e(2) > object.minPoint.y && hitPoint.e(2) < object.maxPoint.y) ){
             console.log("HIT! Front-Side");
@@ -243,6 +255,8 @@ function hitTest(x,y, object){
             parentHit = object;
             break;
         }
+        
+        
 
     }
 
@@ -255,10 +269,13 @@ function hitTest(x,y, object){
     if (parentHit == object && object.children.length > 0){ 
         for (var i=0; i<object.children.length; i++)
             {
+            	if(object.children[i].name == "area") {
+            	}
                 var tempHit = hitTest(x,y,object.children[i]);
                 if (tempHit != null)
-                    hit[hitAmount] = tempHit;
-                    hitAmount++;
+               
+                    hit.push(tempHit);
+                    //hitAmount++;
             }
     }
   
@@ -266,8 +283,17 @@ function hitTest(x,y, object){
  
     //TODO cause event on the specific object, that was hit
     //This requires Event-Handling to support calling events on specified listeners
-    if (hit.length > 0)
-        return hit[hit.length-1];
+    if (hit.length > 0) {
+    	var max = -5000;
+    	var pos = -1;
+    	for(var i = 0; i<hit.length; i++) {
+    		if(hit[i].lastHitpoint.e(3) > max) {
+    			max = hit[i].lastHitpoint.e(3);
+    			pos = i;
+    		}
+    	}
+        return hit[pos];
+    }
     else
         return parentHit;
 }

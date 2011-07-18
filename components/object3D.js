@@ -2,30 +2,34 @@ function Object3D(gl){
 	this.gl = gl;
 	this.buffer = new Object();
 	this.texBuffer = null;
+	this.normalsBuffer = null;
     this.children = new Array();
     this.vertices = new Array();
+    this.textureCoords = new Array();
     this.textures = new Array();
+    this.perspectiveHasChanged = true;
+    this.mvMatrixHasChanged = true;
+    this.vertexPositionsHaveChanged = true;
     //this.boundingBox
     //this.lastTranslMatrix
     //this.minPoint;
     //this.maxPoint;
-    this.normals = new Array();
+    this.boundingNormals = new Array();
     //Front Face
-    this.normals[0] = Vector.create([0,0,1]);
+    this.boundingNormals[0] = Vector.create([0,0,1]);
     //Back Face
-    this.normals[1] = Vector.create([0,0,-1]);
+    this.boundingNormals[1] = Vector.create([0,0,-1]);
     //Top 
-    this.normals[2] = Vector.create([0,1,0]);
+    this.boundingNormals[2] = Vector.create([0,1,0]);
     //Bottom
-    this.normals[3] = Vector.create([0,-1,0]);
+    this.boundingNormals[3] = Vector.create([0,-1,0]);
     //Right
-    this.normals[5] = Vector.create([1,0,0]);
+    this.boundingNormals[5] = Vector.create([1,0,0]);
     //Left
-    this.normals[4] = Vector.create([-1,0,0]);
+    this.boundingNormals[4] = Vector.create([-1,0,0]);
     
 
-	this.animationMashs = new Array();
-
+	this.animationMashs = new Object();
 
     this.xOffset = 0;
     this.yOffset = 0;
@@ -34,6 +38,8 @@ function Object3D(gl){
     this.currentX = 0;
     this.currentY = 0;
     this.currentZ = 0;
+    
+    this.visible = true;
 	
 	this.rotationMatrix;
     this.rotationAxis = "y";
@@ -41,16 +47,26 @@ function Object3D(gl){
 	this.rotation = 0;
 	this.animationspeed = 0;
 	
-	this._rebuildShaderProgram = function(){
+	
+	this._rebuildShaderProgram = function(new_parts){
 		var tmp_vert_parts = new Array();
 		var tmp_frag_parts = new Array();
+		if(new_parts == null) new_parts = new Array();
 		
-		for(var i = 0; i<this.animationMashs.length; i++) {
+		/*for(var i in this.animationMashs) {
 			for(var j=0;j<this.animationMashs[i].getAnimations().length; j++) {
-				tmp_vert_parts = tmp_vert_parts.concat(this.animationMashs[i].getAnimations()[j].parts);
+				var parts = this.animationMashs[i].getAnimations()[j].parts;
+				for(var k=0; k<parts.length; k++) {
+					if(parts[k].type == Shader.TYPE_VERTEX_SHADER) tmp_vert_parts.push(parts[k]);
+					else tmp_frag_parts.push(parts[k]);
+				}
 			}
-		}
+		}*/
 		
+		for(var k=0; k<new_parts.length; k++) {
+			if(new_parts[k].type == Shader.TYPE_VERTEX_SHADER) tmp_vert_parts.push(new_parts[k]);
+			else tmp_frag_parts.push(new_parts[k]);
+		}
 		tmp_vert_parts = tmp_vert_parts.concat(this.shaderProgram.vertexShader.parts);
 		tmp_frag_parts = tmp_frag_parts.concat(this.shaderProgram.fragmentShader.parts);
 		
@@ -60,13 +76,25 @@ function Object3D(gl){
         
         var myShaderProgram = ShaderProgramBuilder.buildShaderProgram(vertShader, fragShader);
         
-        this.setShaderProgram(myShaderProgram);   
+        this.setShaderProgram(myShaderProgram, false);   
 		
 	}
-	this.addAnimation= function (animation) {
-		this.animationMashs.push(animation);
+	this.addAnimationMash= function (animation) {
+		if(animation.object != null) throw "This AnimationMash (" + animation.name + ") is already bound to another Object3D (" + animation.object.name + ")";
+		this.animationMashs[animation.name] = animation;
 		animation.object = this;
-		this._rebuildShaderProgram();
+		
+		var parts = new Array();
+		for(var j=0;j<animation.getAnimations().length; j++) {
+			parts = parts.concat(animation.getAnimations()[j].parts);
+		}
+		
+		this._rebuildShaderProgram(parts);
+	}
+	
+	this.removeAnimationMash = function (name) {
+		this.animationMashs[name].object = null;
+		delete this.animationMashs[name];
 	}
 	
 	this.getRunningAnimations = function() {
@@ -77,8 +105,16 @@ function Object3D(gl){
 		return anis;
 	}
 	
-	this.setShaderProgram = function(program) {
-		this.shaderProgram = program;	
+	this.setShaderProgram = function(program, clone) {
+		clone = false;
+		this.mvMatrixHasChanged = true;
+		this.perspectiveHasChanged = true;
+		this.vertexPositionsHaveChanged = true;
+		if(clone == null || clone == true) {
+			this.shaderProgram = ShaderProgramBuilder.clone(program);	
+		} else {
+			this.shaderProgram = program;
+		}
 		this.shaderProgram.vertexPositionAttribute = this.shaderProgram.gl.getAttribLocation(this.shaderProgram.binary, WebGLBase.stdVertParams["VERTEX_POSITION"].identifier);
     	this.shaderProgram.gl.enableVertexAttribArray(this.shaderProgram.vertexPositionAttribute);     	
 	}
@@ -111,55 +147,104 @@ function Object3D(gl){
         objects
     */
 	
-	this.refresh = function(gl, shaderProgram, transMat) {
-		    var translationMatrix = Matrix.I(4);
-            //translationMatrix = WebGLBase.pMatrix;
+	this.refresh = function(transMat) {
+			var aniRotMats = new Array();
+			var aniTransMats = new Array();
+			var aniScaleMats = new Array();
+			for(var i in this.animationMashs) {
+				var mash = this.animationMashs[i];
+				mash.refresh(this);
+				aniRotMats = aniRotMats.concat(mash.rotationMatrices);
+				aniTransMats = aniTransMats.concat(mash.translationMatrices);
+				aniScaleMats = aniScaleMats.concat(mash.scalingMatrices);
+			}
+			
+			
 
-            if (transMat == null)
+			/**
+			 * compose the global translation matrix
+			 */
+		    var translationMatrix = Matrix.I(4);
+
+            if (transMat == null) {
 		        translationMatrix = translationMatrix.x(create3DTranslationMatrix(Vector.create([this.currentX, this.currentY, this.currentZ])).ensure4x4());
-            else{
+            }
+            else {
                 translationMatrix = transMat;
                 translationMatrix = translationMatrix.x(create3DTranslationMatrix(Vector.create([this.xOffset, this.yOffset, this.zOffset])).ensure4x4());
             }
-    
+            
+            for(var i = 0;i<aniTransMats.length;i++) {
+		    	translationMatrix = translationMatrix.x(aniTransMats[i]);
+		    }
+			/**
+			 * compose the global rotation matrix
+			 */
+			var rotationMatrix = Matrix.I(4);
+			
 		    if (this.rotation == true){
 			    this.rotValue += this.animationspeed;
 		   	 	this.rotationMatrix = WebGLBase.createRotationMatrix(this.rotationAxis, this.rotValue);
-		    	translationMatrix = translationMatrix.x(this.rotationMatrix);
+		    	rotationMatrix = rotationMatrix.x(this.rotationMatrix);
 		    }
-
-			for(var i = 0; i<this.animationMashs.length; i++) {
-				this.animationMashs[i].refresh(this);
-			}
+		    
+			for(var i = 0;i<aniRotMats.length;i++) {
+		    	rotationMatrix = rotationMatrix.x(aniRotMats[i]);
+		    }
+		    
+		    /**
+			 * compose the global scaling matrix
+			 */
+			var scalingMatrix = Matrix.I(4);
+			
+			for(var i = 0;i<aniScaleMats.length;i++) {
+		    	scalingMatrix = scalingMatrix.x(aniScaleMats[i]);
+		    }
+		    
+		    var tmp = this.lastTranslMatrix;
+		    this.lastTranslMatrix = translationMatrix.x(rotationMatrix).x(scalingMatrix);
+		    if(tmp == null || !tmp.eql(this.lastTranslMatrix)) {
+		    	this.mvMatrixHasChanged = true;
+		    }  else {
+		    	this.mvMatrixHasChanged = false;
+		    }
 			this.refreshPartActivators();
-            return this.lastTranslMatrix = translationMatrix;
+            return this.lastTranslMatrix;
     }
+    
+    this.partStateCache = new Object();
     
     this.refreshPartActivators = function() {
     	var act;
     	var part;
+    	var cache;
     	for(var i = 0;i<this.shaderProgram.vertexShader.parts.length;i++) {
     		part = this.shaderProgram.vertexShader.parts[i];
-    		act = true;
-    		if(!part.isActive) act = false;
-    		this.shaderProgram.setParameter(new ShaderParameter("isActive_"+part.id, "bool", "uniform"), act);
+    		cache = this.partStateCache[part.id];
+    		if(cache != part.isActive || cache == null) {
+    			this.partStateCache[part.id] = part.isActive;
+    			this.shaderProgram.setParameter(new ShaderParameter("isActive_"+part.id, "bool", "uniform"), part.isActive);
+    		}
     	}
     	for(var i = 0;i<this.shaderProgram.fragmentShader.parts.length;i++) {
     		part = this.shaderProgram.fragmentShader.parts[i];
-    		act = true;
-    		if(!part.isActive) act = false;
-    		this.shaderProgram.setParameter(new ShaderParameter("isActive_"+part.id, "bool", "uniform"), act);
+    		cache = this.partStateCache[part.id];
+    		if(cache != part.isActive || cache == null) {
+    			this.partStateCache[part.id] = part.isActive;
+    			this.shaderProgram.setParameter(new ShaderParameter("isActive_"+part.id, "bool", "uniform"), part.isActive);
+    		}
     	}
     	
 		
-		for(var i = 0; i<this.animationMashs.length; i++) {
+		for(var i in this.animationMashs) {
 			for(var j=0;j<this.animationMashs[i].getAnimations().length; j++) {
 				for(var k=0;k<this.animationMashs[i].getAnimations()[j].parts.length; k++)
 				part = this.animationMashs[i].getAnimations()[j].parts[k];
-				act = true;
-    			if(!part.isActive) act = false;
-    			this.shaderProgram.setParameter(new ShaderParameter("isActive_"+part.id, "bool", "uniform"), act);
-			}
+				cache = this.partStateCache[part.id];
+    			if(cache != part.isActive || cache == null) {
+    				this.partStateCache[part.id] = part.isActive;
+    				this.shaderProgram.setParameter(new ShaderParameter("isActive_"+part.id, "bool", "uniform"), part.isActive);
+    		}}
 		}
     }
 
@@ -203,6 +288,7 @@ function Object3D(gl){
                 */
                 var Vvertice = $V([ this.vertices[i*3],this.vertices[i*3+1],this.vertices[i*3+2],1 ]);
                 Vvertice = this.lastTranslMatrix.x(Vvertice);
+                //Deactivate next row, to display bounding boxes
                 Vvertice = WebGLBase.pMatrix.x(Vvertice);                      
           
                 //for each coordinate of all of the points: check if they are the new smallest/largest points                
@@ -250,7 +336,8 @@ function Object3D(gl){
 
             }
                    
-                 
+        
+        
         this.minPoint = new Point3D(VMin.elements[0],VMin.elements[1],VMin.elements[2]);
         this.maxPoint = new Point3D(VMax.elements[0],VMax.elements[1],VMax.elements[2]);
 		
@@ -262,7 +349,6 @@ function Object3D(gl){
         //Override the translationMatrix in the Shader because here the translation is applied
         //to the vertices directly
         
-        //var mvUniform = gl.getUniformLocation(shaderProgram.binary, "uMVMatrix");
-        //gl.uniformMatrix4fv(mvUniform, false, new Float32Array(Matrix.I(4).flatten()));
-    }
-}
+       //var mvUniform = gl.getUniformLocation(shaderProgram.binary, "uMVMatrix");
+       //gl.uniformMatrix4fv(mvUniform, false, new Float32Array(Matrix.I(4).flatten()));
+    }}

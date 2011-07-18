@@ -3,11 +3,13 @@ function Drawer(){
     //this.currentGl
     //this.currentShaderProgram
     this.shaders = new Array();
+    this.fpsLimit = 60;
 }
 var last_frame = 0;
 var fpsUpdateTime = 500;
 var fpsFramesTime = 0;
 var fpsFramesCount = 0;
+
 
 Drawer.prototype = {
      startDrawing: function(object){
@@ -34,7 +36,7 @@ Drawer.prototype = {
 				//this.currentGl.disable(this.currentGl.DEPTH_TEST);
 
 
-        setInterval(function(){ myDrawer.drawScene() }, 15);
+        setInterval(function(){ myDrawer.drawScene() }, 1.0/this.fpsLimit*1000);
      },
 
     drawScene: function(){
@@ -55,26 +57,36 @@ Drawer.prototype = {
     	last_frame = new Date().getTime();
     	//console.log("Frame:" + (new Date().getTime() - last_frame) + " ms");
     },
-    drawElement : function(obj, gl, shaderProgram, transMat){
-    	
-    	var anfang = new Date().getTime();
+    drawElement: function(obj, gl, shaderProgram, transMat){
+    	//aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
     	gl.useProgram(shaderProgram.binary);
-    	var translationMat = obj.refresh(gl,shaderProgram, transMat);	
+    	var translationMat = obj.refresh(transMat);	
     	
-    	if (obj.buffer.itemSize != null) {
-	     	shaderProgram.setParameter(WebGLBase.stdVertParams["P_MATRIX"], new Float32Array(WebGLBase.pMatrix.flatten()));
-			shaderProgram.setParameter(WebGLBase.stdVertParams["MV_MATRIX"], new Float32Array(translationMat.flatten()));
-			shaderProgram.setBuffer(WebGLBase.stdVertParams["VERTEX_POSITION"], obj.buffer, new Float32Array(obj.vertices));
-
-		    if (obj.texBuffer != null){
-		    	//obj has a texture in use COMMIT TEST
-		    	//request texture to be hold in place by textureModel
-		    	TextureModel.activate(obj);      	              	
-		    }
-		    
-		    gl.drawArrays(gl.TRIANGLES, 0, obj.buffer.numItems);
-        }
-        
+    	if(obj.visible) {
+	    	if (obj.buffer.itemSize != null) {
+	    		//console.log(obj.name, shaderProgram);
+	    		if(obj.perspectiveHasChanged) {
+		     		shaderProgram.setParameter(WebGLBase.stdVertParams["P_MATRIX"], new Float32Array(WebGLBase.pMatrix.flatten()));
+					obj.perspectiveHasChanged = false;
+				}
+				//if(obj.mvMatrixHasChanged) {
+					shaderProgram.setParameter(WebGLBase.stdVertParams["MV_MATRIX"], new Float32Array(translationMat.flatten()));
+					obj.mvMatrixHasChanged = false;
+				//}
+				//if(obj.vertexPositionsHaveChanged) {
+					shaderProgram.setBuffer(WebGLBase.stdVertParams["VERTEX_POSITION"], obj.buffer, new Float32Array(obj.vertices));
+					obj.vertexPositionsHaveChanged = false;
+				//}
+			    if (obj.texBuffer != null){
+			    	//obj has a texture in use COMMIT TEST
+			    	//request texture to be hold in place by textureModel
+			    	TextureModel.activate(obj);      	              	
+			    }
+			    // DEBUGGING OUTPUT for webgl inspector
+			    //gl.getUniformLocation(shaderProgram.binary, "drawing " + obj.name);
+			    gl.drawArrays(gl.TRIANGLES, 0, obj.buffer.numItems);
+	        }
+       }
         //console.log("  " +   obj.name + " " + (new Date().getTime() - anfang) + " ms");
         if (obj.children.length > 0){
             for (var i=0; i<obj.children.length;i++){
@@ -84,7 +96,7 @@ Drawer.prototype = {
             }
         }
         
-       	gl.useProgram(shaderProgram.binary);
+       	//gl.useProgram(shaderProgram.binary);
         obj.updateBoundingBox(gl, shaderProgram);
         
         //console.log(obj.name + " " + (new Date().getTime() - anfang) + " ms");

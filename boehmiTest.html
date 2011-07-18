@@ -1,269 +1,363 @@
 <html>
-<head>
-<title>Bier</title>
-<script type="text/javascript" src="utils/utils.js"></script>
-<script type="text/javascript" src="utils/sort.js"></script>
-<script type="text/javascript" src="utils/drawer.js"></script>
-<script type="text/javascript" src="utils/events.js"></script>
-<script type="text/javascript" src="components/texture.js"></script>
-<script type="text/javascript" src="model/shaderModel.js"></script>
-<script type="text/javascript" src="shaders.js"></script>
+	<head>
+		<title>Bier</title>
+		<script type="text/javascript" src="utils/utils.js"></script>
+		<script type="text/javascript" src="utils/sort.js"></script>
+		<script type="text/javascript" src="utils/drawer.js"></script>
+		<script type="text/javascript" src="utils/events.js"></script>
+		<script type="text/javascript" src="components/texture.js"></script>
+		<script type="text/javascript" src="model/shaderModel.js"></script>
+		<script type="text/javascript" src="shaders.js"></script>
+		<script type="text/javascript" src="utils/shapeFactory.js"></script>
+		<script type="text/javascript" src="model/textureModel.js"></script>
+		<script type="text/javascript" src="model/objectModel.js"></script>
+		<script type="text/javascript" src="utils/sylvester.js"></script>
+		<script type="text/javascript" src="utils/GlUtils.js"></script>
+		<script type="text/javascript" src="skeleton.js"></script>
+		<script type="text/javascript" src="animation.js"></script>
+		<script type="text/javascript" src="components/object3D.js"></script>
+		<script type="text/javascript" src="components/texture.js"></script>
+		<script type="text/javascript">
+			var triangle;
+			var triangle2;
+			var myShaderProgram3;
+			var area;
+			function init() {
+				object3d = new Array();
+				var myGl = WebGLBase.initGL(document.getElementById("scene"));
 
-<script type="text/javascript" src="model/textureModel.js"></script>
-<script type="text/javascript" src="model/objectModel.js"></script>
-<script type="text/javascript" src="utils/sylvester.js"></script> 
-<script type="text/javascript" src="utils/GlUtils.js"></script> 
-<script type="text/javascript" src="skeleton.js"></script>
-<script type="text/javascript" src="animation.js"></script>
-<script type="text/javascript" src="components/object3D.js"></script>
-<script type="text/javascript" src="components/texture.js"></script>
+				var myShaders = new Array();
+				var myShaders2 = new Array();
+				var myShaders3 = new Array();
+				var myRoot = new Object3D(myGl);
+				var myRoot2 = new Object3D(myGl);
+				myDrawer = new Drawer();
+				var myDefs = new Array();
+				var def = new DeferrableList();
+				triangles = new Array();
 
-<script type="text/javascript">
-    var triangle;
-    var triangle2;
-    var myShaderProgram3;
-function init() {
-    object3d = new Array();
- 	var myGl = WebGLBase.initGL(document.getElementById("scene"));
- 	
-    var myShaders = new Array();
-    var myShaders2 = new Array();
-    var myShaders3 = new Array();
-    var myRoot = new Object3D(myGl);
-    var myRoot2 = new Object3D(myGl);
-    myDrawer = new Drawer();
-    var myDefs = new Array();
-    var def = new DeferrableList();
-    triangles = new Array();
+				triangles[0] = createTriangle(new Point3D(0,  1,  0), new Point3D(-1, -1,  0), new Point3D(1, -1,  0));
+				triangles[1] = createRectangle(new Point3D(-1,1,-1), new Point3D(1,1,-1), new Point3D(1,1,1), new Point3D(-1,1,1));
+				triangles[2] = createRectangle(new Point3D(-1,1,-1), new Point3D(1,1,-1), new Point3D(1,-1,-1), new Point3D(-1,-1,-1));
+				triangles[3] = createRectangle(new Point3D(1,1,1), new Point3D(1,-1,1), new Point3D(1,-1,-1), new Point3D(1,1,-1));
+				triangles[4] = createRectangle(new Point3D(-1,1,1), new Point3D(-1,-1,1), new Point3D(-1,-1,-1), new Point3D(-1,1,-1));
+				triangles[5] = createTriangle(new Point3D(-1,1,1), new Point3D(0,2,0), new Point3D(1,1,1));
+				triangles[6] = createTriangle(new Point3D(-1,1,-1), new Point3D(0,2,0), new Point3D(1,1,-1));
+				var object3d3 = WebGLBase.createObject3D(triangles, myGl);
 
-	triangles[0] = createTriangle(new Point3D(0,  1,  0), new Point3D(-1, -1,  0), new Point3D(1, -1,  0));
-	triangles[1] = createRectangle(new Point3D(-1,1,-1), new Point3D(1,1,-1), new Point3D(1,1,1), new Point3D(-1,1,1));
-	triangles[2] = createRectangle(new Point3D(-1,1,-1), new Point3D(1,1,-1), new Point3D(1,-1,-1), new Point3D(-1,-1,-1));
-	triangles[3] = createRectangle(new Point3D(1,1,1), new Point3D(1,-1,1), new Point3D(1,-1,-1), new Point3D(1,1,-1));
-	triangles[4] = createRectangle(new Point3D(-1,1,1), new Point3D(-1,-1,1), new Point3D(-1,-1,-1), new Point3D(-1,1,-1));
-	triangles[5] = createTriangle(new Point3D(-1,1,1), new Point3D(0,2,0), new Point3D(1,1,1));
-	triangles[6] = createTriangle(new Point3D(-1,1,-1), new Point3D(0,2,0), new Point3D(1,1,-1));
-    var object3d3 = WebGLBase.createObject3D(triangles, myGl);
-    
-    cube = new Array();
-    cube[0] = createBoundingBox(new Point3D(-1,-1,-1), new Point3D(1,1,1));
-    var object3dCube = WebGLBase.createObject3D(triangles, myGl);
+				cube = new Array();
+				cube[0] = createBoundingBox(new Point3D(-1,-1,-1), new Point3D(1,1,1));
+				var object3dCube = WebGLBase.createObject3D(triangles, myGl);
 
+				var myTexture = WebGLBase.textureModel.find("texpyra.jpg", myGl);
+				var myTexture2 = WebGLBase.textureModel.find("grass.png", myGl);
+				var myTexture3 = WebGLBase.textureModel.find("brown.jpg", myGl);
+				var windowTexture = WebGLBase.textureModel.find("window.png", myGl);
+				var buttonTexture = WebGLBase.textureModel.find("button.png", myGl);
+				var minimizeTexture = WebGLBase.textureModel.find("minimize.png", myGl);
 
-	var myTexture = WebGLBase.textureModel.find("texpyra.jpg", myGl);
-	var myTexture2 = WebGLBase.textureModel.find("grass.png", myGl);
-	var myTexture3 = WebGLBase.textureModel.find("brown.jpg", myGl);
-
-
- 
-    myDefs[0] = WebGLBase.shaderPartFactory.createFromName("vertshader_texture").addCallback(function(data){myShaders[0] = data; });
-    myDefs[1] = WebGLBase.shaderPartFactory.createFromName("fragshader_benji").addCallback(function(data){myShaders[1] = data; });
-    myDefs[2] = WebGLBase.shaderPartFactory.createFromName("vertshader_benji").addCallback(function(data){myShaders2[0] = data; });
-    myDefs[3] = WebGLBase.shaderPartFactory.createFromName("fragshader2_benji").addCallback(function(data){myShaders2[1] = data; });
-    myDefs[8] = WebGLBase.shaderPartFactory.createFromName("vertshader_texture").addCallback(function(data){myShaders3[0] = data; });
-    myDefs[9] = WebGLBase.shaderPartFactory.createFromName("fragshader").addCallback(function(data){myShaders3[1] = data; });
-    
-    myDefs[4] = WebGLBase.objectModel.find("triangle3").addCallback(
-                function(data){
-                    triangle = myRoot.add(WebGLBase.createObjectFromFile(data, myGl));
-                    triangle.add(object3dCube);
-                    object3dCube.xOffset = -5;
-                    object3dCube.yOffset = -5;
-                    myRoot.add(object3d3);
-                    object3d3.yOffset = 4;
-                    object3d3.xOffset = 10;
-                    object3d3.zOffset = -40;    
-                    //var thirdChild = object3d3.add(WebGLBase.createObjectFromFile(data, myGl));
-                    //thirdChild.xOffset = -30;
-                    triangle.xOffset = 0;
-                    triangle.zOffset = -40;
-                    //triangle.startRotation(2,"y");
-                    triangle.onMyFirstEvent = function(event){
-                                                console.log( hitTest(event.clientX, event.clientY, myRoot) );
-                                            };
-                    triangle.onMoveRight = function(data){triangle.xOffset++;};
-                    triangle.onMoveLeft = function(data){triangle.xOffset--;};
-                    WebGLBase.event.register("a",triangle.onMyFirstEvent);
-                    WebGLBase.event.register("moveRight",triangle.onMoveRight);
-                    WebGLBase.event.register("moveLeft",triangle.onMoveLeft);
-                });
-    myDefs[5] = WebGLBase.objectModel.find("triangle2").addCallback(
-                function(data){
-                    triangle2 = triangle.add(WebGLBase.createObjectFromFile(data, myGl));
-                    triangle2.yOffset = 3;
-                    triangle2.zOffset = 0;
-                   //triangle2.startRotation(2,"y");
-                    triangle2.onMyFirstEvent = function(data){alert("im triangle2: "+data);};
-                    var myEventID = WebGLBase.event.register("a",triangle2.onMyFirstEvent);
-                    WebGLBase.event.unregister("a", myEventID);
-                });
-    myDefs[6] = WebGLBase.objectModel.find("pyramide").addCallback(
-                function(data){
-                    triangle3 = triangle2.add(WebGLBase.createObjectFromFile(data, myGl));
-                    triangle3.yOffset = 0;
-                    triangle3.xOffset =0;
-                    //triangle3.startRotation(2,"x");
-                });
-    myDefs[7] = WebGLBase.objectModel.find("pyramide").addCallback(
-                function(data){
-                    triangle4 = myRoot2.add(WebGLBase.createObjectFromFile(data, myGl));
-                    triangle4.yOffset = 10;
-                    triangle4.xOffset = 5;
-                    triangle4.zOffset = -30;
-                  //  triangle4.startRotation(2,"y");
-                });
-
-	rotani = new RotationAnimation(Animation.TYPE_ENDLESS);
-	myDefs.push(rotani.completed);
-	rotani2 = new RotationAnimation(Animation.TYPE_ONCE);
-	myDefs.push(rotani2.completed);
-	rotani3 = new TranslationAnimation(Animation.TYPE_ONCE);
-	myDefs.push(rotani3.completed);
-	rotani4 = new TranslationAnimation(Animation.TYPE_ONCE);
-	myDefs.push(rotani4.completed);	
-	rotani5 = new TranslationAnimation(Animation.TYPE_ONCE);
-	myDefs.push(rotani5.completed);	
-	
-	mash = new AnimationMash();
-		
-    def.finalCallback(function(){ 
-
-				var vertShader = ShaderBuilder.buildDefaultShader(Shader.TYPE_VERTEX_SHADER, myGl);
-                var fragShader = ShaderBuilder.buildShaderFromParts(new Array(myShaders[1]), Shader.TYPE_FRAGMENT_SHADER, myGl);
-                //var vertShader2 = ShaderBuilder.buildShaderFromParts(new Array(), Shader.TYPE_VERTEX_SHADER, myGl);
-                var fragShader2 = ShaderBuilder.buildShaderFromParts(new Array(myShaders2[1]), Shader.TYPE_FRAGMENT_SHADER, myGl);
-                var vertShader3 = ShaderBuilder.buildShaderFromParts(new Array(myShaders3[0]), Shader.TYPE_VERTEX_SHADER, myGl);
-                var fragShader3 = ShaderBuilder.buildShaderFromParts(new Array(myShaders3[1]), Shader.TYPE_FRAGMENT_SHADER, myGl);
-                   
-                var myShaderProgram = ShaderProgramBuilder.buildShaderProgram(vertShader, fragShader);
-                var myShaderProgram2 = ShaderProgramBuilder.buildShaderProgram(vertShader, fragShader2);
-                myShaderProgram3 = ShaderProgramBuilder.buildShaderProgram(vertShader3, fragShader3);
-                   
-                rotani.duration = 300;
-                rotani.end_offset_y = 360;
-                //rotani.end_offset_z = 0;
-                rotani.name = "rotani";
-                
-                rotani2.duration = 3200;
-                rotani2.start_offset_x = 360;
-                rotani2.start_offset_z = 25;
-                rotani2.end_offset_x = 0;
-                rotani2.name = "rotani2";
-
-                rotani3.duration = 2000;
-                rotani3.start_offset = Vector.create([10,0,0]);
-                rotani3.end_offset = Vector.create([0,0,0]);
-                rotani3.name = "transAni1";     
-                
-                rotani4.duration = 2000;
-                rotani4.start_offset = Vector.create([0,0,0]);
-                rotani4.end_offset = Vector.create([10,0,0]);
-                rotani4.name = "transAni2";     
-                
-                rotani5.duration = 500;
-                rotani5.name = "transAni3";   
-
-                
-                mash.addStartAnimation(rotani4);
-                mash.connectSuccessor(rotani4, rotani3);
-				mash.connectSuccessor(rotani3, rotani4);
-                console.log(mash);
-
-                   
-                myRoot.setShaderProgram(myShaderProgram2);
-                myRoot.name = "root";
-                triangle.setShaderProgram(myShaderProgram);
-                triangle.name = "triangle";
-                triangle2.setShaderProgram(myShaderProgram3);
-                triangle2.name = "triangle2";
-                
-                
-                triangle3.setShaderProgram(myShaderProgram3);
-                triangle3.name = "triangle3";
-            
-				var path = new AnimationPath();
-				path.addPoint(new Point3D(0.0,0.0,0.0));
-				path.addPoint(new Point3D(1.0,1.0,1.0));
-				path.addPoint(new Point3D(2.0,2.0,2.0));
-				path.addPoint(new Point3D(3.0,3.0,3.0));
-				console.log(path.getLength());
+				myDefs[0] = WebGLBase.shaderPartFactory.createFromName("vertshader_texture").addCallback( function(data) {
+					myShaders[0] = data;
+				});
+				myDefs[1] = WebGLBase.shaderPartFactory.createFromName("fragshader_benji").addCallback( function(data) {
+					myShaders[1] = data;
+				});
+				myDefs[2] = WebGLBase.shaderPartFactory.createFromName("vertshader_benji").addCallback( function(data) {
+					myShaders2[0] = data;
+				});
+				myDefs[3] = WebGLBase.shaderPartFactory.createFromName("fragshader2_benji").addCallback( function(data) {
+					myShaders2[1] = data;
+				});
+				myDefs[8] = WebGLBase.shaderPartFactory.createFromName("vertshader_texture").addCallback( function(data) {
+					myShaders3[0] = data;
+				});
+				myDefs[9] = WebGLBase.shaderPartFactory.createFromName("fragshader").addCallback( function(data) {
+					myShaders3[1] = data;
+				});
+				myDefs[4] = WebGLBase.objectModel.find("triangle3").addCallback( function(data) {
+					triangle = myRoot.add(WebGLBase.createObjectFromFile(data, myGl));
+					triangle.add(object3dCube);
+					object3dCube.xOffset = -5;
+					object3dCube.yOffset = -5;
+					myRoot.add(object3d3);
+					object3d3.yOffset = 4;
+					object3d3.xOffset = 2;
+					object3d3.zOffset = -20;
+					//var thirdChild = object3d3.add(WebGLBase.createObjectFromFile(data, myGl));
+					//thirdChild.xOffset = -30;
+					triangle.xOffset = -5;
+					triangle.zOffset = -40;
+					//triangle.startRotation(2,"y");
+					triangle.onMyFirstEvent = function(event) {
+						var hit =( hitTest(event.clientX, event.clientY, myRoot) );
+						if(hit.name == "area") {
+							var effect = "windowFlip";
+							if(hit.animationMashs[effect].state == Animation.STATE_PAUSED) {
+								hit.animationMashs[effect].resumeOneStep();
+							} else {
+								hit.animationMashs[effect].start();
+								hit.animationMashs[effect].pause();
+							}
+						} else if(hit.name == "button") {
+							hit.animationMashs["blink"].start();
+						} else if(hit.name == "minimize") {
+							hit.animationMashs["click"].start();
+							var effect = "minimize";
+							if(area.animationMashs[effect].state == Animation.STATE_PAUSED) {
+								area.animationMashs[effect].resumeOneStep();
+							} else {
+								area.animationMashs[effect].start();
+								area.animationMashs[effect].pause();
+							}
+						}
+					};
+					triangle.onMoveRight = function(data) {
+						triangle.xOffset++;
+					};
+					triangle.onMoveLeft = function(data) {
+						triangle.xOffset--;
+					};
+					WebGLBase.event.register("a",triangle.onMyFirstEvent);
+					WebGLBase.event.register("moveRight",triangle.onMoveRight);
+					WebGLBase.event.register("moveLeft",triangle.onMoveLeft);
+				});
+				myDefs[5] = WebGLBase.objectModel.find("triangle2").addCallback( function(data) {
+					triangle2 = triangle.add(WebGLBase.createObjectFromFile(data, myGl));
+					triangle2.xOffset = 5;
+					triangle2.zOffset = 0;
+					//triangle2.startRotation(2,"y");
+					triangle2.onMyFirstEvent = function(data) {
+						alert("im triangle2: "+data);
+					};
+					var myEventID = WebGLBase.event.register("a",triangle2.onMyFirstEvent);
+					WebGLBase.event.unregister("a", myEventID);
+				});
+				myDefs[6] = WebGLBase.objectModel.find("pyramide").addCallback( function(data) {
+					triangle3 = triangle2.add(WebGLBase.createObjectFromFile(data, myGl));
+					triangle3.yOffset = 3;
+					triangle3.xOffset =5;
+					//triangle3.startRotation(2,"x");
+				});
+				myDefs[7] = WebGLBase.objectModel.find("pyramide").addCallback( function(data) {
+					triangle4 = myRoot2.add(WebGLBase.createObjectFromFile(data, myGl));
+					triangle4.yOffset = 10;
+					triangle4.xOffset = 5;
+					triangle4.zOffset = -30;
+					//  triangle4.startRotation(2,"y");
+				});
+				myDefs.push(AnimationMashFactory.createFlipAnimation("z",180,1000));
+				myDefs[myDefs.length-1].addCallback( function(data) {
+					mash3 = data;
+					mash3.name = "windowFlip";
+				});
+				myDefs.push(AnimationMashFactory.createBlinkAnimation());
+				myDefs[myDefs.length-1].addCallback( function(data) {
+					mash4 = data;
+					mash4.name = "blink";
+				});
+				myDefs.push(AnimationMashFactory.createMinimizeAnimation(Vector.create([-20,-20,0])));
+				myDefs[myDefs.length-1].addCallback( function(data) {
+					mash2 = data;
+					mash2.name = "minimize";
+				});
+				myDefs.push(AnimationMashFactory.createShrinkAnimation());
+				myDefs[myDefs.length-1].addCallback( function(data) {
+					mash5 = data;
+					mash5.name = "click";
+				});
+				path = new AnimationPath();
+				path.addPoint(new Point3D(0,0,0));
+				path.addPoint(new Point3D(5,5,0));
+				path.addPoint(new Point3D(5,10,0));
+				path.addPoint(new Point3D(0,15,0));
+				path.addPoint(new Point3D(-5,10,0));
+				path.addPoint(new Point3D(-5,5,0));
+				path.addPoint(new Point3D(0,0,0));
 				
-				triangle2.addAnimation(mash);
-				
+				myDefs.push(AnimationMashFactory.createLinearPathTranslationAnimation(path,10000));
+				myDefs[myDefs.length-1].addCallback( function(data) {
+					mash6 = data;
+					mash6.name = "path";
+				});
 
-                triangle4.setShaderProgram(myShaderProgram);
-                triangle4.name = "triangle4";
-                
-                				
-                object3dCube.setShaderProgram(myShaderProgram);
-                object3dCube.name = "3dcude";
-                object3d3.setShaderProgram(myShaderProgram2);
-                object3d3.name = "3d3";
-                                
-                triangle3.addTexture(myTexture, "randomTextureCoord", "uSampler");
-                triangle2.addTexture(myTexture2, "randomTextureCoord", "uSampler");
-                triangle.addTexture(myTexture3, "randomTextureCoord", "uSampler");
+				//myDefs.push();
+				mash = new AnimationMash();
 
-                /*Here RootNode is declared as Node to start drawing.
-                Beginning here, all children of the Node will be drawn.                
-                */
-                myDrawer.startDrawing(myRoot);  
-    });  
-    def.addDeferrables(myDefs);
+				def.finalCallback( function() {
 
-}
+					var vertShader = ShaderBuilder.buildDefaultShader(Shader.TYPE_VERTEX_SHADER, myGl);
+					var fragShader = ShaderBuilder.buildShaderFromParts(new Array(myShaders[1]), Shader.TYPE_FRAGMENT_SHADER, myGl);
+					var fragShader2 = ShaderBuilder.buildShaderFromParts(new Array(myShaders2[1]), Shader.TYPE_FRAGMENT_SHADER, myGl);
+					var vertShader3 = ShaderBuilder.buildShaderFromParts(new Array(myShaders3[0]), Shader.TYPE_VERTEX_SHADER, myGl);
+					var fragShader3 = ShaderBuilder.buildShaderFromParts(new Array(myShaders3[1]), Shader.TYPE_FRAGMENT_SHADER, myGl);
 
-function updateAnimation(event) {
-	if(rotani5.state == Animation.STATE_RUNNING) {
-		rotani5.setNewEnd(Vector.create([(event.offsetX-256)*16.5/256, -1*(event.offsetY-256)*16.5/256, 0]));
-		rotani5.duration = 500 + rotani5.time_elapsed;
-	} else {
-		rotani5.start_offset = rotani5.end_offset;
-		rotani5.setNewEnd(Vector.create([(event.offsetX-256)*16.5/256, -1*(event.offsetY-256)*16.5/256, 0]));
-		rotani5.duration = 500;
-		rotani5.restart();
-		
-	}
-}
+					var myShaderProgram = ShaderProgramBuilder.buildShaderProgram(vertShader, fragShader);
+					var myShaderProgram2 = ShaderProgramBuilder.buildShaderProgram(vertShader, fragShader2);
+					myShaderProgram3 = ShaderProgramBuilder.buildShaderProgram(vertShader3, fragShader3);
 
-function startAnimation() {
-	mash.start();
-}
-function pauseAnimation() {
-	mash.pause();
-}
-function resumeAnimation() {
-	mash.resume();
-}
-function stopAnimation() {
-	
-	myShaderProgram3.fragmentShader.parts[0].isActive = !myShaderProgram3.fragmentShader.parts[0].isActive;
-	//mash.stopAnimations();
-}
+					var minimize = createMash(1.2,1.2,1,myGl);
+					minimize.setShaderProgram(myShaderProgram3);
+					minimize.name = "minimize";
+					minimize.xOffset = -12.6;
+					minimize.yOffset = 0.01;
+					minimize.zOffset = -14.1;
+					minimize.addAnimationMash(mash5);
 
+					var button = createMash(5.3,1.5,1,myGl);
+					button.setShaderProgram(myShaderProgram3);
+					button.name = "button";
+					button.xOffset = 12.3;
+					button.yOffset = 0.01;
+					button.zOffset = 9.6;
+					button.addAnimationMash(mash4);
 
-</script>
-</head>
-<body onload="init()"><span>
-<canvas id="scene" onMouseMove="updateAnimation(event)" onClick='WebGLBase.event.eventOccured("a",event);' width=512 height=512></canvas>
-</span>
-<span id="fps" width=100></span>
-<button name="Klickmich" type="button"
-      value="Überraschung" onclick='WebGLBase.event.eventOccured("moveLeft","blabla");'>
-      <p>
-        <b>Root nach links</b>
-      </p>
- </button>
-<button name="Klickmich" type="button"
-      value="Überraschung" onclick='WebGLBase.event.eventOccured("moveRight","blabla");'>
-      <p>
-        <b>Root nach rechts</b>
-      </p>
- </button>
- <br>
- <button onClick="startAnimation()">Start</button>
- <button onClick="pauseAnimation()">Pause</button>
- <button onClick="resumeAnimation()">Resume</button>
- <button onClick="stopAnimation()">Stop</button>
-</body>
+					
+
+					area = createMash(30,30,1,myGl);
+					area.setShaderProgram(myShaderProgram3);
+					area.name = "area";
+					area.rotation = true;
+					area.rotValue = 90;
+					//area.animationSpeed = 1;
+					area.rotationAxis = "x";
+
+					area.add(button);
+					area.add(minimize);
+
+					myRoot.add(area);
+
+					area.zOffset = -45;
+					area.addAnimationMash(mash3);
+					area.addAnimationMash(mash2);
+					area.addAnimationMash(mash6);
+					mash6.start();
+
+					myRoot.setShaderProgram(myShaderProgram2);
+					myRoot.name = "root";
+					triangle.setShaderProgram(myShaderProgram);
+					triangle.name = "triangle";
+					triangle.visible = false;
+					triangle2.setShaderProgram(myShaderProgram3);
+					triangle2.name = "triangle2";
+					triangle2.visible = false;
+
+					triangle3.setShaderProgram(myShaderProgram3);
+					triangle3.name = "triangle3";
+					triangle3.visible = false;
+
+					var path = new AnimationPath();
+					path.addPoint(new Point3D(0.0,0.0,0.0));
+					path.addPoint(new Point3D(1.0,0.0,0.0));
+					path.addPoint(new Point3D(2.0,0.0,0.0));
+					path.addPoint(new Point3D(3.0,0.0,0.0));
+
+					//triangle2.addAnimationMash(mash);
+					//triangle3.addAnimationMash(mash2);
+					//mash2.start();
+
+					triangle4.setShaderProgram(myShaderProgram);
+					triangle4.visible = false;
+					triangle4.name = "triangle4";
+
+					object3dCube.setShaderProgram(myShaderProgram);
+					object3dCube.name = "3dcude";
+					object3dCube.visible = false;
+					object3d3.setShaderProgram(myShaderProgram2);
+					object3d3.name = "3d3";
+					object3d3.visible = false;
+
+					area.addTexture(windowTexture, "randomTextureCoord", "uSampler");
+					button.addTexture(buttonTexture, "randomTextureCoord", "uSampler");
+					minimize.addTexture(minimizeTexture, "randomTextureCoord", "uSampler");
+					triangle3.addTexture(myTexture, "randomTextureCoord", "uSampler");
+					triangle2.addTexture(myTexture2, "randomTextureCoord", "uSampler");
+					triangle.addTexture(myTexture3, "randomTextureCoord", "uSampler");
+
+					/*Here RootNode is declared as Node to start drawing.
+					 Beginning here, all children of the Node will be drawn.
+					 */
+					myDrawer.startDrawing(myRoot);
+				});
+				def.addDeferrables(myDefs);
+
+			}
+
+			function updateAnimation(event) {
+				return;
+				if(rotani5.state == Animation.STATE_RUNNING) {
+					rotani5.setNewEnd(Vector.create([(event.offsetX-256)*16.5/256, -1*(event.offsetY-256)*16.5/256, 0]));
+					rotani5.duration = 500 + rotani5.time_elapsed;
+				} else {
+					rotani5.start_offset = rotani5.end_offset;
+					rotani5.setNewEnd(Vector.create([(event.offsetX-256)*16.5/256, -1*(event.offsetY-256)*16.5/256, 0]));
+					rotani5.duration = 500;
+					rotani5.restart();
+
+				}
+			}
+
+			function startAnimation() {
+				mash.start();
+			}
+
+			function pauseAnimation() {
+				mash.pause();
+			}
+
+			function resumeAnimation() {
+				mash.resume();
+			}
+
+			function stopAnimation() {
+
+				myShaderProgram3.fragmentShader.parts[0].isActive = !myShaderProgram3.fragmentShader.parts[0].isActive;
+				//mash.stopAnimations();
+			}
+
+			function maximize() {
+				var effect = "minimize";
+				if(area.animationMashs[effect].state == Animation.STATE_PAUSED) {
+					area.animationMashs[effect].resumeOneStep();
+				} else {
+					area.animationMashs[effect].start();
+					area.animationMashs[effect].pause();
+				}
+			}
+		</script>
+	</head>
+	<body onload="init()">
+		<span>
+			<canvas id="scene" onMouseMove="updateAnimation(event)" onClick='WebGLBase.event.eventOccured("a",event);' width=512 height=512>
+			</canvas>
+		</span>
+		<span id="fps" width=100></span>
+		<button name="Klickmich" type="button"
+		value="Überraschung" onclick='WebGLBase.event.eventOccured("moveLeft","blabla");'>
+			<p>
+				<b>Root nach links</b>
+			</p>
+		</button>
+		<button name="Klickmich" type="button"
+		value="Überraschung" onclick='WebGLBase.event.eventOccured("moveRight","blabla");'>
+			<p>
+				<b>Root nach rechts</b>
+			</p>
+		</button>
+		<br>
+		<button onClick="startAnimation()">
+			Start
+		</button>
+		<button onClick="pauseAnimation()">
+			Pause
+		</button>
+		<button onClick="resumeAnimation()">
+			Resume
+		</button>
+		<button onClick="stopAnimation()">
+			Stop
+		</button>
+		<button onClick="maximize()">
+			max
+		</button>
+	</body>
 </html>

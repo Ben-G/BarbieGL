@@ -55,8 +55,14 @@ ShaderProgramBuilder = function() {
 	this.cache = null;
 }
 
+ShaderProgramCount = 0;
+
 ShaderProgramBuilder.prototype = {
-	
+	clone: function(program) {
+		var frag = ShaderBuilder.clone(program.fragmentShader);
+		var vert = ShaderBuilder.clone(program.vertexShader);
+		return this.buildShaderProgram(vert, frag);
+	},
 	/**
 	 * compiles and links a fragment and a vertex Shader object
 	 * 
@@ -80,6 +86,7 @@ ShaderProgramBuilder.prototype = {
 		// create and initialize a ShaderProgram object
 		var program = new ShaderProgram(vertexShader, fragmentShader, vertexShader.gl);
 		program.binary = binary;
+		program.name = "Shaderprogram" + ShaderProgramCount++;
 		//program.vertexPositionAttribute = program.gl.getAttribLocation(program.binary, "aVertexPosition");
     	//program.gl.enableVertexAttribArray(program.vertexPositionAttribute);
 		return program;
@@ -106,18 +113,33 @@ ShaderProgramBuilder = new ShaderProgramBuilder();
 
 ShaderBuilder = function() {};
 
+FragmentShaderCount = 0;
+VertexShaderCount = 0;
+
 ShaderBuilder.prototype = {
+	clone: function(shader) {
+		return this.buildShaderFromParts(shader.parts, shader.type, shader.gl, true);
+	},
 	buildShaderFromParts: function(parts, type, gl, clone) {
 		if(clone == null) clone = true;
 		var s = new Shader(type, gl);
 		for(var i = 0; i < parts.length; i++) {
 			s.addShaderPart(parts[i], clone);
-			
+		}
+		if(type == Shader.TYPE_FRAGMENT_SHADER) {
+			s.name = "FragmentShader" + FragmentShaderCount++;
+		} else {
+			s.name = "VertexShader" + VertexShaderCount++;
 		}
 		return s;
 	},
 	buildDefaultShader: function(type, gl) {
 		var s = new Shader(type, gl);
+		if(type == Shader.TYPE_FRAGMENT_SHADER) {
+			s.name = "FragmentShader" + FragmentShaderCount++;
+		} else {
+			s.name = "VertexShader" + VertexShaderCount++;
+		}
 		return s;
 	}
 }
@@ -189,6 +211,8 @@ Shader = function(type, gl) {
 	
 	this.gl = gl;
 	this.parts = new Array();
+	this.isCompiled = false;
+	this.binary = null;
 	if(type != null) {
 		this.type = type;
 	} else (this.type = 0);
@@ -338,7 +362,7 @@ Shader.prototype = {
 			main_src += "\tvec4 originalPosition = vec4(aVertexPosition,1.0);\n";
 			main_src += "\tvec4 vertexPosition = vec4(aVertexPosition,1.0);\n";
 		} else {
-			main_src += "\tvec4 fragColor = vec4(1.0,1.0,1.0,1.0);\n"
+			main_src += "\tvec4 fragColor = vec4(0.0,0.0,0.0,0.0);\n"
 		}
 		
 		for(var i = 0; i < this.parts.length; i++) {
@@ -380,6 +404,8 @@ ShaderProgram = function(vertexShader, fragmentShader, gl) {
 	this.fragmentShader = fragmentShader;
 
 	this.parameterLocations = new Object();
+	
+	this.binary = null;
 }
 
 
@@ -434,7 +460,6 @@ ShaderProgram.prototype = {
 		if(para == null) return;
 		var location; 
 		
-		var anfang = new Date().getTime();
 		if(para.modifier.search("varying") >= 0) {
 			throw "Varying parameters can only be set inside shaders!"
 		} 
@@ -527,11 +552,11 @@ ShaderProgram.prototype = {
 			case "vec4": {
 				switch(para.modifier) {
 					case "uniform": {
-						this.gl.uniform1fv(location, value);
+						this.gl.uniform4fv(location, value);
 						break;
 					}
 					case "attribute": {
-						this.gl.vertexAttrib1f(location, value);
+						this.gl.vertexAttrib4f(location, value);
 						break;
 					}
 				}

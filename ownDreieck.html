@@ -20,6 +20,7 @@
 <script type="text/javascript" src="components/texture.js"></script>
 <script type="text/javascript" src="components/textUnit.js"></script>
 <script type="text/javascript" src="text/bmFont.js"></script>
+<script type="text/javascript" src="animation.js"></script>
 
 
 <script type="text/javascript">
@@ -115,7 +116,7 @@ function init() {
                     triangle.xOffset = 0;
                     triangle.zOffset = -40;
                     triangle.startRotation(2,"y");
-                    //textUnit.startRotation(0.1,"y");
+                    //textUnit.startRotation(1,"y");
                     triangle.onMyFirstEvent = function(event){
                     							var hitObject = hitTest(event.offsetX, event.offsetY, myRoot);
                                                 console.log(hitObject);    
@@ -156,6 +157,12 @@ function init() {
                     triangle4.zOffset = -30;
                     triangle4.startRotation(2,"y");
                 });
+    myDefs.push( AnimationMashFactory.createBlinkAnimation(Vector.create([0,-1,0,0]), 300).addCallback( 
+    		function(data){
+    			myMash = data;
+    			myMash.connectSuccessor(myMash._animations[1], myMash._animations[0]);
+    		}
+    ));       
 
     def.finalCallback(function(){ 
 
@@ -169,7 +176,7 @@ function init() {
                 var myShaderProgram = ShaderProgramBuilder.buildShaderProgram(vertShader, fragShader);
                 var myShaderProgram2 = ShaderProgramBuilder.buildShaderProgram(vertShader2, fragShader2);
                 var myShaderProgram3 = ShaderProgramBuilder.buildShaderProgram(vertShader3, fragShader3);
-                   
+
                    
                 //TODO default setting for shaderPrograms   
                 myRoot.setShaderProgram(myShaderProgram2);
@@ -182,11 +189,13 @@ function init() {
 
 				textUnit.setShaderProgram(myShaderProgram3);
 				textUnit.cursor.setShaderProgram(myShaderProgram2);
+
 				textUnit.setBitmapFont(text_a,newFont);
-				textUnit.setMaxWidth(20);
+				textUnit.setMaxWidth(60);
 				textUnit.setFontSize(0.7);
 				textUnit.setText("AB");
-				
+				textUnit.cursor.addAnimationMash(myMash);
+				myMash.start();
 				
 				//textUnit.children[0].setShaderProgram(myShaderProgram3);
 				//textUnit.children[1].setShaderProgram(myShaderProgram3);
