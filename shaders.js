@@ -362,7 +362,7 @@ Shader.prototype = {
 			main_src += "\tvec4 originalPosition = vec4(aVertexPosition,1.0);\n";
 			main_src += "\tvec4 vertexPosition = vec4(aVertexPosition,1.0);\n";
 		} else {
-			main_src += "\tvec4 fragColor = vec4(0.0,0.0,0.0,1.0);\n"
+			main_src += "\tvec4 fragColor = vec4(0.0,0.0,0.0,0.0);\n"
 		}
 		
 		for(var i = 0; i < this.parts.length; i++) {

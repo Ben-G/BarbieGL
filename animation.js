@@ -330,10 +330,15 @@ TranslationAnimation = function(type, name) {
 	this.changesTranslationMatrix = true;
 	this.passToChildren = true;
 }
+
 TranslationAnimation.prototype= new Animation();
 
 TranslationAnimation.prototype._calculateTranslationMatrix = function(transVector) {
 		return create3DTranslationMatrix(transVector).ensure4x4();
+}
+
+TranslationAnimation.prototype._calculateTranslationVector = function() {
+	return AnimationUtilities.calculateLinearValues(this.start_offset, this.end_offset, this.time_elapsed, this.duration);
 }
 
 TranslationAnimation.prototype.setNewEnd = function(newEndVector) {
@@ -342,8 +347,36 @@ TranslationAnimation.prototype.setNewEnd = function(newEndVector) {
 		this.end_offset = newEndVector
 }
 TranslationAnimation.prototype._refreshValues = function(obj, context) {
-	 	this.current_offset = AnimationUtilities.calculateLinearValues(this.start_offset, this.end_offset, this.time_elapsed, this.duration);
+	 	this.current_offset = this._calculateTranslationVector();
 		this.translationMatrix = this._calculateTranslationMatrix(this.current_offset);
+}
+
+
+SplineTranslationAnimation.TENSION_TIGHT = -1;
+SplineTranslationAnimation.TENSION_NORMAL = 0;
+SplineTranslationAnimation.TENSION_LOOSE = 1;
+
+SplineTranslationAnimation = function(type, name) {
+	TranslationAnimation.call(this, type, name);
+	this.control_points = new Array();
+	this.tension = 0;
+}
+
+SplineTranslationAnimation.prototype= new TranslationAnimation();
+
+SplineTranslationAnimation.prototype._calculateTranslationVector = function() {
+	if(this.control_points.length < 4) throw "Cardinal Splines need at least 4 control points but you have specified less";
+	var u = this.duration / this.time_elapsed;
+	var s = (1-this.tension)/2;
+	var p = this.control_points;
+	var u3 = Math.pow(u,3);
+	var u2 = Math.pow(u,2);
+	
+	var res = p[0].toVector().x(-s*u3+2*s*u2-s*u);
+	res.add(p[1].toVector().x((2-s)*u3+(s-3)*u2+1));
+	res.add(p[2].toVector().x((s-2)*u3+(3-2*s)*u2+1+s*u));
+	res.add(p[3].toVector().x(s*u3-s*u2));
+	return res;
 }
 
 
@@ -959,7 +992,48 @@ AnimationMashFactory.prototype = {
 		defList.addDeferrables(defs);
 		return d;
 	},
-	
+	createSplineTranslationAnimation: function(path, duration) {
+		if(duration == null) duration = 1000;
+		if(path == null) return null;
+		
+		var defs = new Array();
+		var d = new Deferrable();
+   		var defList = new DeferrableList();
+
+		// create Animations
+		var anis = new Array();
+		
+		for(var i = 0; i<path.points.length-1; i++) {
+			var ani = new TranslationAnimation(Animation.TYPE_ONCE);
+			anis.push(ani);
+			defs.push(ani.completed);
+		}
+		
+		defList.finalCallback( function() {
+			
+			// configure animations
+			var mash = new AnimationMash();
+			mash.name = "minimize";
+			mash.addStartAnimation(anis[0]);
+			
+			
+			for(var i = 0; i<anis.length; i++) {
+				var ani = anis[i];
+				ani.start_offset = path.points[i].toVector();
+				ani.end_offset = path.points[i+1].toVector();
+				ani.duration = duration * path.getLength(i,i+1) / path.getLength();
+				if(i != anis.length -1) {
+					mash.connectSuccessor(ani, anis[i+1]);
+				} else {
+					mash.connectSuccessor(ani, anis[0]);
+				}
+			}
+
+			d.callback(mash);
+		});
+		defList.addDeferrables(defs);
+		return d;
+	},
 }
 
 AnimationMashFactory = new AnimationMashFactory();
