@@ -44,9 +44,7 @@ WebGLBase.prototype = {
         var g_yCamTrans = 0;
         var g_zCamTrans = 0;
         //Because of the offset of the HTML-Canvas-Tag        
-        x = x-8;
-        y = y-8;
-
+      
 	    var x3D = (x-(g_nCanvasWidth  / 2))*1*Math.tan(g_fOpenViewAngle*Math.PI/180.0)/(g_nCanvasWidth / 2);
         var y3D = (y-(g_nCanvasHeight / 2))*1*Math.tan(g_fOpenViewAngle*Math.PI/180.0)/(g_nCanvasHeight / 2);
         var vTempVector4D;

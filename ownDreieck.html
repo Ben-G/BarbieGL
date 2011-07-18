@@ -20,9 +20,29 @@
 <script type="text/javascript" src="components/texture.js"></script>
 <script type="text/javascript" src="components/textUnit.js"></script>
 <script type="text/javascript" src="text/bmFont.js"></script>
+<script type="text/javascript" src="animation.js"></script>
 
 
 <script type="text/javascript">
+
+function keyDownCanvas(){	 
+	if (event.keyCode == 46){
+		textUnit.deleteLetterAt(textUnit.cursor.positionId);
+	}
+	if (event.keyCode == 8){
+		textUnit.deleteLetterAt(textUnit.cursor.positionId-1);
+	}
+	if (event.keyCode == 39){ 
+		textUnit.moveCursorRight();
+	}
+	if (event.keyCode == 37){
+		textUnit.moveCursorLeft(); 
+	}	
+}
+
+function keyPressCanvas(){ 
+		textUnit.insertLetterAt(textUnit.cursor.positionId,event.keyCode);
+}
 
 function init() {
     object3d = new Array();
@@ -59,11 +79,6 @@ function init() {
     
     
     textUnit = new TextUnit(myGl); 
-    console.log(textUnit);
-    triangles2 = new Array();
-    triangles2[0] = createRectangle(new Point3D(-0.5,-1,1), new Point3D(0.5,-1,1), new Point3D(0.5,1,1), new Point3D(-0.5,1,1));
-    
-
 
 	
 	var myTexture = WebGLBase.textureModel.find("texpyra.jpg", myGl);
@@ -90,7 +105,7 @@ function init() {
                     object3dCube.yOffset = -5;
                     myRoot.add(object3d3);
                     myRoot.add(textUnit);
-                    textUnit.zOffset = -50; 
+                    textUnit.zOffset = -30; 
                     textUnit.xOffset = -10;
                     object3d3.yOffset = 4;
                     object3d3.xOffset = 10;
@@ -101,9 +116,9 @@ function init() {
                     triangle.xOffset = 0;
                     triangle.zOffset = -40;
                     triangle.startRotation(2,"y");
-                    //textUnit.startRotation(2,"y");
+                    //textUnit.startRotation(1,"y");
                     triangle.onMyFirstEvent = function(event){
-                    							var hitObject = hitTest(event.clientX, event.clientY, myRoot);
+                    							var hitObject = hitTest(event.offsetX, event.offsetY, myRoot);
                                                 console.log(hitObject);    
                                                 if (hitObject.clicked != null){ 
                                                 	hitObject.clicked();           
@@ -142,6 +157,12 @@ function init() {
                     triangle4.zOffset = -30;
                     triangle4.startRotation(2,"y");
                 });
+    myDefs.push( AnimationMashFactory.createBlinkAnimation(Vector.create([0,-1,0,0]), 300).addCallback( 
+    		function(data){
+    			myMash = data;
+    			myMash.connectSuccessor(myMash._animations[1], myMash._animations[0]);
+    		}
+    ));       
 
     def.finalCallback(function(){ 
 
@@ -167,15 +188,14 @@ function init() {
                 object3d3.setShaderProgram(myShaderProgram2);
 
 				textUnit.setShaderProgram(myShaderProgram3);
-				textUnit.zOffset = -80;
-				textUnit.xOffset = -30;
-				textUnit.yOffset = 30;
+				textUnit.cursor.setShaderProgram(myShaderProgram2);
+
 				textUnit.setBitmapFont(text_a,newFont);
 				textUnit.setMaxWidth(60);
 				textUnit.setFontSize(0.7);
-				textUnit.addLetter("A");
-    			textUnit.addLetter("B");
-				
+				textUnit.setText("AB");
+				textUnit.cursor.addAnimationMash(myMash);
+				myMash.start();
 				
 				//textUnit.children[0].setShaderProgram(myShaderProgram3);
 				//textUnit.children[1].setShaderProgram(myShaderProgram3);
@@ -204,8 +224,8 @@ function init() {
 
 </script>
 </head>
-<body onload="init()">
-<canvas id="scene" onClick='WebGLBase.event.eventOccured("a",event);' width=512 height=512></canvas>
+<body onload="init()" onkeydown='keyDownCanvas(event);' onkeypress='keyPressCanvas(event);'>
+<canvas id="scene"  onClick='WebGLBase.event.eventOccured("a",event);' width=512 height=512></canvas>
 <button name="Klickmich" type="button"
       value="Überraschung" onclick='WebGLBase.event.eventOccured("moveLeft","blabla");'>
       <p>
@@ -218,7 +238,6 @@ function init() {
         <b>Root nach rechts</b>
       </p>
  </button>
- <input type="text" id="MyText" value="ABA" onkeyup='textUnit.setText(MyText.value);'/>
  <div id="fps"></div>
 </body>
 </html>

@@ -46,6 +46,9 @@ BitmapFontDescriptor.prototype = {
             generalInfo = generalInfo.iterateNext();
           	closure.size.width = parseInt(generalInfo.attributes.getNamedItem("scaleW").value);
             closure.size.height = parseInt(generalInfo.attributes.getNamedItem("scaleH").value); 
+            closure.base = parseInt(generalInfo.attributes.getNamedItem("base").value);
+            closure.lineHeight = parseInt(generalInfo.attributes.getNamedItem("lineHeight").value);
+
                         
 
             while(item = letters.iterateNext())
@@ -62,9 +65,9 @@ BitmapFontDescriptor.prototype = {
                 closure.chars[id].id = id;
                 closure.chars[id].x = x;
                 closure.chars[id].y = y;
-                closure.chars[id].xadvance = xadvance/32;
-                closure.chars[id].xoffset = xoffset/32;
-                closure.chars[id].yoffset = yoffset/32;
+                closure.chars[id].xadvance = xadvance;
+                closure.chars[id].xoffset = xoffset;
+                closure.chars[id].yoffset = yoffset;
                 closure.chars[id].width = width; 
                 closure.chars[id].height = height;
                 closure.chars[id].textureBuffer = 	[ x/closure.size.width              ,(y+height)/closure.size.height,//P1
@@ -73,10 +76,7 @@ BitmapFontDescriptor.prototype = {
 		                                              (x+width)/closure.size.width      ,(y+height)/closure.size.height,//P2
 		                                              (x+width)/closure.size.width      ,y/closure.size.height,//P3
 		                                              x/closure.size.width              ,y/closure.size.height,];//P4	
-
-	            closure.chars[id].aspectY = height/32;
-	            closure.chars[id].aspectX = width/32; 
-	            
+        
             }
 
         });	
