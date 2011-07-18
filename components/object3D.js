@@ -7,6 +7,9 @@ function Object3D(gl){
     this.vertices = new Array();
     this.textureCoords = new Array();
     this.textures = new Array();
+    this.perspectiveHasChanged = true;
+    this.mvMatrixHasChanged = true;
+    this.vertexPositionsHaveChanged = true;
     //this.boundingBox
     //this.lastTranslMatrix
     //this.minPoint;
@@ -45,11 +48,12 @@ function Object3D(gl){
 	this.animationspeed = 0;
 	
 	
-	this._rebuildShaderProgram = function(){
+	this._rebuildShaderProgram = function(new_parts){
 		var tmp_vert_parts = new Array();
 		var tmp_frag_parts = new Array();
+		if(new_parts == null) new_parts = new Array();
 		
-		for(var i in this.animationMashs) {
+		/*for(var i in this.animationMashs) {
 			for(var j=0;j<this.animationMashs[i].getAnimations().length; j++) {
 				var parts = this.animationMashs[i].getAnimations()[j].parts;
 				for(var k=0; k<parts.length; k++) {
@@ -57,8 +61,12 @@ function Object3D(gl){
 					else tmp_frag_parts.push(parts[k]);
 				}
 			}
-		}
+		}*/
 		
+		for(var k=0; k<new_parts.length; k++) {
+			if(new_parts[k].type == Shader.TYPE_VERTEX_SHADER) tmp_vert_parts.push(new_parts[k]);
+			else tmp_frag_parts.push(new_parts[k]);
+		}
 		tmp_vert_parts = tmp_vert_parts.concat(this.shaderProgram.vertexShader.parts);
 		tmp_frag_parts = tmp_frag_parts.concat(this.shaderProgram.fragmentShader.parts);
 		
@@ -68,14 +76,20 @@ function Object3D(gl){
         
         var myShaderProgram = ShaderProgramBuilder.buildShaderProgram(vertShader, fragShader);
         
-        this.setShaderProgram(myShaderProgram);   
+        this.setShaderProgram(myShaderProgram, false);   
 		
 	}
 	this.addAnimationMash= function (animation) {
 		if(animation.object != null) throw "This AnimationMash (" + animation.name + ") is already bound to another Object3D (" + animation.object.name + ")";
 		this.animationMashs[animation.name] = animation;
 		animation.object = this;
-		this._rebuildShaderProgram();
+		
+		var parts = new Array();
+		for(var j=0;j<animation.getAnimations().length; j++) {
+			parts = parts.concat(animation.getAnimations()[j].parts);
+		}
+		
+		this._rebuildShaderProgram(parts);
 	}
 	
 	this.removeAnimationMash = function (name) {
@@ -91,8 +105,16 @@ function Object3D(gl){
 		return anis;
 	}
 	
-	this.setShaderProgram = function(program) {
-		this.shaderProgram = program;	
+	this.setShaderProgram = function(program, clone) {
+		clone = false;
+		this.mvMatrixHasChanged = true;
+		this.perspectiveHasChanged = true;
+		this.vertexPositionsHaveChanged = true;
+		if(clone == null || clone == true) {
+			this.shaderProgram = ShaderProgramBuilder.clone(program);	
+		} else {
+			this.shaderProgram = program;
+		}
 		this.shaderProgram.vertexPositionAttribute = this.shaderProgram.gl.getAttribLocation(this.shaderProgram.binary, WebGLBase.stdVertParams["VERTEX_POSITION"].identifier);
     	this.shaderProgram.gl.enableVertexAttribArray(this.shaderProgram.vertexPositionAttribute);     	
 	}
@@ -136,6 +158,8 @@ function Object3D(gl){
 				aniTransMats = aniTransMats.concat(mash.translationMatrices);
 				aniScaleMats = aniScaleMats.concat(mash.scalingMatrices);
 			}
+			
+			
 
 			/**
 			 * compose the global translation matrix
@@ -177,8 +201,13 @@ function Object3D(gl){
 		    	scalingMatrix = scalingMatrix.x(aniScaleMats[i]);
 		    }
 		    
-		    
+		    var tmp = this.lastTranslMatrix;
 		    this.lastTranslMatrix = translationMatrix.x(rotationMatrix).x(scalingMatrix);
+		    if(tmp == null || !tmp.eql(this.lastTranslMatrix)) {
+		    	this.mvMatrixHasChanged = true;
+		    }  else {
+		    	this.mvMatrixHasChanged = false;
+		    }
 			this.refreshPartActivators();
             return this.lastTranslMatrix;
     }
@@ -320,7 +349,6 @@ function Object3D(gl){
         //Override the translationMatrix in the Shader because here the translation is applied
         //to the vertices directly
         
-       var mvUniform = gl.getUniformLocation(shaderProgram.binary, "uMVMatrix");
-       gl.uniformMatrix4fv(mvUniform, false, new Float32Array(Matrix.I(4).flatten()));
-    }
-}
+       //var mvUniform = gl.getUniformLocation(shaderProgram.binary, "uMVMatrix");
+       //gl.uniformMatrix4fv(mvUniform, false, new Float32Array(Matrix.I(4).flatten()));
+    }}

@@ -167,8 +167,11 @@ function init() {
                 object3d3.setShaderProgram(myShaderProgram2);
 
 				textUnit.setShaderProgram(myShaderProgram3);
+				textUnit.zOffset = -80;
+				textUnit.xOffset = -30;
+				textUnit.yOffset = 30;
 				textUnit.setBitmapFont(text_a,newFont);
-				textUnit.setMaxWidth(20);
+				textUnit.setMaxWidth(60);
 				textUnit.setFontSize(0.7);
 				textUnit.addLetter("A");
     			textUnit.addLetter("B");

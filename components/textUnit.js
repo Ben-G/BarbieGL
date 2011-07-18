@@ -42,6 +42,7 @@ TextUnit.prototype = {
     		
     		
     	var tile = WebGLBase.createObject3D(triangles2, this.gl);
+
     	//Create and fill a textureCoordBuffer
     	tile.texBuffer = new Object();
 		tile.texBuffer.values = this.gl.createBuffer();
@@ -57,6 +58,7 @@ TextUnit.prototype = {
 		//tile.yOffset = this.currentyOffset+letterInfo.yoffset; 
 		//tile.xOffset = this.currentxOffset+letterInfo.xoffset; 
 
+    	
 		
 		if (this.currentxOffset+letterInfo.aspectX > this.maxWidth && this.maxWidth != 0){
 			//start new line

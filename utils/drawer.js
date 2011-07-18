@@ -64,19 +64,26 @@ Drawer.prototype = {
     	
     	if(obj.visible) {
 	    	if (obj.buffer.itemSize != null) {
-		     	shaderProgram.setParameter(WebGLBase.stdVertParams["P_MATRIX"], new Float32Array(WebGLBase.pMatrix.flatten()));
-				//if(obj.name == "triangle2") console.log(translationMat.inspect());
-				
-				shaderProgram.setParameter(WebGLBase.stdVertParams["MV_MATRIX"], new Float32Array(translationMat.flatten()));
-				shaderProgram.setBuffer(WebGLBase.stdVertParams["VERTEX_POSITION"], obj.buffer, new Float32Array(obj.vertices));
-	
+	    		//console.log(obj.name, shaderProgram);
+	    		if(obj.perspectiveHasChanged) {
+		     		shaderProgram.setParameter(WebGLBase.stdVertParams["P_MATRIX"], new Float32Array(WebGLBase.pMatrix.flatten()));
+					obj.perspectiveHasChanged = false;
+				}
+				//if(obj.mvMatrixHasChanged) {
+					shaderProgram.setParameter(WebGLBase.stdVertParams["MV_MATRIX"], new Float32Array(translationMat.flatten()));
+					obj.mvMatrixHasChanged = false;
+				//}
+				//if(obj.vertexPositionsHaveChanged) {
+					shaderProgram.setBuffer(WebGLBase.stdVertParams["VERTEX_POSITION"], obj.buffer, new Float32Array(obj.vertices));
+					obj.vertexPositionsHaveChanged = false;
+				//}
 			    if (obj.texBuffer != null){
 			    	//obj has a texture in use COMMIT TEST
 			    	//request texture to be hold in place by textureModel
 			    	TextureModel.activate(obj);      	              	
 			    }
 			    // DEBUGGING OUTPUT for webgl inspector
-			    gl.getUniformLocation(shaderProgram.binary, "drawing " + obj.name);
+			    //gl.getUniformLocation(shaderProgram.binary, "drawing " + obj.name);
 			    gl.drawArrays(gl.TRIANGLES, 0, obj.buffer.numItems);
 	        }
        }
@@ -89,7 +96,7 @@ Drawer.prototype = {
             }
         }
         
-       	gl.useProgram(shaderProgram.binary);
+       	//gl.useProgram(shaderProgram.binary);
         obj.updateBoundingBox(gl, shaderProgram);
         
         //console.log(obj.name + " " + (new Date().getTime() - anfang) + " ms");
