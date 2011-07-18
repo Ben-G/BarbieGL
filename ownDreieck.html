@@ -24,6 +24,25 @@
 
 <script type="text/javascript">
 
+function keyDownCanvas(){	 
+	if (event.keyCode == 46){
+		textUnit.deleteLetterAt(textUnit.cursor.positionId);
+	}
+	if (event.keyCode == 8){
+		textUnit.deleteLetterAt(textUnit.cursor.positionId-1);
+	}
+	if (event.keyCode == 39){ 
+		textUnit.moveCursorRight();
+	}
+	if (event.keyCode == 37){
+		textUnit.moveCursorLeft(); 
+	}	
+}
+
+function keyPressCanvas(){ 
+		textUnit.insertLetterAt(textUnit.cursor.positionId,event.keyCode);
+}
+
 function init() {
     object3d = new Array();
  	var myGl = WebGLBase.initGL(document.getElementById("scene"));
@@ -59,11 +78,6 @@ function init() {
     
     
     textUnit = new TextUnit(myGl); 
-    console.log(textUnit);
-    triangles2 = new Array();
-    triangles2[0] = createRectangle(new Point3D(-0.5,-1,1), new Point3D(0.5,-1,1), new Point3D(0.5,1,1), new Point3D(-0.5,1,1));
-    
-
 
 	
 	var myTexture = WebGLBase.textureModel.find("texpyra.jpg", myGl);
@@ -90,7 +104,7 @@ function init() {
                     object3dCube.yOffset = -5;
                     myRoot.add(object3d3);
                     myRoot.add(textUnit);
-                    textUnit.zOffset = -50; 
+                    textUnit.zOffset = -30; 
                     textUnit.xOffset = -10;
                     object3d3.yOffset = 4;
                     object3d3.xOffset = 10;
@@ -101,9 +115,9 @@ function init() {
                     triangle.xOffset = 0;
                     triangle.zOffset = -40;
                     triangle.startRotation(2,"y");
-                    //textUnit.startRotation(2,"y");
+                    //textUnit.startRotation(0.1,"y");
                     triangle.onMyFirstEvent = function(event){
-                    							var hitObject = hitTest(event.clientX, event.clientY, myRoot);
+                    							var hitObject = hitTest(event.offsetX, event.offsetY, myRoot);
                                                 console.log(hitObject);    
                                                 if (hitObject.clicked != null){ 
                                                 	hitObject.clicked();           
@@ -167,11 +181,11 @@ function init() {
                 object3d3.setShaderProgram(myShaderProgram2);
 
 				textUnit.setShaderProgram(myShaderProgram3);
+				textUnit.cursor.setShaderProgram(myShaderProgram2);
 				textUnit.setBitmapFont(text_a,newFont);
 				textUnit.setMaxWidth(20);
 				textUnit.setFontSize(0.7);
-				textUnit.addLetter("A");
-    			textUnit.addLetter("B");
+				textUnit.setText("AB");
 				
 				
 				//textUnit.children[0].setShaderProgram(myShaderProgram3);
@@ -201,8 +215,8 @@ function init() {
 
 </script>
 </head>
-<body onload="init()">
-<canvas id="scene" onClick='WebGLBase.event.eventOccured("a",event);' width=512 height=512></canvas>
+<body onload="init()" onkeydown='keyDownCanvas(event);' onkeypress='keyPressCanvas(event);'>
+<canvas id="scene"  onClick='WebGLBase.event.eventOccured("a",event);' width=512 height=512></canvas>
 <button name="Klickmich" type="button"
       value="Überraschung" onclick='WebGLBase.event.eventOccured("moveLeft","blabla");'>
       <p>
@@ -215,7 +229,6 @@ function init() {
         <b>Root nach rechts</b>
       </p>
  </button>
- <input type="text" id="MyText" value="ABA" onkeyup='textUnit.setText(MyText.value);'/>
  <div id="fps"></div>
 </body>
 </html>
