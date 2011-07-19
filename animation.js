@@ -19,6 +19,7 @@ Animation = function(type, required_parts, name) {
 	this.changesRotationMatrix = false;
 	this.changesTranslationMatrix = false;
 	this.changesScalingMatrix = false;
+	this.duration = 1000;
 	
 	
 	
@@ -132,6 +133,9 @@ Animation.prototype = {
 			if(this.parts[i].name == name) return this.parts[i];
 		}
 		return null;
+	},
+	katze: function() {
+		console.log("superClass");
 	},
 	_activateParts: function() {
 		for(var i=0;i<this.parts.length;i++) {
@@ -341,6 +345,11 @@ TranslationAnimation.prototype._calculateTranslationVector = function() {
 	return AnimationUtilities.calculateLinearValues(this.start_offset, this.end_offset, this.time_elapsed, this.duration);
 }
 
+TranslationAnimation.prototype.katze = function() {
+	Animation.prototype.katze.call(this);
+	console.log("subClass");
+}
+
 TranslationAnimation.prototype.setNewEnd = function(newEndVector) {
 		curPositionVector = this._calculatePosition(this.start_offset, this.end_offset, this.time_elapsed, this.duration);
 		this.start_offset = curPositionVector;
@@ -348,35 +357,37 @@ TranslationAnimation.prototype.setNewEnd = function(newEndVector) {
 }
 TranslationAnimation.prototype._refreshValues = function(obj, context) {
 	 	this.current_offset = this._calculateTranslationVector();
+		this.katze();
 		this.translationMatrix = this._calculateTranslationMatrix(this.current_offset);
 }
 
 
-SplineTranslationAnimation.TENSION_TIGHT = -1;
-SplineTranslationAnimation.TENSION_NORMAL = 0;
-SplineTranslationAnimation.TENSION_LOOSE = 1;
-
-SplineTranslationAnimation = function(type, name) {
+SplineTranslationAnimation = function(type, name, spline) {
 	TranslationAnimation.call(this, type, name);
-	this.control_points = new Array();
-	this.tension = 0;
+	this.spline = spline;
+	this.tension = CardinalSpline.TENSION_NORMAL;
 }
 
 SplineTranslationAnimation.prototype= new TranslationAnimation();
 
 SplineTranslationAnimation.prototype._calculateTranslationVector = function() {
-	if(this.control_points.length < 4) throw "Cardinal Splines need at least 4 control points but you have specified less";
-	var u = this.duration / this.time_elapsed;
-	var s = (1-this.tension)/2;
-	var p = this.control_points;
-	var u3 = Math.pow(u,3);
-	var u2 = Math.pow(u,2);
-	
-	var res = p[0].toVector().x(-s*u3+2*s*u2-s*u);
-	res.add(p[1].toVector().x((2-s)*u3+(s-3)*u2+1));
-	res.add(p[2].toVector().x((s-2)*u3+(3-2*s)*u2+1+s*u));
-	res.add(p[3].toVector().x(s*u3-s*u2));
-	return res;
+	var u = this.time_elapsed / this.duration;
+	//console.log(this.name, this.duration, -s*u3+2*s*u2-s*u, (2-s)*u3+(s-3)*u2+1, (s-2)*u3+(3-2*s)*u2+1+s*u, s*u3-s*u2, "\n", p[0].toVector().inspect(), p[1].toVector().inspect(), p[2].toVector().inspect(), p[3].toVector().inspect(), res.inspect());
+	return this.spline.getPosition(u, this.tension);
+}
+
+BezierTranslationAnimation = function(type, name, curve) {
+	TranslationAnimation.call(this, type, name);
+	this.curve = curve;
+}
+
+BezierTranslationAnimation.prototype= new TranslationAnimation();
+
+
+BezierTranslationAnimation.prototype._calculateTranslationVector = function() {
+	var u = this.time_elapsed / this.duration;
+	//console.log(this.name, this.duration, -s*u3+2*s*u2-s*u, (2-s)*u3+(s-3)*u2+1, (s-2)*u3+(3-2*s)*u2+1+s*u, s*u3-s*u2, "\n", p[0].toVector().inspect(), p[1].toVector().inspect(), p[2].toVector().inspect(), p[3].toVector().inspect(), res.inspect());
+	return this.curve.getPosition(u);
 }
 
 
@@ -791,16 +802,56 @@ AnimationPath.prototype = {
 			if(this.getLength(i) >= length) return i-1;
 			if(i == this.points.length-1) return i;
 		}
-		
 	},
 	getLength: function(index, index2) {
 		if(index == null || index >= this.points.length) var index = 0;
 		if(index2 == null || index2 >= this.points.length) var index2 = this.points.length-1;
 		var len = 0;
 		for(var i=index+1; i<=index2; i++) {
-			len += this.points[i].toVector().distanceFrom(this.points[i-1].toVector());
+			len += this.points[i].distanceFrom(this.points[i-1]);
 		}
 		return len;
+	},
+	getCircleLength: function() {
+		return this.getLength() + this.points[0].distanceFrom(this.points[this.points.length-1]);
+	},
+	getCardinalSpline: function(index, circle, tension) {
+		if(circle == null) circle == false;
+		if(tension == null) tension == 0;
+
+		var points = new Array();
+		if(this.points.length < 4) throw "Path has less than 4 points";
+		
+		if(circle) {
+			points.push(this.points[(index+this.points.length-1)%(this.points.length)]);
+			points.push(this.points[index]);
+			points.push(this.points[(index+1)%(this.points.length)]);
+			points.push(this.points[(index+2)%(this.points.length)]);
+		} else {
+			if(i+2 >= this.points.length) throw "Index is too high";
+			if(index == 0) {
+				points.push(this.points[index]);
+				points.push(this.points[index]);
+				points.push(this.points[index+1]);
+				points.push(this.points[index+2]);
+			} else if(index == this.points.length-2) {
+				points.push(this.points[index-1]);
+				points.push(this.points[index]);
+				points.push(this.points[index+1]);
+				points.push(this.points[index+1]);
+			} else {
+				points.push(this.points[index-1]);
+				points.push(this.points[index]);
+				points.push(this.points[index+1]);
+				points.push(this.points[index+2]);
+			}
+		}
+		return new CardinalSpline(points);
+	},
+	getBezierCurve: function(index, index2) {
+		if(index == null) index = 0;
+		
+		return new BezierCurve(this.points.slice(index, index2))
 	}
 }
 
@@ -950,6 +1001,98 @@ AnimationMashFactory.prototype = {
 		defList.addDeferrables(defs);
 		return d;
 	},
+	createCircleMinimizeAnimation: function(radius, duration) {
+		if(duration == null) duration = 500;
+		if(radius == null) radius = 3;
+		
+		var defs = new Array();
+		var d = new Deferrable();
+   		var defList = new DeferrableList();
+
+		// create Animations
+		
+		var path = new AnimationPath();
+		path.addPoint(Vector.create([0,0,0]));
+		path.addPoint(Vector.create([radius,-radius,0]));
+		path.addPoint(Vector.create([2*radius,0,0]));
+		path.addPoint(Vector.create([0,2*radius,0]));
+		path.addPoint(Vector.create([-4*radius,0,0]));
+		path.addPoint(Vector.create([6*radius,-6*radius,0]));
+		
+		minAni1 = new ScalingAnimation(Animation.TYPE_ONCE);
+		
+		var mash2;
+		
+		defs.push(minAni1.completed);
+		defs.push(this.createSplineTranslationAnimation(path,true,duration));
+		defs[defs.length-1].addCallback(function(data) { mash2 = data; console.log((data))});
+		
+		defList.finalCallback( function() {
+			
+			// configure animations
+	        minAni1.duration = duration;
+	        minAni1.start_offset = Vector.create([1,1,1]);
+	        minAni1.end_offset = Vector.create([0,0,0]);
+			
+			var mash = new AnimationMash();
+			mash.name = "minimize";
+			mash.addStartAnimation(minAni1);
+			mash.addStartAnimation(mash2._animations[0]);
+			for(var i = 0; i < mash2._animations.length-1; i++) {
+				mash.connectSuccessor(mash2._animations[i], mash2._animations[i+1]);
+			}
+			console.log(mash);
+			d.callback(mash);
+		});
+		defList.addDeferrables(defs);
+		return d;
+	},
+	createCircleMaximizeAnimation: function(radius, duration) {
+		if(duration == null) duration = 500;
+		if(radius == null) radius = 3;
+		
+		var defs = new Array();
+		var d = new Deferrable();
+   		var defList = new DeferrableList();
+
+		// create Animations
+		
+		var path = new AnimationPath();
+		path.addPoint(Vector.create([6*radius,-6*radius,0]));
+		path.addPoint(Vector.create([-4*radius,0,0]));
+		path.addPoint(Vector.create([0,2*radius,0]));
+		path.addPoint(Vector.create([2*radius,0,0]));
+		path.addPoint(Vector.create([radius,-radius,0]));
+		path.addPoint(Vector.create([0,0,0]));
+
+		minAni1 = new ScalingAnimation(Animation.TYPE_ONCE);
+		
+		var mash2;
+		
+		defs.push(minAni1.completed);
+		defs.push(this.createSplineTranslationAnimation(path,true,duration));
+		defs[defs.length-1].addCallback(function(data) { mash2 = data; console.log((data))});
+		
+		defList.finalCallback( function() {
+			
+			// configure animations
+	        minAni1.duration = duration;
+	        minAni1.start_offset = Vector.create([0,0,0]);
+	        minAni1.end_offset = Vector.create([1,1,1]);
+			
+			var mash = new AnimationMash();
+			mash.name = "maximize";
+			mash.addStartAnimation(minAni1);
+			mash.addStartAnimation(mash2._animations[0]);
+			for(var i = 0; i < mash2._animations.length-1; i++) {
+				mash.connectSuccessor(mash2._animations[i], mash2._animations[i+1]);
+			}
+			console.log(mash);
+			d.callback(mash);
+		});
+		defList.addDeferrables(defs);
+		return d;
+	},
 	createLinearPathTranslationAnimation: function(path, duration) {
 		if(duration == null) duration = 1000;
 		if(path == null) return null;
@@ -977,8 +1120,8 @@ AnimationMashFactory.prototype = {
 			
 			for(var i = 0; i<anis.length; i++) {
 				var ani = anis[i];
-				ani.start_offset = path.points[i].toVector();
-				ani.end_offset = path.points[i+1].toVector();
+				ani.start_offset = path.points[i];
+				ani.end_offset = path.points[i+1];
 				ani.duration = duration * path.getLength(i,i+1) / path.getLength();
 				if(i != anis.length -1) {
 					mash.connectSuccessor(ani, anis[i+1]);
@@ -992,9 +1135,10 @@ AnimationMashFactory.prototype = {
 		defList.addDeferrables(defs);
 		return d;
 	},
-	createSplineTranslationAnimation: function(path, duration) {
+	createSplineTranslationAnimation: function(path, circle, duration) {
 		if(duration == null) duration = 1000;
 		if(path == null) return null;
+		if(circle == null) circle == true;
 		
 		var defs = new Array();
 		var d = new Deferrable();
@@ -1003,8 +1147,11 @@ AnimationMashFactory.prototype = {
 		// create Animations
 		var anis = new Array();
 		
-		for(var i = 0; i<path.points.length-1; i++) {
-			var ani = new TranslationAnimation(Animation.TYPE_ONCE);
+		var c;
+		if(circle) c=path.points.length;
+		else c=path.points.length+1; 
+		for(var i = 0; i<c; i++) {
+			var ani = new SplineTranslationAnimation(Animation.TYPE_ONCE);
 			anis.push(ani);
 			defs.push(ani.completed);
 		}
@@ -1013,22 +1160,21 @@ AnimationMashFactory.prototype = {
 			
 			// configure animations
 			var mash = new AnimationMash();
-			mash.name = "minimize";
+			mash.name = "splineTranslation";
 			mash.addStartAnimation(anis[0]);
-			
 			
 			for(var i = 0; i<anis.length; i++) {
 				var ani = anis[i];
-				ani.start_offset = path.points[i].toVector();
-				ani.end_offset = path.points[i+1].toVector();
-				ani.duration = duration * path.getLength(i,i+1) / path.getLength();
+				ani.spline = path.getCardinalSpline(i,circle);
+				
 				if(i != anis.length -1) {
 					mash.connectSuccessor(ani, anis[i+1]);
+					ani.duration = duration * path.getLength(i,i+1) / path.getCircleLength();
 				} else {
 					mash.connectSuccessor(ani, anis[0]);
+					ani.duration = duration * (path.getCircleLength() - path.getLength()) / path.getCircleLength();
 				}
 			}
-
 			d.callback(mash);
 		});
 		defList.addDeferrables(defs);
@@ -1037,3 +1183,54 @@ AnimationMashFactory.prototype = {
 }
 
 AnimationMashFactory = new AnimationMashFactory();
+
+CardinalSpline = function(control_points) {
+	this.control_points = control_points;
+}
+
+CardinalSpline.TENSION_TIGHT = -1;
+CardinalSpline.TENSION_NORMAL = 0;
+CardinalSpline.TENSION_LOOSE = 1;
+
+CardinalSpline.prototype = {
+	getPosition: function(u, tension) {
+		if(tension == null) tension = 0;
+		if(this.control_points == null || this.control_points.length < 4) throw "Cardinal Splines need at least 4 control points but you have specified less";
+		var s = (1-tension)/2;
+		var p = this.control_points;
+		var u3 = Math.pow(u,3);
+		var u2 = Math.pow(u,2);
+		
+		var res = p[0].x(-s*u3+2*s*u2-s*u);
+		res = res.add(p[1].x((2-s)*u3+(s-3)*u2+1));
+		res = res.add(p[2].x((s-2)*u3+(3-2*s)*u2+s*u));
+		res = res.add(p[3].x(s*u3-s*u2));
+		
+		//console.log(this.name, this.duration, -s*u3+2*s*u2-s*u, (2-s)*u3+(s-3)*u2+1, (s-2)*u3+(3-2*s)*u2+1+s*u, s*u3-s*u2, "\n", p[0].toVector().inspect(), p[1].toVector().inspect(), p[2].toVector().inspect(), p[3].toVector().inspect(), res.inspect());
+		return res;
+	}
+}
+
+
+BezierCurve = function(control_points) {
+	this.control_points = control_points;
+}
+
+
+BezierCurve.prototype = {
+	getPosition: function(u) {
+		if(this.control_points == null) throw "No control points for Bezier curve specified";
+		var p = this.control_points;
+		var res = Vector.create([0,0,0]);
+
+		for(var i=0; i<p.length; i++) {
+			res = res.add(p[i].x(this._bezier(i,p.length-1,u)));
+		}
+		//console.log(this.name, this.duration, -s*u3+2*s*u2-s*u, (2-s)*u3+(s-3)*u2+1, (s-2)*u3+(3-2*s)*u2+1+s*u, s*u3-s*u2, "\n", p[0].toVector().inspect(), p[1].toVector().inspect(), p[2].toVector().inspect(), p[3].toVector().inspect(), res.inspect());
+		return res;
+	},
+	_bezier: function(k,n,u) {
+		var bez = (factorial(n)/(factorial(k)*factorial(n-k))) * Math.pow(u,k) * Math.pow(1-u, n-k);
+		return  bez;
+	}
+}

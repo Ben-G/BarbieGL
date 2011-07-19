@@ -107,7 +107,7 @@
 								area.animationMashs[effect].resumeOneStep();
 							} else {
 								area.animationMashs[effect].start();
-								area.animationMashs[effect].pause();
+								//area.animationMashs[effect].pause();
 							}
 						}
 					};
@@ -145,7 +145,7 @@
 					triangle4.zOffset = -30;
 					//  triangle4.startRotation(2,"y");
 				});
-				myDefs.push(AnimationMashFactory.createFlipAnimation("z",180,1000));
+				myDefs.push(AnimationMashFactory.createFlipAnimation("z",180,500));
 				myDefs[myDefs.length-1].addCallback( function(data) {
 					mash3 = data;
 					mash3.name = "windowFlip";
@@ -155,7 +155,7 @@
 					mash4 = data;
 					mash4.name = "blink";
 				});
-				myDefs.push(AnimationMashFactory.createMinimizeAnimation(Vector.create([-20,-20,0])));
+				myDefs.push(AnimationMashFactory.createCircleMinimizeAnimation(3, 1000));
 				myDefs[myDefs.length-1].addCallback( function(data) {
 					mash2 = data;
 					mash2.name = "minimize";
@@ -166,15 +166,24 @@
 					mash5.name = "click";
 				});
 				path = new AnimationPath();
-				path.addPoint(new Point3D(0,0,0));
-				path.addPoint(new Point3D(5,5,0));
-				path.addPoint(new Point3D(5,10,0));
-				path.addPoint(new Point3D(0,15,0));
-				path.addPoint(new Point3D(-5,10,0));
-				path.addPoint(new Point3D(-5,5,0));
-				path.addPoint(new Point3D(0,0,0));
+				path.addPoint(Vector.create([0,-10,0]));
+				path.addPoint(Vector.create([10,-10,0]));
+				path.addPoint(Vector.create([10,20,0]));
+				path.addPoint(Vector.create([-10,0,0]));
+				path.addPoint(Vector.create([-10,-10,0]));
+				path.addPoint(Vector.create([0,-10,0]));
+				//path.addPoint(Vector.create([20,-10,0]));
+				//path.addPoint(Vector.create([-20,20,0]));
+				//path.addPoint(Vector.create([20,-20,0]));
 				
-				myDefs.push(AnimationMashFactory.createLinearPathTranslationAnimation(path,10000));
+				mash7 = new AnimationMash();
+				aniassss = new BezierTranslationAnimation(Animation.TYPE_ENDLESS, "bez", path.getBezierCurve());
+				myDefs.push(aniassss.completed);
+				
+				mash7.addStartAnimation(aniassss);
+				
+				
+				myDefs.push(AnimationMashFactory.createSplineTranslationAnimation(path, true, 1000));
 				myDefs[myDefs.length-1].addCallback( function(data) {
 					mash6 = data;
 					mash6.name = "path";
@@ -229,8 +238,8 @@
 					area.zOffset = -45;
 					area.addAnimationMash(mash3);
 					area.addAnimationMash(mash2);
-					area.addAnimationMash(mash6);
-					mash6.start();
+					area.addAnimationMash(mash7);
+					mash7.start();
 
 					myRoot.setShaderProgram(myShaderProgram2);
 					myRoot.name = "root";
@@ -320,7 +329,8 @@
 					area.animationMashs[effect].resumeOneStep();
 				} else {
 					area.animationMashs[effect].start();
-					area.animationMashs[effect].pause();
+					area.animationMashs["windowFlip"].start();
+					//area.animationMashs[effect].pause();
 				}
 			}
 		</script>
