@@ -19,11 +19,27 @@
 <script type="text/javascript" src="components/object3D.js"></script>
 <script type="text/javascript" src="components/texture.js"></script>
 <script type="text/javascript" src="components/textUnit.js"></script>
+<script type="text/javascript" src="components/tile.js"></script>
 <script type="text/javascript" src="text/bmFont.js"></script>
 <script type="text/javascript" src="animation.js"></script>
 
 
 <script type="text/javascript">
+
+
+function mouseUpCanvas(){
+	var hitObject = hitTest(event.offsetX, event.offsetY, myRoot);
+                                                if (hitObject.mouseUp != null){ 
+                                                	hitObject.mouseUp();       
+                                                }     
+}
+
+function mouseDownCanvas(){
+	var hitObject = hitTest(event.offsetX, event.offsetY, myRoot);
+                                                if (hitObject.mouseDown != null){ 
+                                                	hitObject.mouseDown();       
+                                                }                                               
+}
 
 function keyDownCanvas(){	 
 	if (event.keyCode == 46){
@@ -50,7 +66,8 @@ function init() {
     var myShaders = new Array();
     var myShaders2 = new Array();
     var myShaders3 = new Array();
-    var myRoot = new Object3D(myGl);
+    var myTextShader = new Array();  
+    myRoot = new Object3D(myGl);
     var myRoot2 = new Object3D(myGl);
     myDrawer = new Drawer();
     var myDefs = new Array();
@@ -74,7 +91,6 @@ function init() {
     
     cube = new Array();
     cube[0] = createBoundingBox(new Point3D(-1,-1,-1), new Point3D(1,1,1));
-    console.log("Cube: "+cube[0]);
     var object3dCube = WebGLBase.createObject3D(triangles, myGl);
     
     
@@ -95,6 +111,8 @@ function init() {
     myDefs[2] = WebGLBase.shaderPartFactory.createFromName("vertshader_benji").addCallback(function(data){myShaders2[0] = data; });
     myDefs[3] = WebGLBase.shaderPartFactory.createFromName("fragshader2_benji").addCallback(function(data){myShaders2[1] = data; });
     myDefs[8] = WebGLBase.shaderPartFactory.createFromName("vertshader_texture").addCallback(function(data){myShaders3[0] = data; });
+    myDefs.push( WebGLBase.shaderPartFactory.createFromName("vertshader_texture").addCallback(function(data){myTextShader[0] = data; }));
+    myDefs.push( WebGLBase.shaderPartFactory.createFromName("textshader").addCallback(function(data){myTextShader[1] = data; }));
     myDefs[9] = WebGLBase.shaderPartFactory.createFromName("fragshader").addCallback(function(data){myShaders3[1] = data; });
     
     myDefs[4] = WebGLBase.objectModel.find("triangle3").addCallback(
@@ -119,7 +137,7 @@ function init() {
                     //textUnit.startRotation(1,"y");
                     triangle.onMyFirstEvent = function(event){
                     							var hitObject = hitTest(event.offsetX, event.offsetY, myRoot);
-                                                console.log(hitObject);    
+                                                //console.log(hitObject);    
                                                 if (hitObject.clicked != null){ 
                                                 	hitObject.clicked();           
                                                 }                           
@@ -162,9 +180,10 @@ function init() {
     			myMash = data;
     			myMash.connectSuccessor(myMash._animations[1], myMash._animations[0]);
     		}
-    ));       
-
+    ));      
+    
     def.finalCallback(function(){ 
+    	
 
 				var vertShader = ShaderBuilder.buildDefaultShader(Shader.TYPE_VERTEX_SHADER, myGl);
                 var fragShader = ShaderBuilder.buildShaderFromParts(new Array(myShaders[1]), Shader.TYPE_FRAGMENT_SHADER, myGl);
@@ -172,10 +191,14 @@ function init() {
                 var fragShader2 = ShaderBuilder.buildShaderFromParts(new Array(myShaders2[1]), Shader.TYPE_FRAGMENT_SHADER, myGl);
                 var vertShader3 = ShaderBuilder.buildShaderFromParts(new Array(myShaders3[0]), Shader.TYPE_VERTEX_SHADER, myGl);
                 var fragShader3 = ShaderBuilder.buildShaderFromParts(new Array(myShaders3[1]), Shader.TYPE_FRAGMENT_SHADER, myGl);
+                  
+                var textShader_vert = ShaderBuilder.buildShaderFromParts(new Array(myTextShader[0]), Shader.TYPE_VERTEX_SHADER, myGl);   
+                var textShader = ShaderBuilder.buildShaderFromParts(new Array(myTextShader[1]), Shader.TYPE_FRAGMENT_SHADER, myGl);    
                    
                 var myShaderProgram = ShaderProgramBuilder.buildShaderProgram(vertShader, fragShader);
                 var myShaderProgram2 = ShaderProgramBuilder.buildShaderProgram(vertShader2, fragShader2);
                 var myShaderProgram3 = ShaderProgramBuilder.buildShaderProgram(vertShader3, fragShader3);
+                var myTextShaderP = ShaderProgramBuilder.buildShaderProgram(textShader_vert, textShader); 
 
                    
                 //TODO default setting for shaderPrograms   
@@ -187,15 +210,19 @@ function init() {
                 object3dCube.setShaderProgram(myShaderProgram2);
                 object3d3.setShaderProgram(myShaderProgram2);
 
-				textUnit.setShaderProgram(myShaderProgram3);
+				textUnit.setShaderProgram(myTextShaderP);
+				textUnit.name = "textUnit";
 				textUnit.cursor.setShaderProgram(myShaderProgram2);
 
 				textUnit.setBitmapFont(text_a,newFont);
-				textUnit.setMaxWidth(60);
+				textUnit.setMaxWidth(20);
 				textUnit.setFontSize(0.7);
 				textUnit.setText("AB");
 				textUnit.cursor.addAnimationMash(myMash);
 				myMash.start();
+				
+				//console.log(myTextShaderP.fragmentShader.parts[0].getParameterById("marked"));
+				myTextShaderP.setParameter(myTextShaderP.fragmentShader.parts[0].getParameterById("marked"), true);
 				
 				//textUnit.children[0].setShaderProgram(myShaderProgram3);
 				//textUnit.children[1].setShaderProgram(myShaderProgram3);
@@ -225,7 +252,7 @@ function init() {
 </script>
 </head>
 <body onload="init()" onkeydown='keyDownCanvas(event);' onkeypress='keyPressCanvas(event);'>
-<canvas id="scene"  onClick='WebGLBase.event.eventOccured("a",event);' width=512 height=512></canvas>
+<canvas id="scene" onmousedown="mouseDownCanvas()" onmouseup="mouseUpCanvas()" onClick='WebGLBase.event.eventOccured("a",event);' width=512 height=512></canvas>
 <button name="Klickmich" type="button"
       value="Überraschung" onclick='WebGLBase.event.eventOccured("moveLeft","blabla");'>
       <p>

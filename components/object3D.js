@@ -13,7 +13,7 @@ function Object3D(gl){
     //this.boundingBox
     //this.lastTranslMatrix
     //this.minPoint;
-    //this.maxPoint;
+    //this.maxPoint; 
     this.boundingNormals = new Array();
     //Front Face
     this.boundingNormals[0] = Vector.create([0,0,1]);
@@ -47,8 +47,12 @@ function Object3D(gl){
 	this.rotation = 0;
 	this.animationspeed = 0;
 	
+	this.partStateCache = new Object();
+}
+
+Object3D.prototype = {	
 	
-	this._rebuildShaderProgram = function(new_parts){
+	_rebuildShaderProgram : function(new_parts){
 		var tmp_vert_parts = new Array();
 		var tmp_frag_parts = new Array();
 		if(new_parts == null) new_parts = new Array();
@@ -78,8 +82,8 @@ function Object3D(gl){
         
         this.setShaderProgram(myShaderProgram, false);   
 		
-	}
-	this.addAnimationMash= function (animation) {
+	},
+	addAnimationMash : function (animation) {
 		if(animation.object != null) throw "This AnimationMash (" + animation.name + ") is already bound to another Object3D (" + animation.object.name + ")";
 		this.animationMashs[animation.name] = animation;
 		animation.object = this;
@@ -90,22 +94,22 @@ function Object3D(gl){
 		}
 		
 		this._rebuildShaderProgram(parts);
-	}
+	},
 	
-	this.removeAnimationMash = function (name) {
+	removeAnimationMash : function (name) {
 		this.animationMashs[name].object = null;
 		delete this.animationMashs[name];
-	}
+	},
 	
-	this.getRunningAnimations = function() {
+	getRunningAnimations : function() {
 		var anis = new Array();
 		for(var i = 0; i<this.animations.length; i++) {
 			if(this.animations[i].state == Animation.STATE_RUNNING) anis.push(this.animations[i]);
 		}
 		return anis;
-	}
+	},
 	
-	this.setShaderProgram = function(program, clone) {
+	setShaderProgram : function(program, clone) {
 		clone = false;
 		this.mvMatrixHasChanged = true;
 		this.perspectiveHasChanged = true;
@@ -117,10 +121,10 @@ function Object3D(gl){
 		}
 		this.shaderProgram.vertexPositionAttribute = this.shaderProgram.gl.getAttribLocation(this.shaderProgram.binary, WebGLBase.stdVertParams["VERTEX_POSITION"].identifier);
     	this.shaderProgram.gl.enableVertexAttribArray(this.shaderProgram.vertexPositionAttribute);     	
-	}
+	},
 	
 	
-	this.addTexture = function(texture, shaderAttrib, samplerID){
+	addTexture : function(texture, shaderAttrib, samplerID){
 		if (this.shaderProgram === null)
 			throw "ConnectWithoutShaderException";
 			
@@ -131,13 +135,13 @@ function Object3D(gl){
         texture.samplerParameter =  samplerPara;
         
         this.textures.push(texture);
-	}
+	},
 	
 	
-	this.rotate = function(degree,axis)
+	rotate : function(degree,axis)
 	{
 		this.rotValue += degree;
-	}
+	},
 
     /*  This method is called, before the object is redrawn.
         This is the place for animation and translation.
@@ -147,7 +151,7 @@ function Object3D(gl){
         objects
     */
 	
-	this.refresh = function(transMat) {
+	refresh : function(transMat) {
 			var aniRotMats = new Array();
 			var aniTransMats = new Array();
 			var aniScaleMats = new Array();
@@ -210,11 +214,11 @@ function Object3D(gl){
 		    }
 			this.refreshPartActivators();
             return this.lastTranslMatrix;
-    }
+    },
     
-    this.partStateCache = new Object();
     
-    this.refreshPartActivators = function() {
+    
+    refreshPartActivators : function() {
     	var act;
     	var part;
     	var cache;
@@ -246,33 +250,33 @@ function Object3D(gl){
     				this.shaderProgram.setParameter(new ShaderParameter("isActive_"+part.id, "bool", "uniform"), part.isActive);
     		}}
 		}
-    }
+   },
 
 	/*  Will let the object rotate with specified angle speed, around the specified axis    
         which must either equal "x","y" or "z"
     */
 
-	this.startRotation = function(speed, axis){
+	startRotation : function(speed, axis){
         this.rotationAxis = axis;		
         this.rotationMatrix = WebGLBase.createRotationMatrix(axis, this.rotValue);
 		this.rotation = true;
 		this.animationspeed = speed;
-	}
+	},
 
     /*  Adds a child to this element in order to be drawn.
         Returns the added object, so the client can manipulate it, if
         necessary       
     */
-    this.add = function(object){
+    add : function(object){
         this.children[this.children.length] = object;
         return object;
-    }
+    },
 
 
     /*  Is called before redraw. Updates the BoundingBoxes of the object
         regarding the childrens boundings.    
     */
-    this.updateBoundingBox = function(gl, shaderProgram){
+    updateBoundingBox : function(gl, shaderProgram){
         
     
         var VMin = $V([5000,5000,5000,1]);

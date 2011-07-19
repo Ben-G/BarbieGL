@@ -97,6 +97,22 @@ WebGLBase.prototype = {
         newObject.buffer.numItems = totalItemSize/3;
         return newObject;
     },
+    createTile: function(polygons, gl){    	
+        var newObject = new Tile();
+        newObject.gl = gl;
+        newObject.buffer.values = gl.createBuffer();
+	    gl.bindBuffer(gl.ARRAY_BUFFER, newObject.buffer.values);
+        var totalItemSize = 0;	
+        for (var i=0; i<polygons.length; i++){
+	        newObject.vertices = newObject.vertices.concat(polygons[i]);
+	        totalItemSize+=polygons[i].length;
+        }
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(newObject.vertices), gl.STATIC_DRAW);
+        newObject.buffer.itemSize = 3;
+        newObject.buffer.numItems = totalItemSize/3;
+        return newObject;
+    },
+    
     createBoundingBox: function(polygons, boundingBox ,gl){
     	if(boundingBox == null){ 
     			return this.createObject3D(polygons, gl);    	  
@@ -226,7 +242,7 @@ function hitTest(x,y, object){
         object.lastHitpoint = hitPoint;
         
         if ( (hitPoint.e(1) > object.minPoint.x && hitPoint.e(1) < object.maxPoint.x) && (hitPoint.e(2) > object.minPoint.y && hitPoint.e(2) < object.maxPoint.y) ){
-            console.log("HIT! Front-Side");
+            //console.log("HIT! Front-Side");
             parentHit = object; 
             break;
         }
@@ -234,7 +250,7 @@ function hitTest(x,y, object){
         hitPoint = WebGLBase.calculateClickVector(x,y, object,3);
 
         if ( (hitPoint.e(3) > object.minPoint.z && hitPoint.e(3) < object.maxPoint.z) && (hitPoint.e(1) > object.minPoint.x && hitPoint.e(1) < object.maxPoint.x) ){
-            console.log("HIT! Bottom-Side");
+            //console.log("HIT! Bottom-Side");
             parentHit = object;
             break;
         }
@@ -242,7 +258,7 @@ function hitTest(x,y, object){
         hitPoint = WebGLBase.calculateClickVector(x,y, object,4);
 
         if ( (hitPoint.e(3) > object.minPoint.z && hitPoint.e(3) < object.maxPoint.z) && (hitPoint.e(2) > object.minPoint.y && hitPoint.e(2) < object.maxPoint.y) ){
-            console.log("HIT! Right-Side");
+            //console.log("HIT! Right-Side");
             parentHit = object;
             break;
         }
@@ -251,7 +267,7 @@ function hitTest(x,y, object){
         hitPoint = WebGLBase.calculateClickVector(x,y, object,5);
 
         if ( (hitPoint.e(3) > object.minPoint.z && hitPoint.e(3) < object.maxPoint.z) && (hitPoint.e(2) > object.minPoint.y && hitPoint.e(2) < object.maxPoint.y) ){
-            console.log("HIT! Left-Side");
+            //console.log("HIT! Left-Side"); 
             parentHit = object;
             break;
         }

@@ -9,7 +9,7 @@ var last_frame = 0;
 var fpsUpdateTime = 500;
 var fpsFramesTime = 0;
 var fpsFramesCount = 0;
-
+blah = false;
 
 Drawer.prototype = {
      startDrawing: function(object){
@@ -58,10 +58,9 @@ Drawer.prototype = {
     	//console.log("Frame:" + (new Date().getTime() - last_frame) + " ms");
     },
     drawElement: function(obj, gl, shaderProgram, transMat){
-    	//aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
     	gl.useProgram(shaderProgram.binary);
     	var translationMat = obj.refresh(transMat);	
-    	
+
     	if(obj.visible) {
 	    	if (obj.buffer.itemSize != null) {
 	    		//console.log(obj.name, shaderProgram);
@@ -84,6 +83,7 @@ Drawer.prototype = {
 			    }
 			    // DEBUGGING OUTPUT for webgl inspector
 			    //gl.getUniformLocation(shaderProgram.binary, "drawing " + obj.name);
+
 			    gl.drawArrays(gl.TRIANGLES, 0, obj.buffer.numItems);
 	        }
        }
@@ -108,3 +108,4 @@ Drawer.prototype = {
         
     }
 }
+
