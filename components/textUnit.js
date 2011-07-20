@@ -108,19 +108,28 @@ extend(TextUnit, Object3D);
 		//is called if any of the tiles is beeing clicked
 		var closure = this;
 		tile.clicked =  function(){
-			closure.moveCursorToTile(this.stringPositionId);
 		};
 		tile.mouseDown = function(){
 			closure.selectionIndexStart = this.stringPositionId;
-
+			for (var i=0; i<=closure.text.length-1;i++){
+				closure.tiles[i].marked = false;		
+				console.log("delte");
+			}
 		};
 		tile.mouseUp = function(){
 			closure.selectionIndexEnd = this.stringPositionId;
-			if (closure.selectionIndexStart == closure.selectionIndexEnd)
+			if (closure.selectionIndexStart == closure.selectionIndexEnd){
 				copiedText = "";
-			else
-				var copiedText = closure.text.substring(closure.selectionIndexStart, closure.selectionIndexEnd+1);  
-			
+				closure.moveCursorToTile(this.stringPositionId);
+			}
+
+				else{
+					var copiedText = closure.text.substring(closure.selectionIndexStart, closure.selectionIndexEnd+1);  
+					for (var i=closure.selectionIndexStart; i <= closure.selectionIndexEnd; i++){
+					closure.tiles[i].marked = true;
+					closure.moveCursorToTile(closure.selectionIndexEnd+1);
+				}
+			}
 			console.log(closure.selectionIndexStart+":"+closure.selectionIndexEnd+":"+copiedText);
 		};
 	}
@@ -160,9 +169,11 @@ extend(TextUnit, Object3D);
 		this.fontSize = fontSize;
 	}
 	TextUnit.prototype.deleteLetterAt = function(positionID){
+		if (positionID >= 0){ 
 			var newText = this.text.substring(0, positionID)+this.text.substring(positionID+1, this.text.length);
 			this.setText(newText);
-			this.moveCursorToTile(positionID);	
+		    this.moveCursorToTile(positionID);	
+		}
 	}
 	TextUnit.prototype.insertLetterAt = function(positionID,charCode){
 				var letter = String.fromCharCode(charCode);
@@ -178,11 +189,13 @@ extend(TextUnit, Object3D);
 			this.cursor.yOffset = tile.currentyOffset;
 			this.cursor.positionId = tile.stringPositionId;		
 		}
-		if (tileId == this.text.length && this.text.length != 0){
+		console.log(tileId+":"+this.text.length);
+		if ( tileId == this.text.length && this.text.length != 0){
 			//move cursor to position right of the last letter
 			this.cursor.xOffset = this.tiles[tileId-1].currentxOffset + this.tiles[tileId-1].xadvance;
 			this.cursor.yOffset = this.tiles[tileId-1].currentyOffset;
 			this.cursor.positionId = tileId;
+			console.log("movetoback");
 		}
 	}
 	TextUnit.prototype.moveCursorRight = function(){
