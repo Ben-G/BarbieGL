@@ -12,6 +12,14 @@ function extend(subClass, superClass)
 	}
 }
 
+//Function providing inheritance capabilities to JS-Objects
+function extend2(subClass, superClass)
+{
+	subClass.prototype = new superClass();
+	subClass.superClass = superClass;
+}
+
+
 function deferredLoadFile(fileUrl){
     var d = new Deferrable();
 

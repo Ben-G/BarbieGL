@@ -134,9 +134,6 @@ Animation.prototype = {
 		}
 		return null;
 	},
-	katze: function() {
-		console.log("superClass");
-	},
 	_activateParts: function() {
 		for(var i=0;i<this.parts.length;i++) {
 			this.parts[i].isActive = true;
@@ -345,10 +342,7 @@ TranslationAnimation.prototype._calculateTranslationVector = function() {
 	return AnimationUtilities.calculateLinearValues(this.start_offset, this.end_offset, this.time_elapsed, this.duration);
 }
 
-TranslationAnimation.prototype.katze = function() {
-	Animation.prototype.katze.call(this);
-	console.log("subClass");
-}
+
 
 TranslationAnimation.prototype.setNewEnd = function(newEndVector) {
 		curPositionVector = this._calculatePosition(this.start_offset, this.end_offset, this.time_elapsed, this.duration);
@@ -357,7 +351,6 @@ TranslationAnimation.prototype.setNewEnd = function(newEndVector) {
 }
 TranslationAnimation.prototype._refreshValues = function(obj, context) {
 	 	this.current_offset = this._calculateTranslationVector();
-		this.katze();
 		this.translationMatrix = this._calculateTranslationMatrix(this.current_offset);
 }
 

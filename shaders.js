@@ -525,7 +525,7 @@ ShaderProgram.prototype = {
 				}
 			break;
 			}		
-			case "bool": {
+			case "bool": {			
 				switch(para.modifier) {
 					case "uniform": {
 						this.gl.uniform1i(location, value);
@@ -678,7 +678,6 @@ ShaderPart.prototype = {
 				return p;
 			}
 		}
-		console.log(this);
 		return null;
 	},
 	getParameterSrc: function() {

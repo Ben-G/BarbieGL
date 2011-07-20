@@ -234,6 +234,7 @@
 					area.add(minimize);
 
 					myRoot.add(area);
+					
 
 					area.zOffset = -45;
 					area.addAnimationMash(mash3);
@@ -333,6 +334,23 @@
 					//area.animationMashs[effect].pause();
 				}
 			}
+			
+			
+		
+Katze = function() {
+	Object3D.call(this);
+}
+
+Katze.prototype = new Object3D();
+
+Katze.prototype.refresh = function() {
+	this.shaderProgram = myShaderProgram3;
+	Object3D.prototype.refresh.call(this);
+	console.log("sub");
+}
+
+var a = new Katze();
+
 		</script>
 	</head>
 	<body onload="init()">

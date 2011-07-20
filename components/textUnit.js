@@ -15,6 +15,8 @@ function TextUnit(gl){
 	this.fontSize = 1;
 	this.text = "";
 	this.tiles = new Object();
+	this.selectionIndexStart;
+	this.selectionIndexEnd;
 	
     var cursorRect = new Array();
     cursorRect[0] = createRectangle(new Point3D(-0.05,-1,1), new Point3D(0.05,-1,1), new Point3D(0.05,0,1), new Point3D(-0.05,0,1));
@@ -22,15 +24,14 @@ function TextUnit(gl){
     this.add(this.cursor);
 }
 
-extend(TextUnit, Object3D);
+extend(TextUnit, Object3D); 
 
-TextUnit.prototype = {
-	/**
+/**
  	* This method uses the letter information received from a data format to create a suitable tile for a letter and
  	* stretching a texture onto this tile as described in the delivered textureCoordBuffer.
  	* It adds a letter to the textUnit, visually and in the data structure.
  	*/
-	addLetter: function(letter){
+	TextUnit.prototype.addLetter = function(letter){
 				
 		if (letter.charCodeAt(0) == 13){
 			this.newline();
@@ -50,9 +51,9 @@ TextUnit.prototype = {
     		new Point3D(letterInfo.width/this.minSize,-letterInfo.height/this.minSize,1), 
     		new Point3D(letterInfo.width/this.minSize,0,1), new Point3D(0,0,1)); 	
     		
-    		
-    	var tile = WebGLBase.createObject3D(triangles2, this.gl);
-
+    		 
+    	var tile = WebGLBase.createTile(triangles2, this.gl);
+ 
     	//Create and fill a textureCoordBuffer
     	tile.texBuffer = new Object();
 		tile.texBuffer.values = this.gl.createBuffer();
@@ -91,7 +92,7 @@ TextUnit.prototype = {
 		//this.cursor.yOffset = this.currentyOffset;
 		
 		
-		
+		 
 		this.add(tile);	
 		this.text+=letter;
 		tile.stringPositionId = this.text.length - 1;
@@ -109,13 +110,26 @@ TextUnit.prototype = {
 		tile.clicked =  function(){
 			closure.moveCursorToTile(this.stringPositionId);
 		};
-	},
+		tile.mouseDown = function(){
+			closure.selectionIndexStart = this.stringPositionId;
+
+		};
+		tile.mouseUp = function(){
+			closure.selectionIndexEnd = this.stringPositionId;
+			if (closure.selectionIndexStart == closure.selectionIndexEnd)
+				copiedText = "";
+			else
+				var copiedText = closure.text.substring(closure.selectionIndexStart, closure.selectionIndexEnd+1);  
+			
+			console.log(closure.selectionIndexStart+":"+closure.selectionIndexEnd+":"+copiedText);
+		};
+	}
 	/**
 	 * Method to set the content of the textUnit.
 	 * Resets the content and then adds all letters passed in 
 	 * iterative.
 	 */
-	setText: function(text){
+	TextUnit.prototype.setText = function(text){
 		this.children = new Array();
 		this.letters = new Array();
 		this.tiles = new Object();
@@ -130,34 +144,34 @@ TextUnit.prototype = {
 		}
 		this.add(this.cursor);
 		this.moveCursorToTile(this.text.length);
-	},
+	}
 	/**
 	 * Sets the bitmapFont(Texture) which shall be used to create
 	 * the letter tiles
 	 */
-	setBitmapFont: function(bitmapFont,bitmapFontDescriptor){
+	TextUnit.prototype.setBitmapFont = function(bitmapFont,bitmapFontDescriptor){
 		this.bitmapFont = bitmapFont;
 		this.bitmapFontDescriptor = bitmapFontDescriptor;
-	},
-	setMaxWidth: function(maxWidth){
+	}
+	TextUnit.prototype.setMaxWidth = function(maxWidth){
 		this.maxWidth = maxWidth;
-	},
-	setFontSize: function(fontSize){
+	}
+	TextUnit.prototype.setFontSize = function(fontSize){
 		this.fontSize = fontSize;
-	},
-	deleteLetterAt: function(positionID){
+	}
+	TextUnit.prototype.deleteLetterAt = function(positionID){
 			var newText = this.text.substring(0, positionID)+this.text.substring(positionID+1, this.text.length);
 			this.setText(newText);
 			this.moveCursorToTile(positionID);	
-	},
-	insertLetterAt: function(positionID,charCode){
+	}
+	TextUnit.prototype.insertLetterAt = function(positionID,charCode){
 				var letter = String.fromCharCode(charCode);
 				var newText = this.text.substring(0, positionID)+letter+this.text.substring(positionID, this.text.length);
 				this.setText(newText);
 				this.moveCursorToTile(positionID+1);				
-	},
+	}
 
-	moveCursorToTile: function(tileId){
+	TextUnit.prototype.moveCursorToTile = function(tileId){
 		var tile = this.tiles[tileId];	
 		if (tile != null){	
 			this.cursor.xOffset = tile.currentxOffset;
@@ -170,15 +184,16 @@ TextUnit.prototype = {
 			this.cursor.yOffset = this.tiles[tileId-1].currentyOffset;
 			this.cursor.positionId = tileId;
 		}
-	},
-	moveCursorRight: function(){
+	}
+	TextUnit.prototype.moveCursorRight = function(){
 		this.moveCursorToTile(this.cursor.positionId+1);
-	},
-	moveCursorLeft: function(){
+	}
+	TextUnit.prototype.moveCursorLeft = function(){
 		this.moveCursorToTile(this.cursor.positionId-1);
-	},
-	newline: function(){
+	}
+	TextUnit.prototype.newline = function(){
 		this.currentxOffset = 0;
 		this.currentyOffset -= this.bitmapFontDescriptor.lineHeight/this.minSize;
 	}
-}
+	
+
