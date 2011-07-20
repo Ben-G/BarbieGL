@@ -1,12 +1,12 @@
 function Tile(gl){
-	Tile.superclass.constructor.call(this,gl);
+	Tile.superclass.constructor.call(this, gl);
 }
 
 extend(Tile, Object3D);
-
-	/*Tile.prototype.refresh = function(transMat){
-		Object3D.prototype.refresh.call(this,transMat);
+/*
+	Tile.prototype.refresh = function(transMat){
+		Tile.superclass.refresh(transMat);
 		console.log("extend :D");
-	}*/
-	
+	}
+	*/
 	
