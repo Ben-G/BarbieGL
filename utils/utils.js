@@ -12,6 +12,14 @@ function extend(subClass, superClass)
 	}
 }
 
+//Function providing inheritance capabilities to JS-Objects
+function extend2(subClass, superClass)
+{
+	subClass.prototype = new superClass();
+	subClass.superClass = superClass;
+}
+
+
 function deferredLoadFile(fileUrl){
     var d = new Deferrable();
 
@@ -91,6 +99,13 @@ function Deferrable(){
     this.data;
     this.returnedValues = new Array();
 }
+
+function round(zahl,n_stelle){   
+   zahl = Math.round(zahl * n_stelle) / n_stelle;
+   
+   return zahl;
+}
+
 
 Deferrable.prototype = {
 
@@ -286,4 +301,10 @@ function getDoubleIdentifiers(parameters) {
 }
 
 
-
+function factorial(number) {
+	var sum = 1;
+	for(var i = number; i>0; i--) {
+		sum*=i;
+	}
+	return sum;
+}

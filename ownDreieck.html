@@ -175,7 +175,7 @@ function init() {
                     triangle4.zOffset = -30;
                     triangle4.startRotation(2,"y");
                 });
-    myDefs.push( AnimationMashFactory.createBlinkAnimation(Vector.create([0,-1,0,0]), 300).addCallback( 
+    myDefs.push( AnimationMashFactory.createBlinkAnimation(Vector.create([0,0,0,-1]), 300).addCallback( 
     		function(data){
     			myMash = data;
     			myMash.connectSuccessor(myMash._animations[1], myMash._animations[0]);
@@ -215,6 +215,7 @@ function init() {
 				textUnit.cursor.setShaderProgram(myShaderProgram2);
 
 				textUnit.setBitmapFont(text_a,newFont);
+				textUnit.setMaxWidth(5);
 				textUnit.setMaxWidth(20);
 				textUnit.setFontSize(0.7);
 				textUnit.setText("AB");
