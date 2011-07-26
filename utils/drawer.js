@@ -4,6 +4,8 @@ function Drawer(){
     //this.currentShaderProgram
     this.shaders = new Array();
     this.fpsLimit = 60;
+    this.rootElement;
+    this.drawables = new Array();
 }
 var last_frame = 0;
 var fpsUpdateTime = 500;
@@ -43,6 +45,8 @@ Drawer.prototype = {
     	
     	this.currentGl.clear(this.currentGl.COLOR_BUFFER_BIT | this.currentGl.DEPTH_BUFFER_BIT);
     	this.currentShaderProgram = this.currentObject.shaderProgram;
+    	this.rootElement = this.currentObject;
+    	this.drawables = new Array();
     	this.drawElement(this.currentObject, this.currentGl, this.currentShaderProgram);
     	if(fpsFramesTime > fpsUpdateTime) {
     		var div = document.getElementById("fps");
@@ -58,10 +62,53 @@ Drawer.prototype = {
     	//console.log("Frame:" + (new Date().getTime() - last_frame) + " ms");
     },
     drawElement: function(obj, gl, shaderProgram, transMat){
+    	shaderProgram = obj.shaderProgram;
     	gl.useProgram(shaderProgram.binary);
     	var translationMat = obj.refresh(transMat);	
 
+    	
+        //console.log("  " +   obj.name + " " + (new Date().getTime() - anfang) + " ms");
+        if (obj.children.length > 0){
+            for (var i=0; i<obj.children.length;i++){
+            	 this.currentShaderProgram = obj.children[i].shaderProgram;
+                 this.drawElement(obj.children[i],gl,this.currentShaderProgram, translationMat);
+                
+            }
+        }
+        
+        //this.drawObject(obj,gl,shaderProgram);
+        if (obj != this.rootElement){
+        	this.drawables.push(obj);
+        }else{
+        	//sort elements by z-value to ensure correct transparency calculation	
+
+       		this.drawables.sort(zSort);
+
+        	for (var i=0; i < this.drawables.length; i++){
+        		this.drawObject(this.drawables[i],gl,shaderProgram);
+        	}
+        }
+       
+        
+       	//gl.useProgram(shaderProgram.binary);
+        obj.updateBoundingBox(gl, shaderProgram);
+        
+        //console.log(obj.name + " " + (new Date().getTime() - anfang) + " ms");
+        /*gl.bindBuffer(gl.ARRAY_BUFFER, obj.boundingBox.buffer.values);
+        gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, obj.boundingBox.buffer.itemSize, gl.FLOAT, false, 0, 0);
+        gl.drawArrays(gl.LINE_LOOP, 0, obj.boundingBox.buffer.numItems);   
+        */
+       
+        
+    },
+    drawObject: function(obj,gl,shaderProgram){
+    	var gl = obj.gl;
+    	var shaderProgram = obj.shaderProgram;
+    	gl.useProgram(shaderProgram.binary);
+
+    	
     	if(obj.visible) {
+    		obj.prepareDrawing();
 	    	if (obj.buffer.itemSize != null) {
 	    		//console.log(obj.name, shaderProgram);
 	    		if(obj.perspectiveHasChanged) {
@@ -69,7 +116,7 @@ Drawer.prototype = {
 					obj.perspectiveHasChanged = false;
 				}
 				//if(obj.mvMatrixHasChanged) {
-					shaderProgram.setParameter(WebGLBase.stdVertParams["MV_MATRIX"], new Float32Array(translationMat.flatten()));
+					shaderProgram.setParameter(WebGLBase.stdVertParams["MV_MATRIX"], new Float32Array(obj.lastTranslMatrix.flatten()));
 					obj.mvMatrixHasChanged = false;
 				//}
 				//if(obj.vertexPositionsHaveChanged) {
@@ -87,25 +134,6 @@ Drawer.prototype = {
 			    gl.drawArrays(gl.TRIANGLES, 0, obj.buffer.numItems);
 	        }
        }
-        //console.log("  " +   obj.name + " " + (new Date().getTime() - anfang) + " ms");
-        if (obj.children.length > 0){
-            for (var i=0; i<obj.children.length;i++){
-            	 this.currentShaderProgram = obj.children[i].shaderProgram;
-                 this.drawElement(obj.children[i],gl,this.currentShaderProgram, translationMat);
-                
-            }
-        }
-        
-       	//gl.useProgram(shaderProgram.binary);
-        obj.updateBoundingBox(gl, shaderProgram);
-        
-        //console.log(obj.name + " " + (new Date().getTime() - anfang) + " ms");
-        /*gl.bindBuffer(gl.ARRAY_BUFFER, obj.boundingBox.buffer.values);
-        gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, obj.boundingBox.buffer.itemSize, gl.FLOAT, false, 0, 0);
-        gl.drawArrays(gl.LINE_LOOP, 0, obj.boundingBox.buffer.numItems);   
-        */
-       
-        
     }
 }
 

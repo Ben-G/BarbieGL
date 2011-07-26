@@ -308,3 +308,11 @@ function factorial(number) {
 	}
 	return sum;
 }
+
+function zSort(object3D1, object3D2){
+	if (object3D1.minPoint.z > object3D2.minPoint.z)
+		return -1;
+	if (object3D1.minPoint.z < object3D2.minPoint.z)
+		return +1;
+			
+}

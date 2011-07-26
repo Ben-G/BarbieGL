@@ -355,4 +355,7 @@ Object3D.prototype = {
         
        //var mvUniform = gl.getUniformLocation(shaderProgram.binary, "uMVMatrix");
        //gl.uniformMatrix4fv(mvUniform, false, new Float32Array(Matrix.I(4).flatten()));
+    },
+    prepareDrawing: function(){
+    	
     }}

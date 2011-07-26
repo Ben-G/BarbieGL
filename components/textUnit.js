@@ -5,23 +5,39 @@
  * letters to a block of text
  */
 
-function TextUnit(gl){
+function TextUnit(gl,maxWidth,maxHeight){
 	TextUnit.superclass.constructor.call(this,gl);
 	this.gl = gl;
 	this.letters = new Array();
 	this.currentxOffset = 0;
 	this.currentyOffset = 0;
-	this.maxWidth = 0;
+	this.maxWidth = maxWidth;
+	this.maxHeight = maxHeight;
 	this.fontSize = 1;
 	this.text = "";
 	this.tiles = new Object();
 	this.selectionIndexStart;
 	this.selectionIndexEnd;
+	//boolean this.focused
 	
-    var cursorRect = new Array();
-    cursorRect[0] = createRectangle(new Point3D(-0.05,-1,1), new Point3D(0.05,-1,1), new Point3D(0.05,0,1), new Point3D(-0.05,0,1));
-    this.cursor = WebGLBase.createObject3D(cursorRect, this.gl);
-    this.add(this.cursor);
+   
+	this.createCursor();
+    
+    var backField = new Array();
+    backField[0] = createRectangle(new Point3D(0,-this.maxHeight,0.95), new Point3D(this.maxWidth,-this.maxHeight,0.95), new Point3D(this.maxWidth,0,0.95), new Point3D(0,0,0.95));
+    //backField[0] = createRectangle(new Point3D(-5,-5,1), new Point3D(5,-5,1), new Point3D(5,5,1), new Point3D(-5,5,1));
+
+    this.backgroundField = WebGLBase.createObject3D(backField, this.gl);
+    //otherwise component has cursor by default
+    this.lostFocus();
+    
+    var closure = this;
+    
+    this.backgroundField.clicked = function(){
+		WebGLBase.UIDelegate.reportFocus(closure);
+	}
+    //this.add(this.cursor);
+    //this.add(this.backgroundField);
 }
 
 extend(TextUnit, Object3D); 
@@ -37,7 +53,7 @@ extend(TextUnit, Object3D);
 			this.newline();
 		}
 		
-		this.minSize=96;
+		this.minSize=96-this.fontSize;
 		//Array for vertice collection
 		var triangles2 = new Array();
 		//Metainformation and textureCoordBuffer for a given letter
@@ -115,6 +131,7 @@ extend(TextUnit, Object3D);
 				closure.tiles[i].marked = false;		
 				console.log("delte");
 			}
+			WebGLBase.UIDelegate.reportFocus(closure);
 		};
 		tile.mouseUp = function(){
 			closure.selectionIndexEnd = this.stringPositionId;
@@ -124,6 +141,14 @@ extend(TextUnit, Object3D);
 			}
 
 				else{
+					
+					if (closure.selectionIndexStart > closure.selectionIndexEnd){
+						var temp = closure.selectionIndexStart;
+						closure.selectionIndexStart = closure.selectionIndexEnd;
+						closure.selectionIndexEnd = temp;
+					}
+					
+					
 					var copiedText = closure.text.substring(closure.selectionIndexStart, closure.selectionIndexEnd+1);  
 					for (var i=closure.selectionIndexStart; i <= closure.selectionIndexEnd; i++){
 					closure.tiles[i].marked = true;
@@ -132,6 +157,35 @@ extend(TextUnit, Object3D);
 			}
 			console.log(closure.selectionIndexStart+":"+closure.selectionIndexEnd+":"+copiedText);
 		};
+	}
+	
+	TextUnit.prototype.receivedFocus = function(){
+		this.focused = true;
+		this.cursor.visible = true;
+	}
+	
+	TextUnit.prototype.lostFocus = function(){
+		this.focused = false;
+		this.cursor.visible = false;
+	}
+	
+	TextUnit.prototype.onKeyDown = function(){
+		if (event.keyCode == 46){
+			this.deleteLetterAt(this.cursor.positionId);
+		}
+		if (event.keyCode == 8){
+			this.deleteLetterAt(this.cursor.positionId-1);
+		}
+		if (event.keyCode == 39){ 
+			this.moveCursorRight();
+		}
+		if (event.keyCode == 37){
+			this.moveCursorLeft(); 
+		}
+	}
+	
+	TextUnit.prototype.onKeyPress = function(){
+		this.insertLetterAt(this.cursor.positionId,event.keyCode);
 	}
 	/**
 	 * Method to set the content of the textUnit.
@@ -148,10 +202,15 @@ extend(TextUnit, Object3D);
 		this.cursor.yOffset = 0;
 		this.text = "";
 		
+		
+		
 		for (var i = 0; i<text.length; i++){
 			this.addLetter(text[i]);
 		}
+		//cursor needs to be readded, because all children are deleted
+		//this.createCursor();
 		this.add(this.cursor);
+		this.add(this.backgroundField);
 		this.moveCursorToTile(this.text.length);
 	}
 	/**
@@ -164,6 +223,9 @@ extend(TextUnit, Object3D);
 	}
 	TextUnit.prototype.setMaxWidth = function(maxWidth){
 		this.maxWidth = maxWidth;
+	}
+	TextUnit.prototype.setMaxHeight = function(maxHeight){
+		this.maxHeight = maxHeight;
 	}
 	TextUnit.prototype.setFontSize = function(fontSize){
 		this.fontSize = fontSize;
@@ -208,5 +270,18 @@ extend(TextUnit, Object3D);
 		this.currentxOffset = 0;
 		this.currentyOffset -= this.bitmapFontDescriptor.lineHeight/this.minSize;
 	}
+	TextUnit.prototype.createCursor = function(){
+		
+		//shaderProgram needs to be loaded and set here!
+		
+		var cursorRect = new Array();
+    	cursorRect[0] = createRectangle(new Point3D((-0.05/96)*(96-this.fontSize),(-1/96)*(96-this.fontSize),1), 
+    	new Point3D((0.05/96)*(96/this.fontSize),(-1/96)*(96/this.fontSize),1), 
+    	new Point3D((0.05/96)*(96/this.fontSize),(0/96)*(96/this.fontSize),1), 
+    	new Point3D((-0.05/96)*(96/this.fontSize),(0/96)*(96/this.fontSize),1));
+    	   
+    	this.cursor = WebGLBase.createObject3D(cursorRect, this.gl);
+	}
+	
 	
 
