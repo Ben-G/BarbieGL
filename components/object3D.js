@@ -1,4 +1,5 @@
 function Object3D(gl){
+	asMaterial.call(Object3D.prototype);
 	this.gl = gl;
 	this.buffer = new Object();
 	this.texBuffer = null;
@@ -10,6 +11,7 @@ function Object3D(gl){
     this.perspectiveHasChanged = true;
     this.mvMatrixHasChanged = true;
     this.vertexPositionsHaveChanged = true;
+    this.parent = null;
     //this.boundingBox
     //this.lastTranslMatrix
     //this.minPoint;
@@ -269,7 +271,20 @@ Object3D.prototype = {
     */
     add : function(object){
         this.children[this.children.length] = object;
+        object.parent = this;
         return object;
+    },
+    
+    /**
+     * @method getAllLights
+     * @return all lights affecting this object, including lights of its parents
+     */
+    getAllLights : function() {
+    	var par = new Array();
+    	if(this.parent != null) {
+    		par = this.parent.getAllLights();
+    	}
+    	return par.concat(this.lights)
     },
 
 
