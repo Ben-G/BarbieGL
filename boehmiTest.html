@@ -59,7 +59,7 @@
 				myDefs[0] = WebGLBase.shaderPartFactory.createFromName("vertshader_texture").addCallback( function(data) {
 					myShaders[0] = data;
 				});
-				myDefs[1] = WebGLBase.shaderPartFactory.createFromName("fragshader_benji").addCallback( function(data) {
+				myDefs[1] = WebGLBase.shaderPartFactory.createFromName2("benji", Shader.TYPE_FRAGMENT_SHADER).addCallback( function(data) {
 					myShaders[1] = data;
 				});
 				myDefs[2] = WebGLBase.shaderPartFactory.createFromName("vertshader_benji").addCallback( function(data) {
@@ -172,9 +172,6 @@
 				path.addPoint(Vector.create([-10,0,0]));
 				path.addPoint(Vector.create([-10,-10,0]));
 				path.addPoint(Vector.create([0,-10,0]));
-				//path.addPoint(Vector.create([20,-10,0]));
-				//path.addPoint(Vector.create([-20,20,0]));
-				//path.addPoint(Vector.create([20,-20,0]));
 				
 				mash7 = new AnimationMash();
 				aniassss = new BezierTranslationAnimation(Animation.TYPE_ENDLESS, "bez", path.getBezierCurve());
@@ -187,6 +184,12 @@
 				myDefs[myDefs.length-1].addCallback( function(data) {
 					mash6 = data;
 					mash6.name = "path";
+				});
+				
+				myDefs.push(ShaderProgramBuilder.buildShaderProgramFromName("benji", myGl));
+				myDefs[myDefs.length-1].addCallback( function(data) {
+					program_test = data;
+					console.log(data);
 				});
 
 				//myDefs.push();
@@ -244,7 +247,7 @@
 
 					myRoot.setShaderProgram(myShaderProgram2);
 					myRoot.name = "root";
-					triangle.setShaderProgram(myShaderProgram);
+					triangle.setShaderProgram(program_test);
 					triangle.name = "triangle";
 					triangle.visible = false;
 					triangle2.setShaderProgram(myShaderProgram3);
@@ -335,21 +338,7 @@
 				}
 			}
 			
-			
-		
-Katze = function() {
-	Object3D.call(this);
-}
 
-Katze.prototype = new Object3D();
-
-Katze.prototype.refresh = function() {
-	this.shaderProgram = myShaderProgram3;
-	Object3D.prototype.refresh.call(this);
-	console.log("sub");
-}
-
-var a = new Katze();
 
 		</script>
 	</head>

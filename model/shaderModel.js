@@ -36,6 +36,28 @@ ShaderPartFactory.prototype = {
                 return d;
             }
     },
+    createFromName2: function(name, type) {
+    	var closure = this;
+    	var typestr = "vert";
+    	if(type == Shader.TYPE_FRAGMENT_SHADER)  typestr = "frag";
+    	else if(type == null) throw "must specify a shader type";
+    	
+    	var def_final = new Deferrable();
+    	var def_load_source = deferredLoadFile("shaders/src/"+name+"."+typestr+".glsl");
+    	def_load_source.addCallback(function(src) {
+    		if(src == null) throw new "Could not find shader part of that name or type: " + name + " " + typestr;
+    		var part = new ShaderPart(src);
+
+    		part.name = name;
+    		if(ShaderPartCount[part.name] == null) ShaderPartCount[part.name] = 0;
+    		part.id = part.name + ShaderPartCount[part.name]++;
+    		part.type = type
+    		
+    		closure._addToCache(part.name,part);
+    		def_final.callback(part); 
+    	});
+    	return def_final;
+    },
     createFromJSON: function(json, shaderName) {
     	var closure = this;
     	var def_final = new Deferrable();

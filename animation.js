@@ -176,7 +176,9 @@ Animation.prototype = {
 		}
 	},
 	_refreshValues: function(obj, context) {
-
+		
+	},
+	_blah: function(obj) {
 	},
 	_passParameters: function(shaderProgram) {
 		

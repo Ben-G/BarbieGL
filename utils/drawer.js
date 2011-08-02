@@ -76,7 +76,7 @@ Drawer.prototype = {
 					shaderProgram.setBuffer(WebGLBase.stdVertParams["VERTEX_POSITION"], obj.buffer, new Float32Array(obj.vertices));
 					obj.vertexPositionsHaveChanged = false;
 				//}
-			    if (obj.texBuffer != null){
+			    if (obj.texBuffer != null) {
 			    	//obj has a texture in use COMMIT TEST
 			    	//request texture to be hold in place by textureModel
 			    	TextureModel.activate(obj);      	              	
