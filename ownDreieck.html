@@ -15,10 +15,14 @@
 <script type="text/javascript" src="utils/sylvester.js"></script> 
 <script type="text/javascript" src="utils/GlUtils.js"></script>
 <script type="text/javascript" src="utils/shapeFactory.js"></script>  
+<script type="text/javascript" src="mixins/TextFieldMixin.js"></script>  
 <script type="text/javascript" src="skeleton.js"></script>
 <script type="text/javascript" src="components/object3D.js"></script>
 <script type="text/javascript" src="components/texture.js"></script>
 <script type="text/javascript" src="components/textUnit.js"></script>
+<script type="text/javascript" src="components/scrollableTextUnit.js"></script>
+<script type="text/javascript" src="components/label.js"></script>
+<script type="text/javascript" src="components/button.js"></script>
 <script type="text/javascript" src="components/tile.js"></script>
 <script type="text/javascript" src="text/bmFont.js"></script>
 <script type="text/javascript" src="animation.js"></script>
@@ -31,7 +35,7 @@ function init() {
     object3d = new Array();
     
  	var myGl = WebGLBase.initGL(document.getElementById("scene"));
- 	var myUI = new WebGLBase_UI(document.getElementById("scene"),document.getElementById("body"));
+ 	var myUI = new WebGLBase_UI(document.getElementById("scene"),document.getElementById("body"),myGl);
  	WebGLBase.UIDelegate = myUI;
  	
  	
@@ -66,8 +70,7 @@ function init() {
     var object3dCube = WebGLBase.createObject3D(triangles, myGl);
     
     
-    textUnit = new TextUnit(myGl, 20, 10); 
-    textUnit2 = new TextUnit(myGl, 10, 5);
+
 
 	
 	var myTexture = WebGLBase.textureModel.find("texpyra.jpg", myGl);
@@ -95,14 +98,10 @@ function init() {
                     object3dCube.xOffset = -5;
                     object3dCube.yOffset = -5;
                     myRoot.add(object3d3);
-                    myRoot.add(textUnit);
-                    myRoot.add(textUnit2);
-                    textUnit.zOffset = -30; 
-                    textUnit.xOffset = -10;
+
                     
-                    textUnit2.zOffset = -35;
-                    textUnit2.yOffset = 8;
-                    
+                   
+                                    
                     object3d3.yOffset = 4;
                     object3d3.xOffset = 10;
                     object3d3.zOffset = -40;
@@ -153,18 +152,13 @@ function init() {
                     triangle4.zOffset = -30;
                     triangle4.startRotation(2,"y");
                 });
-    myDefs.push( AnimationMashFactory.createBlinkAnimation(Vector.create([0,0,0,-1]), 300).addCallback( 
-    		function(data){
-    			myMash = data;
-    			myMash.connectSuccessor(myMash._animations[1], myMash._animations[0]);
-    			
-    		}
-    ));      
+    
+    myDefs.push(WebGLBase.UIDelegate.init());
     
     def.finalCallback(function(){ 
     	
-
-				var vertShader = ShaderBuilder.buildDefaultShader(Shader.TYPE_VERTEX_SHADER, myGl);
+    	
+    			var vertShader = ShaderBuilder.buildDefaultShader(Shader.TYPE_VERTEX_SHADER, myGl);
                 var fragShader = ShaderBuilder.buildShaderFromParts(new Array(myShaders[1]), Shader.TYPE_FRAGMENT_SHADER, myGl);
                 var vertShader2 = ShaderBuilder.buildDefaultShader(Shader.TYPE_VERTEX_SHADER, myGl);
                 var fragShader2 = ShaderBuilder.buildShaderFromParts(new Array(myShaders2[1]), Shader.TYPE_FRAGMENT_SHADER, myGl);
@@ -178,6 +172,42 @@ function init() {
                 var myShaderProgram2 = ShaderProgramBuilder.buildShaderProgram(vertShader2, fragShader2);
                 var myShaderProgram3 = ShaderProgramBuilder.buildShaderProgram(vertShader3, fragShader3);
                 var myTextShaderP = ShaderProgramBuilder.buildShaderProgram(textShader_vert, textShader); 
+    	
+    	
+    			WebGLBase.UIDelegate.ButtonShaderText = myTextShaderP; 
+				WebGLBase.UIDelegate.ButtonShaderBack = myShaderProgram2;
+				WebGLBase.UIDelegate.bmFontTexture = text_a;
+				WebGLBase.UIDelegate.bmFontDescriptor = newFont;
+				
+    	
+    	    	textUnit = new TextUnit(myGl, 20, 10); 
+    			textUnit2 = new ScrollableTextUnit(myGl, 10, 5);
+    			myLabel = new Label(myGl,10,5);
+    			myButton = new BarbieButton(myGl,2.3,1);
+    			
+    			console.log(textUnit2);
+    			
+    			myRoot.add(textUnit);
+                myRoot.add(textUnit2);
+                myRoot.add(myLabel);
+                myRoot.add(myButton);
+    
+     			textUnit.zOffset = -30; 
+                textUnit.xOffset = -10;
+                    
+                textUnit2.zOffset = -35;
+                textUnit2.yOffset = 8;
+                    
+                myLabel.zOffset = -30;
+                myLabel.xOffset = -11;
+                myLabel.yOffset = 8;
+                
+                myButton.zOffset = -30;
+                myButton.xOffset = 9;
+                myButton.yOffset = 9;
+                   
+
+				
 
                    
                 //TODO default setting for shaderPrograms   
@@ -191,25 +221,46 @@ function init() {
 
 				textUnit.setShaderProgram(myTextShaderP);
 				textUnit.name = "textUnit";
-				textUnit.cursor.setShaderProgram(myShaderProgram2);
 				textUnit.backgroundField.setShaderProgram(myShaderProgram2);
 
 				textUnit.setBitmapFont(text_a,newFont);
 				textUnit.setFontSize(1);
 				textUnit.setText("AB");
-				textUnit.cursor.addAnimationMash(myMash);
 				
 				textUnit2.setShaderProgram(myTextShaderP);
 				textUnit2.name = "textUnit2";
-				textUnit2.cursor.setShaderProgram(myShaderProgram2);
 				textUnit2.backgroundField.setShaderProgram(myShaderProgram2);
 				
 				textUnit2.setBitmapFont(text_a,newFont);
-				textUnit2.setFontSize(1);
+				textUnit2.setFontSize(35);
 				textUnit2.setText("TextUnit2");
+				
+				
+				myLabel.setShaderProgram(myTextShaderP);
+				myLabel.name = "textUnit2";
+				myLabel.backgroundField.setShaderProgram(myShaderProgram2);
+
+				
+				myLabel.setBitmapFont(text_a,newFont);
+				myLabel.setFontSize(-20);
+				myLabel.setText("Label!");
+				myLabel.backgroundField.visible = false;
+				
+				
+			
+				myButton.setShaderProgram(WebGLBase.UIDelegate.ButtonShaderText);
+				myButton.backgroundField.setShaderProgram(WebGLBase.UIDelegate.ButtonShaderBack);
+				myButton.name = "Button";				
+				myButton.setBitmapFont(WebGLBase.UIDelegate.bmFontTexture,WebGLBase.UIDelegate.bmFontDescriptor);
+				myButton.setFontSize(-20);
+				myButton.setText("Button");
+				myButton.clicked = function(){console.log("buttonclicked");}
+				
+				
+			
 				//textUnit2.cursor.addAnimationMash(myMash2);
 				
-				myMash.start();
+				//myMash.start();
 				//console.log(myTextShaderP.fragmentShader.parts[0].getParameterById("marked"));
 				myTextShaderP.setParameter(myTextShaderP.fragmentShader.parts[0].getParameterById("marked"), true);
 				
@@ -230,7 +281,6 @@ function init() {
                 //myDrawer.startDrawing(myRoot2, myGl, myShaderProgram2);  
                 //myDrawer.addShaderProgram(myShaderProgram, myGl);
 
-                
                 myDrawer.startDrawing(myRoot);  
     });  
     

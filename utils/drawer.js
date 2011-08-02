@@ -85,7 +85,7 @@ Drawer.prototype = {
        		this.drawables.sort(zSort);
 
         	for (var i=0; i < this.drawables.length; i++){
-        		this.drawObject(this.drawables[i],gl,shaderProgram);
+        		this.drawObject(this.drawables[i],gl,shaderProgram);      		
         	}
         }
        
