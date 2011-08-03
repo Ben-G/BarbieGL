@@ -181,7 +181,7 @@ function init() {
 				
     	
     	    	textUnit = new TextUnit(myGl, 20, 10); 
-    			textUnit2 = new ScrollableTextUnit(myGl, 10, 5);
+    			textUnit2 = new ScrollableTextUnit(myGl, 10, 4.9); 
     			myLabel = new Label(myGl,10,5);
     			myButton = new BarbieButton(myGl,2.3,1);
     			
@@ -232,7 +232,7 @@ function init() {
 				textUnit2.backgroundField.setShaderProgram(myShaderProgram2);
 				
 				textUnit2.setBitmapFont(text_a,newFont);
-				textUnit2.setFontSize(35);
+				textUnit2.setFontSize(10);
 				textUnit2.setText("TextUnit2");
 				
 				

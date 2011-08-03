@@ -9,12 +9,18 @@ var asTextField = function(){
 		this.maxHeight = maxHeight;
 		this.fontSize = 1;
 		this.text = "";
-		this.tiles = new Object();
+		this.tiles = new Array();
+		
+		//TODO Dringend durch default shader programm ersetzen
+		this.label = new Object3D(this.gl);
+		this.label.setShaderProgram(WebGLBase.UIDelegate.ButtonShaderBack);
+		
 		this.selectionIndexStart;
 		this.selectionIndexEnd;
 		this.minSize=96-this.fontSize;
+		//indicates the amount of scrolled lines
+		this.scrolledLines = 0;
 
-		//boolean this.focused
 		
 	   
 	   
@@ -84,6 +90,7 @@ var asTextField = function(){
 		//marks the beginning position of the letter, so that cursor can be placed
 		tile.currentyOffset = this.currentyOffset;
 		tile.currentxOffset = this.currentxOffset;
+		tile.heightOffset = yoffset;
 		//tile.yOffset = this.currentyOffset+letterInfo.yoffset; 
 		//tile.xOffset = this.currentxOffset+letterInfo.xoffset; 
 
@@ -110,7 +117,7 @@ var asTextField = function(){
 		
 		
 		 
-		this.add(tile);	
+		this.label.add(tile);	
 		this.text+=letter;
 		tile.stringPositionId = this.text.length - 1;
 		
@@ -125,7 +132,6 @@ var asTextField = function(){
 		//is called if any of the tiles is beeing clicked
 		if (this.enableMouseInteraction != null)
 			this.enableMouseInteraction(tile);
-
 	}
 	
 		
@@ -179,8 +185,9 @@ var asTextField = function(){
 	 */
 	this.setText = function(text){
 		this.children = new Array();
+		this.label.children = new Array();
 		this.letters = new Array();
-		this.tiles = new Object();
+		this.tiles = new Array();
 		this.currentxOffset = 0;
 		this.currentyOffset = 0;
 		if (this.cursor != null){
@@ -189,7 +196,7 @@ var asTextField = function(){
 		}
 		this.text = "";
 		
-		
+		this.add(this.label);
 		
 		for (var i = 0; i<text.length; i++){
 			this.addLetter(text[i]);
@@ -278,15 +285,24 @@ var asClickableAndMarkable = function(){
 		
 		this.moveCursorToTile = function(tileId){
 			var tile = this.tiles[tileId];	
-			if (tile != null){	
-				this.cursor.xOffset = tile.currentxOffset;
-				this.cursor.yOffset = tile.currentyOffset;
+			
+			
+			
+			if (tile != null){
+				if (tile.visible == false){
+					this.cursor.visible = false;
+				}else{
+					this.cursor.visible = true;
+				}	
+				this.cursor.xOffset = tile.currentxOffset+this.label.xOffset;
+				this.cursor.yOffset = tile.currentyOffset+this.label.yOffset;
 				this.cursor.positionId = tile.stringPositionId;		
 			}
 			if ( tileId == this.text.length && this.text.length != 0){
+				this.checkCursorVisibility();
 				//move cursor to position right of the last letter
-				this.cursor.xOffset = this.tiles[tileId-1].currentxOffset + this.tiles[tileId-1].xadvance;
-				this.cursor.yOffset = this.tiles[tileId-1].currentyOffset;
+				this.cursor.xOffset = this.tiles[tileId-1].currentxOffset + this.tiles[tileId-1].xadvance + +this.label.xOffset;
+				this.cursor.yOffset = this.tiles[tileId-1].currentyOffset + this.label.yOffset;
 				this.cursor.positionId = tileId;
 			}
 		}
@@ -298,7 +314,8 @@ var asClickableAndMarkable = function(){
 		}
 		this.receivedFocus = function(){
 			this.focused = true;
-			this.cursor.visible = true;
+			if (this.tiles[this.cursor.positionId] != null && this.tiles[this.cursor.positionId].visible == true)
+				this.cursor.visible = true;
 		}
 	
 		this.lostFocus = function(){
@@ -318,6 +335,26 @@ var asClickableAndMarkable = function(){
 	    	this.cursor.setShaderProgram(WebGLBase.UIDelegate.cursorShaderProgram);
 	    	//this.cursor.addAnimationMash(WebGLBase.UIDelegate.cursorAnimationMash);
 	    	this.cursor.visible = false;
+		}
+		
+		this.checkCursorVisibility = function(){
+			
+			if (this.focused == false){
+				this.cursor.visible = false;
+				return;
+			}
+			
+			if (this.tiles[this.cursor.positionId] != null && this.tiles[this.cursor.positionId].visible == false)
+			this.cursor.visible = false;
+				else{
+			this.cursor.visible = true;
+			}
+			if (this.cursor.positionId == this.tiles.length && this.tiles.length > 1){
+				if (this.tiles[this.tiles.length-2].visible == false)
+					this.cursor.visible = false;
+			else
+				this.cursor.visible = true;
+			}
 		}
 }
 

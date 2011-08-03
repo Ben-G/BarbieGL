@@ -45,19 +45,19 @@ WebGLBase_UI.prototype = {
 	},
     onClick: function(){
     	var hitObject = hitTest(event.offsetX, event.offsetY, myRoot);
-                                                if (hitObject.clicked != null){ 
+                                                if (hitObject.clicked != null && hitObject.visible){ 
                                                 	hitObject.clicked();       
                                                 }     
     },
     onMouseUp: function(){
     	var hitObject = hitTest(event.offsetX, event.offsetY, myRoot);
-                                                if (hitObject.mouseUp != null){ 
+                                                if (hitObject.mouseUp != null && hitObject.visible){ 
                                                 	hitObject.mouseUp();       
                                                 }     
     },
     onMouseDown: function(){
    		var hitObject = hitTest(event.offsetX, event.offsetY, myRoot);
-                                                if (hitObject.mouseDown != null){ 
+                                                if (hitObject.mouseDown != null && hitObject.visible){ 
                                                 	hitObject.mouseDown();       
                                                 }                                               
     },
