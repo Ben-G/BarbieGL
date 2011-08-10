@@ -3,6 +3,7 @@ function ScrollableTextUnit(gl,maxWidth,maxHeight){
 	asTextField.call(ScrollableTextUnit.prototype); 
 	asClickableAndMarkable.call(ScrollableTextUnit.prototype);  
 	asEditableTextField.call(ScrollableTextUnit.prototype);
+	asDraggable.call(ScrollableTextUnit.prototype);
 	this.initialize(gl,maxWidth,maxHeight);
 	this.scrollbarInitialize();
 	
@@ -15,12 +16,14 @@ function ScrollableTextUnit(gl,maxWidth,maxHeight){
 	
 	this.setBitmapFont = function(bitmapFont,bitmapFontDescriptor){
 		ScrollableTextUnit.prototype.setBitmapFont.call(this,bitmapFont,bitmapFontDescriptor);
-		this.scrollStep = this.bitmapFontDescriptor.lineHeight/this.minSize;
+		this.scrollStep = this.lineHeight;
 	}
 	
 	this.setFontSize = function(fontSize){
 		ScrollableTextUnit.prototype.setFontSize.call(this,fontSize);
-		this.scrollStep = this.bitmapFontDescriptor.lineHeight/this.minSize;
+		this.scrollStep = this.lineHeight;
+		this.visibleLines = Math.floor(this.maxHeight/this.scrollStep);
+		console.log(this.visibleLines);
 	}
 }
 
@@ -58,20 +61,11 @@ ScrollableTextUnit.prototype.scrollbarInitialize = function(){
 	
 	var closure = this;
 	scrollUpButton.clicked = function(){
-		if (closure.scrolledLines > 0){
-			closure.scrolledLines -= 1;
-			closure.label.yOffset = closure.scrollStep*closure.scrolledLines;
-			closure.moveCursorToTile(closure.cursor.positionId);
-			closure.hideScrolledOutLetters();
-			WebGLBase.UIDelegate.reportFocus(closure);
-		}
+		closure.scrollUp();
 	}
 	scrollDownButton.clicked = function(){
-			closure.scrolledLines += 1;
-			closure.label.yOffset = closure.scrollStep*closure.scrolledLines;
-			closure.moveCursorToTile(closure.cursor.positionId);
-			closure.hideScrolledOutLetters();
-			WebGLBase.UIDelegate.reportFocus(closure);
+		closure.scrollDown();
+			
 	}
 		
 }
@@ -87,3 +81,26 @@ ScrollableTextUnit.prototype.hideScrolledOutLetters = function(){
 	this.checkCursorVisibility();
 }
 
+
+ScrollableTextUnit.prototype.scrollDown = function(){
+	this.scrolledLines += 1;
+	this.scrollToLine(this.scrolledLines);
+	this.moveCursorToTile(this.cursor.positionId);
+	this.hideScrolledOutLetters();
+	WebGLBase.UIDelegate.reportFocus(this);
+}
+
+ScrollableTextUnit.prototype.scrollUp = function(){
+	if (this.scrolledLines > 0){
+			this.scrolledLines -= 1;
+			this.scrollToLine(this.scrolledLines);
+			this.moveCursorToTile(this.cursor.positionId);
+			this.hideScrolledOutLetters();
+			WebGLBase.UIDelegate.reportFocus(this);
+	}
+}
+
+ScrollableTextUnit.prototype.scrollToLine = function(line){
+	this.label.yOffset = this.scrollStep*line;		
+	this.scrolledLines = line;
+}

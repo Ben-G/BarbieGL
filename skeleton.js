@@ -47,6 +47,7 @@ WebGLBase.prototype = {
       
 	    var x3D = (x-(g_nCanvasWidth  / 2))*1*Math.tan(g_fOpenViewAngle*Math.PI/180.0)/(g_nCanvasWidth / 2);
         var y3D = (y-(g_nCanvasHeight / 2))*1*Math.tan(g_fOpenViewAngle*Math.PI/180.0)/(g_nCanvasHeight / 2);
+
         var vTempVector4D;
 	    var vTempVector3D;
 	    var vKlick4DVector;
@@ -242,15 +243,14 @@ function hitTest(x,y, object){
         object.lastHitpoint = hitPoint;
         
         if ( (hitPoint.e(1) > object.minPoint.x && hitPoint.e(1) < object.maxPoint.x) && (hitPoint.e(2) > object.minPoint.y && hitPoint.e(2) < object.maxPoint.y) ){
-            //console.log("HIT! Front-Side");
-            parentHit = object; 
+            parentHit = object;            
             break;
         }
 
         hitPoint = WebGLBase.calculateClickVector(x,y, object,3);
 
         if ( (hitPoint.e(3) > object.minPoint.z && hitPoint.e(3) < object.maxPoint.z) && (hitPoint.e(1) > object.minPoint.x && hitPoint.e(1) < object.maxPoint.x) ){
-            //console.log("HIT! Bottom-Side");
+            //+console.log("HIT! Bottom-Side");
             parentHit = object;
             break;
         }

@@ -83,8 +83,8 @@ Drawer.prototype = {
         	//sort elements by z-value to ensure correct transparency calculation	
 
        		this.drawables.sort(zSort);
-
-        	for (var i=0; i < this.drawables.length; i++){
+       		
+       		for (var i=0; i < this.drawables.length; i++){
         		this.drawObject(this.drawables[i],gl,shaderProgram);      		
         	}
         }

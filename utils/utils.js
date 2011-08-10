@@ -310,9 +310,31 @@ function factorial(number) {
 }
 
 function zSort(object3D1, object3D2){
+	/*if (object3D1.objectHierarchyId != null && object3D2.objectHierarchyId != null ){
+		if (object3D1.layer > object3D2.layer && object3D1.objectHierarchyId == object3D2.objectHierarchyId)
+			return 1;
+			
+		if (object3D1.layer < object3D2.layer && object3D1.objectHierarchyId == object3D2.objectHierarchyId)
+			return -1;
+	}
+	
+	/*if (object3D1.layer > object3D2.layer)
+			return 1;
+			
+	if (object3D1.layer < object3D2.layer)
+			return -1;
+	*/
+	
+	if (object3D1.layer > object3D2.layer)
+			return 1;
+			
+	if (object3D1.layer < object3D2.layer)
+			return -1;
+			
 	if (object3D1.minPoint.z > object3D2.minPoint.z)
 		return -1;
 	if (object3D1.minPoint.z < object3D2.minPoint.z)
 		return +1;
-			
+		
+
 }

@@ -4,7 +4,9 @@ function WebGLBase_UI(canvas,body,gl){
     this.body = body;
     this.canvas.onclick = this.onClick;
     this.canvas.onmouseup = this.onMouseUp;
+    this.body.onmouseup = this.onMouseUp;
     this.canvas.onmousedown = this.onMouseDown;
+    this.canvas.onmousemove = this.onMouseMove;
     this.body.onkeydown = this.onKeyDown;
     this.body.onkeypress = this.onKeyPress;
     this.gl = gl;
@@ -44,22 +46,35 @@ WebGLBase_UI.prototype = {
 		return myDef;
 	},
     onClick: function(){
-    	var hitObject = hitTest(event.offsetX, event.offsetY, myRoot);
-                                                if (hitObject.clicked != null && hitObject.visible){ 
-                                                	hitObject.clicked();       
+    	this.hitObject = hitTest(event.offsetX, event.offsetY, myRoot);
+                                                if (this.hitObject.clicked != null && this.hitObject.visible){ 
+                                                	this.hitObject.clicked();    
                                                 }     
     },
     onMouseUp: function(){
-    	var hitObject = hitTest(event.offsetX, event.offsetY, myRoot);
-                                                if (hitObject.mouseUp != null && hitObject.visible){ 
-                                                	hitObject.mouseUp();       
+    	this.hitObject = hitTest(event.offsetX, event.offsetY, myRoot);
+                                                if (this.hitObject.mouseUp != null && this.hitObject.visible){ 
+                                                	this.hitObject.mouseUp();       
                                                 }     
+                                                if (this.hitObject != WebGLBase.UIDelegate.focusedComponent &&
+                                                	WebGLBase.UIDelegate.focusedComponent != null){ 
+                                                		if (WebGLBase.UIDelegate.focusedComponent.mouseUp != null)
+                                                		WebGLBase.UIDelegate.focusedComponent.mouseUp();	
+                                                	}
     },
     onMouseDown: function(){
-   		var hitObject = hitTest(event.offsetX, event.offsetY, myRoot);
-                                                if (hitObject.mouseDown != null && hitObject.visible){ 
-                                                	hitObject.mouseDown();       
+   		this.hitObject = hitTest(event.offsetX, event.offsetY, myRoot);
+                                                if (this.hitObject.mouseDown != null && this.hitObject.visible){ 
+                                                	this.hitObject.mouseDown();       
                                                 }                                               
+    },
+    onMouseMove: function(){
+    	if (WebGLBase.UIDelegate.focusedComponent != null && WebGLBase.UIDelegate.focusedComponent.mouseMove != null){
+    		WebGLBase.UIDelegate.focusedComponent.mouseMove();                     
+    	}
+    	if (this.hitObject != null && this.hitObject.mouseMove != null){
+    		this.hitObject.mouseMove();                
+    	}                                   
     },
     onKeyDown: function(){
     	WebGLBase.UIDelegate.focusedComponent.onKeyDown();

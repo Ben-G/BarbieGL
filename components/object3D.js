@@ -47,6 +47,9 @@ function Object3D(gl){
 	this.rotation = 0;
 	this.animationspeed = 0;
 	
+	this.layer = 0;
+	//this.objectHierarchyId = 0;
+	
 	this.partStateCache = new Object();
 }
 

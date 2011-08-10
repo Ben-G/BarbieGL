@@ -20,8 +20,9 @@ var asTextField = function(){
 		this.minSize=96-this.fontSize;
 		//indicates the amount of scrolled lines
 		this.scrolledLines = 0;
+		this.currentLine = 0;
 
-		
+		this.objectHierarchyIdFloat = Math.random();
 	   
 	   
 	
@@ -30,7 +31,7 @@ var asTextField = function(){
 			this.createCursor();
 	    
 	    var backField = new Array();
-	    backField[0] = createRectangle(new Point3D(0,-this.maxHeight,0.95), new Point3D(this.maxWidth,-this.maxHeight,0.95), new Point3D(this.maxWidth,0,0.95), new Point3D(0,0,0.95));
+	    backField[0] = createRectangle(new Point3D(0,-this.maxHeight,0), new Point3D(this.maxWidth,-this.maxHeight,0), new Point3D(this.maxWidth,0,0), new Point3D(0,0,0));
 	    //backField[0] = createRectangle(new Point3D(-5,-5,1), new Point3D(5,-5,1), new Point3D(5,5,1), new Point3D(-5,5,1));
 	
 	    this.backgroundField = WebGLBase.createObject3D(backField, this.gl);
@@ -40,12 +41,28 @@ var asTextField = function(){
 	    
 	    var closure = this;
 	    
+	    this.backgroundField.name = "background";
+	    this.backgroundField.objectHierarchyId = this.objectHierarchyIdFloat;
+	    
+	    
 	    this.backgroundField.clicked = function(){
 			WebGLBase.UIDelegate.reportFocus(closure);
 			if (closure.clicked != null)
 				closure.clicked();
+		    closure.mouseHeldDown = false; 
+		}
+		this.backgroundField.mouseDown = function(){
+				closure.mouseDown();							
 		}
 		
+		this.backgroundField.mouseUp = function(){
+				closure.mouseUp();							
+		}
+		
+		this.backgroundField.mouseMove = function(){			
+				if (closure.mouseMove != null)
+					closure.mouseMove();								
+		}
 		
 	
 	    //this.add(this.cursor);
@@ -67,9 +84,9 @@ var asTextField = function(){
         var xoffset = letterInfo.xoffset/this.minSize;
         var yoffset = letterInfo.yoffset/this.minSize;
     		
-    	triangles2[0] = createRectangle(new Point3D(0,-letterInfo.height/this.minSize,1), 
-    		new Point3D(letterInfo.width/this.minSize,-letterInfo.height/this.minSize,1), 
-    		new Point3D(letterInfo.width/this.minSize,0,1), new Point3D(0,0,1)); 	
+    	triangles2[0] = createRectangle(new Point3D(0,-letterInfo.height/this.minSize,0.1), 
+    		new Point3D(letterInfo.width/this.minSize,-letterInfo.height/this.minSize,0.1), 
+    		new Point3D(letterInfo.width/this.minSize,0,0.1), new Point3D(0,0,0.1)); 	
     		
     		 
     	var tile = WebGLBase.createTile(triangles2, this.gl);
@@ -93,7 +110,14 @@ var asTextField = function(){
 		tile.heightOffset = yoffset;
 		//tile.yOffset = this.currentyOffset+letterInfo.yoffset; 
 		//tile.xOffset = this.currentxOffset+letterInfo.xoffset; 
-
+		
+		if (this.tileLayer != null){
+			tile.layer = this.tileLayer;
+			console.log("setting tileLayer");
+		}
+		
+		tile.objectHierarchyId = this.objectHierarchyIdFloat;
+		tile.name = "tile";
     	
 		
 		if (tile.xOffset + tile.xadvance > this.maxWidth && this.maxWidth != 0){
@@ -142,6 +166,7 @@ var asTextField = function(){
 	this.setBitmapFont = function(bitmapFont,bitmapFontDescriptor){
 		this.bitmapFont = bitmapFont;
 		this.bitmapFontDescriptor = bitmapFontDescriptor;
+		this.lineHeight = this.bitmapFontDescriptor.lineHeight/this.minSize;
 	}
 	this.setMaxWidth = function(maxWidth){
 		this.maxWidth = maxWidth;
@@ -152,6 +177,7 @@ var asTextField = function(){
 	this.setFontSize = function(fontSize){
 		this.fontSize = fontSize;
 		this.minSize=96-this.fontSize;
+		this.lineHeight = this.bitmapFontDescriptor.lineHeight/this.minSize;
 
 		if (this.createCursor != null)
 			this.createCursor();
@@ -174,6 +200,7 @@ var asTextField = function(){
 	this.newline = function(){
 		this.currentxOffset = 0;
 		this.currentyOffset -= this.bitmapFontDescriptor.lineHeight/this.minSize;
+		this.currentLine += 1;
 	}
 
 	
@@ -190,6 +217,7 @@ var asTextField = function(){
 		this.tiles = new Array();
 		this.currentxOffset = 0;
 		this.currentyOffset = 0;
+		this.currentLine = 0;
 		if (this.cursor != null){
 			this.cursor.xOffset = 0;
 			this.cursor.yOffset = 0;
@@ -197,6 +225,7 @@ var asTextField = function(){
 		this.text = "";
 		
 		this.add(this.label);
+		this.label.xOffset = 0.2;
 		
 		for (var i = 0; i<text.length; i++){
 			this.addLetter(text[i]);
@@ -209,6 +238,11 @@ var asTextField = function(){
 			this.add(this.backgroundField);
 		if (this.moveCursorToTile != null)
 			this.moveCursorToTile(this.text.length);
+			
+		if (this.scrollToLine != null && this.currentLine >= this.visibleLines)
+			this.scrollToLine(this.currentLine-(this.visibleLines-1));
+		else if(this.scrollToLine != null)
+			this.scrollToLine(0);
 	}
 	
 }
@@ -249,6 +283,7 @@ var asClickableAndMarkable = function(){
 					
 			
 			tile.clicked =  function(){
+				this.mouseHeldDown = false;
 			};
 			tile.mouseDown = function(){
 				closure.selectionIndexStart = this.stringPositionId;
@@ -258,6 +293,7 @@ var asClickableAndMarkable = function(){
 				WebGLBase.UIDelegate.reportFocus(closure);
 			};
 			tile.mouseUp = function(){
+				closure.mouseHeldDown = false;
 				closure.selectionIndexEnd = this.stringPositionId;
 				if (closure.selectionIndexStart == closure.selectionIndexEnd){
 					copiedText = "";
@@ -281,6 +317,16 @@ var asClickableAndMarkable = function(){
 				}
 				console.log(closure.selectionIndexStart+":"+closure.selectionIndexEnd+":"+copiedText);
 			};
+		}
+		this.mouseUp = function(){
+			this.mouseHeldDown = false;
+		}
+		
+		this.mouseDown = function(){
+			this.mouseHeldDown = true; 
+				
+				if (this.draggableMouseDown != null)
+					this.draggableMouseDown();	
 		}
 		
 		this.moveCursorToTile = function(tileId){
@@ -326,10 +372,10 @@ var asClickableAndMarkable = function(){
 		this.createCursor = function(){					
 			var cursorRect = new Array();
 			var cursorScale = 96/this.minSize;
-	    	cursorRect[0] = createRectangle(new Point3D(-0.05*cursorScale,-1*cursorScale,1), 
-	    	new Point3D(0.05*cursorScale,-1*cursorScale,1), 
-	    	new Point3D(0.05*cursorScale,0*cursorScale,1), 
-	    	new Point3D(-0.05*cursorScale,0*cursorScale,1));
+	    	cursorRect[0] = createRectangle(new Point3D(-0.05*cursorScale,-1*cursorScale,0.1), 
+	    	new Point3D(0.05*cursorScale,-1*cursorScale,0.1), 
+	    	new Point3D(0.05*cursorScale,0*cursorScale,0.1), 
+	    	new Point3D(-0.05*cursorScale,0*cursorScale,0.1));
 	    	   
 	    	this.cursor = WebGLBase.createObject3D(cursorRect, this.gl);
 	    	this.cursor.setShaderProgram(WebGLBase.UIDelegate.cursorShaderProgram);
@@ -358,13 +404,5 @@ var asClickableAndMarkable = function(){
 		}
 }
 
-var asGroupedClickable = function(){
-	this.enableMouseInteraction = function(tile){
-		var closure = this;
-		tile.clicked =  function(){
-			closure.clicked();	 
-		};
-		
-	}
-}
+
 

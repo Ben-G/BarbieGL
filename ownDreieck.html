@@ -16,6 +16,7 @@
 <script type="text/javascript" src="utils/GlUtils.js"></script>
 <script type="text/javascript" src="utils/shapeFactory.js"></script>  
 <script type="text/javascript" src="mixins/TextFieldMixin.js"></script>  
+<script type="text/javascript" src="mixins/UIMixin.js"></script>  
 <script type="text/javascript" src="skeleton.js"></script>
 <script type="text/javascript" src="components/object3D.js"></script>
 <script type="text/javascript" src="components/texture.js"></script>
@@ -23,6 +24,7 @@
 <script type="text/javascript" src="components/scrollableTextUnit.js"></script>
 <script type="text/javascript" src="components/label.js"></script>
 <script type="text/javascript" src="components/button.js"></script>
+<script type="text/javascript" src="components/window.js"></script>
 <script type="text/javascript" src="components/tile.js"></script>
 <script type="text/javascript" src="text/bmFont.js"></script>
 <script type="text/javascript" src="animation.js"></script>
@@ -93,7 +95,8 @@ function init() {
     
     myDefs[4] = WebGLBase.objectModel.find("triangle3").addCallback(
                 function(data){
-                    triangle = myRoot.add(WebGLBase.createObjectFromFile(data, myGl));
+                    //triangle = myRoot.add(WebGLBase.createObjectFromFile(data, myGl));
+                    triangle = WebGLBase.createObjectFromFile(data, myGl);
                     triangle.add(object3dCube);
                     object3dCube.xOffset = -5;
                     object3dCube.yOffset = -5;
@@ -181,16 +184,19 @@ function init() {
 				
     	
     	    	textUnit = new TextUnit(myGl, 20, 10); 
-    			textUnit2 = new ScrollableTextUnit(myGl, 10, 4.9); 
+    			textUnit2 = new ScrollableTextUnit(myGl, 10.2, 4.9); 
     			myLabel = new Label(myGl,10,5);
-    			myButton = new BarbieButton(myGl,2.3,1);
+    			myButton = new BarbieButton(myGl,2.65,1);
+    			myWindow = new GLWindow(myGl, 20,20);
     			
     			console.log(textUnit2);
     			
+    			myRoot.add(myWindow);
     			myRoot.add(textUnit);
                 myRoot.add(textUnit2);
-                myRoot.add(myLabel);
                 myRoot.add(myButton);
+                
+                myWindow.addSubview(myLabel);
     
      			textUnit.zOffset = -30; 
                 textUnit.xOffset = -10;
@@ -198,17 +204,25 @@ function init() {
                 textUnit2.zOffset = -35;
                 textUnit2.yOffset = 8;
                     
-                myLabel.zOffset = -30;
-                myLabel.xOffset = -11;
-                myLabel.yOffset = 8;
+                myLabel.tileLayer = 1;    
+                myLabel.xOffset = 0.1;
+                myLabel.yOffset = -0.1;
+                myLabel.zOffset = 0;
                 
                 myButton.zOffset = -30;
                 myButton.xOffset = 9;
                 myButton.yOffset = 9;
                    
+                myWindow.zOffset = -29;
 
 				
 
+				myWindow.name = "window";
+				
+				myWindow.titleBar.setText("Chat window");
+				
+				//myWindow.startRotation(1,"y");
+				//textUnit2.startRotation(1,"y");
                    
                 //TODO default setting for shaderPrograms   
                 myRoot.setShaderProgram(myShaderProgram2);
@@ -218,7 +232,7 @@ function init() {
                 triangle4.setShaderProgram(myShaderProgram2);
                 object3dCube.setShaderProgram(myShaderProgram2);
                 object3d3.setShaderProgram(myShaderProgram2);
-
+		
 				textUnit.setShaderProgram(myTextShaderP);
 				textUnit.name = "textUnit";
 				textUnit.backgroundField.setShaderProgram(myShaderProgram2);
@@ -243,7 +257,7 @@ function init() {
 				
 				myLabel.setBitmapFont(text_a,newFont);
 				myLabel.setFontSize(-20);
-				myLabel.setText("Label!");
+				myLabel.setText("first window ConTENT");
 				myLabel.backgroundField.visible = false;
 				
 				
@@ -278,10 +292,8 @@ function init() {
                 /*Here RootNode is declared as Node to start drawing.
                 Beginning here, all children of the Node will be drawn.                
                 */
-                //myDrawer.startDrawing(myRoot2, myGl, myShaderProgram2);  
-                //myDrawer.addShaderProgram(myShaderProgram, myGl);
-
-                myDrawer.startDrawing(myRoot);  
+               console.log(myWindow);
+               myDrawer.startDrawing(myRoot);  
     });  
     
     def.addDeferrables(myDefs);
