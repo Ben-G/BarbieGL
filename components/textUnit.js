@@ -10,7 +10,7 @@ function TextUnit(gl,maxWidth,maxHeight){
 	asTextField.call(TextUnit.prototype); 
 	asClickableAndMarkable.call(TextUnit.prototype);  
 	asEditableTextField.call(TextUnit.prototype);
-	asDraggable.call(TextUnit.prototype); 
+	//asDraggable.call(TextUnit.prototype); 
 	this.initialize(gl,maxWidth,maxHeight);
 }
 

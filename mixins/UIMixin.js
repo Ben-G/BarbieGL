@@ -16,6 +16,7 @@ var asDraggable = function(){
 		hitPoint = WebGLBase.pMatrix.inverse().x(hitPoint);
 		this.clickOffsetX = hitPoint.e(1) - this.xOffset;
 		this.clickOffsetY = hitPoint.e(2) - this.yOffset;
+		//document.body.style.cursor = "move";
 	} 
 	
 	
@@ -27,6 +28,7 @@ var asDraggable = function(){
 				hitPoint = WebGLBase.pMatrix.inverse().x(hitPoint);
 		   		this.xOffset = hitPoint.e(1) - this.clickOffsetX;
 		   		this.yOffset = hitPoint.e(2) - this.clickOffsetY;
+   				//document.body.style.cursor = "default";
 	   		}
 	}
 }

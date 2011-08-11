@@ -185,7 +185,7 @@ function init() {
 				WebGLBase.textureShaderProgram = myShaderProgram3;
 				
     	
-    	    	textUnit = new TextUnit(myGl, 20, 10); 
+    	    	textUnit = new TextUnit(myGl, 19, 10); 
     			textUnit2 = new ScrollableTextUnit(myGl, 10.2, 4.9); 
     			myLabel = new Label(myGl,10,5);
     			myButton = new BarbieButton(myGl,2.65,1);
@@ -194,14 +194,16 @@ function init() {
     			console.log(textUnit2);
     			
     			myRoot.add(myWindow);
-    			myRoot.add(textUnit);
-                myRoot.add(textUnit2);
-                myRoot.add(myButton);
+    			//myRoot.add(textUnit2);
                 
-                myWindow.addSubview(myLabel);
+                myWindow.addSubview(textUnit);
+                //myWindow.addSubview(myButton);
     
-     			textUnit.zOffset = -30; 
-                textUnit.xOffset = -10;
+     			textUnit.zOffset =0.1; 
+                textUnit.xOffset = 0.5;
+                textUnit.yOffset = -0.1;
+                textUnit.tileLayer = 1;    
+
                     
                 textUnit2.zOffset = -35;
                 textUnit2.yOffset = 8;
@@ -211,11 +213,12 @@ function init() {
                 myLabel.yOffset = -0.1;
                 myLabel.zOffset = 0;
                 
-                myButton.zOffset = -30;
-                myButton.xOffset = 9;
-                myButton.yOffset = 9;
+                myButton.zOffset = 1;
+                myButton.xOffset = 5;
+                myButton.yOffset = 5;
                    
                 myWindow.zOffset = -29;
+                myWindow.yOffset = 10;
 
 				
 
@@ -225,6 +228,9 @@ function init() {
 				
 				//myWindow.startRotation(1,"y");
 				//textUnit2.startRotation(1,"y");
+				/*myWindow.rotation = true;
+				myWindow.rotationAxis = "x";
+				myWindow.rotValue = -10;*/
                    
                 //TODO default setting for shaderPrograms   
                 myRoot.setShaderProgram(myShaderProgram2);
