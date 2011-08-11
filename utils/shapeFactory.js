@@ -21,13 +21,17 @@ function createRectangle(p1,p2,p3,p4) {
 }
 
 function rectangleTextureCoordBuffer(){
-	return [
+	tempBuffer = new Object();
+	tempBuffer.values = [
 		0.0,1.0,//P1
 		1.0,1.0,//P2
 		0.0,0.0,//P4
 		1.0,1.0,//P2
 		1.0,0.0,//P3
-		0.0,0.0,]//P4	
+		0.0,0.0,]//P4;
+	tempBuffer.itemSize = 2;
+	tempBuffer.numItems = 6;
+	return tempBuffer;	
 }
 
 rectangleTextureCoordBuffer.A = function(){

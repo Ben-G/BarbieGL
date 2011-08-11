@@ -82,7 +82,7 @@ WebGLBase.prototype = {
         }
         return newGL;
     },
-    createObject3D: function(polygons, gl){
+    createObject3D: function(polygons, gl, texBuffer){
     	
         var newObject = new Object3D();
         newObject.gl = gl;
@@ -96,6 +96,20 @@ WebGLBase.prototype = {
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(newObject.vertices), gl.STATIC_DRAW);
         newObject.buffer.itemSize = 3;
         newObject.buffer.numItems = totalItemSize/3;
+        
+        if (texBuffer != null){
+        	newObject.texBuffer = new Object();
+	        newObject.texBuffer.values = gl.createBuffer();
+	   	    gl.bindBuffer(gl.ARRAY_BUFFER, newObject.texBuffer.values);
+	   	    newObject.texBuffer.buffer = texBuffer.values;
+	        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(newObject.texBuffer.buffer), gl.STATIC_DRAW);
+	        newObject.texBuffer.itemSize = texBuffer.itemSize;
+	        newObject.texBuffer.numItems = texBuffer.numItems;
+	        }
+	    else{
+			newObject.texBuffer = null;	        	
+	    }        
+        
         return newObject;
     },
     createTile: function(polygons, gl){    	

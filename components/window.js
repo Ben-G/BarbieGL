@@ -18,8 +18,8 @@ GLWindow.prototype.windowInitialize = function(width, height){
 	var backField = new Array();
 	backField[0] = createRectangle(new Point3D(0,-height,0.0), new Point3D(width,-height,0.0), new Point3D(width,0,0.0), new Point3D(0,0,0.0));
 	    //backField[0] = createRectangle(new Point3D(-5,-5,1), new Point3D(5,-5,1), new Point3D(5,5,1), new Point3D(-5,5,1));
-	
-	this.backgroundField = WebGLBase.createObject3D(backField, this.gl);
+	var backFieldTextureCoord = rectangleTextureCoordBuffer();
+	this.backgroundField = WebGLBase.createObject3D(backField, this.gl,backFieldTextureCoord);
 	this.backgroundField.setShaderProgram(WebGLBase.UIDelegate.ButtonShaderBack);
 	this.add(this.backgroundField);
 	this.backgroundField.yOffset = -1;
@@ -30,7 +30,7 @@ GLWindow.prototype.windowInitialize = function(width, height){
 	this.titleBar = new Label(this.gl,width,1); 
 	this.titleBar.tileLayer = 1;
 	this.titleBar.setShaderProgram(WebGLBase.UIDelegate.ButtonShaderText);
-	this.titleBar.backgroundField.setShaderProgram(WebGLBase.UIDelegate.ButtonShaderBack);
+	this.titleBar.backgroundField.setShaderProgram(WebGLBase.textureShaderProgram);
 	this.titleBar.name = "titleBar";				
 	this.titleBar.setBitmapFont(WebGLBase.UIDelegate.bmFontTexture,WebGLBase.UIDelegate.bmFontDescriptor);
 	this.titleBar.setFontSize(1);

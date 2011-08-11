@@ -79,6 +79,7 @@ function init() {
 	var myTexture2 = WebGLBase.textureModel.find("grass.png", myGl);
 	var myTexture3 = WebGLBase.textureModel.find("brown.jpg", myGl);
 	var text_a = WebGLBase.textureModel.find("arialLargeTransparent.png", myGl);  
+	var titleBarTexture = WebGLBase.textureModel.find("titleBar.png", myGl);
 
 
     var triangle;
@@ -181,6 +182,7 @@ function init() {
 				WebGLBase.UIDelegate.ButtonShaderBack = myShaderProgram2;
 				WebGLBase.UIDelegate.bmFontTexture = text_a;
 				WebGLBase.UIDelegate.bmFontDescriptor = newFont;
+				WebGLBase.textureShaderProgram = myShaderProgram3;
 				
     	
     	    	textUnit = new TextUnit(myGl, 20, 10); 
@@ -284,6 +286,7 @@ function init() {
                 
                 triangle3.addTexture(myTexture, "randomTextureCoord", "uSampler" ,myGl);
                 triangle2.addTexture(myTexture2, "randomTextureCoord", "uSampler" ,myGl);
+                myWindow.titleBar.backgroundField.addTexture(titleBarTexture, "randomTextureCoord", "uSampler" ,myGl);
                 //textUnit.children[0].addTexture(text_a, "randomTextureCoord", "uSampler" ,myGl);
                 //textUnit.children[1].addTexture(text_a, "randomTextureCoord", "uSampler" ,myGl); 
 

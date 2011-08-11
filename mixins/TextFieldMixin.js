@@ -33,8 +33,8 @@ var asTextField = function(){
 	    var backField = new Array();
 	    backField[0] = createRectangle(new Point3D(0,-this.maxHeight,0), new Point3D(this.maxWidth,-this.maxHeight,0), new Point3D(this.maxWidth,0,0), new Point3D(0,0,0));
 	    //backField[0] = createRectangle(new Point3D(-5,-5,1), new Point3D(5,-5,1), new Point3D(5,5,1), new Point3D(-5,5,1));
-	
-	    this.backgroundField = WebGLBase.createObject3D(backField, this.gl);
+		var backFieldTextureCoord = rectangleTextureCoordBuffer();
+	    this.backgroundField = WebGLBase.createObject3D(backField, this.gl, backFieldTextureCoord);
 	    //otherwise component has cursor by default
 	    if(this.lostFocus != null)
 	   		this.lostFocus();
