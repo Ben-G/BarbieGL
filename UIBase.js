@@ -61,12 +61,14 @@ WebGLBase_UI.prototype = {
                                                 		if (WebGLBase.UIDelegate.focusedComponent.mouseUp != null)
                                                 		WebGLBase.UIDelegate.focusedComponent.mouseUp();	
                                                 	}
+    	document.body.style.cursor = "default";                                        	
     },
     onMouseDown: function(){
    		this.hitObject = hitTest(event.offsetX, event.offsetY, myRoot);
                                                 if (this.hitObject.mouseDown != null && this.hitObject.visible){ 
                                                 	this.hitObject.mouseDown();       
-                                                }                                               
+                                                }        
+        return false;                                                                               
     },
     onMouseMove: function(){
     	if (WebGLBase.UIDelegate.focusedComponent != null && WebGLBase.UIDelegate.focusedComponent.mouseMove != null){

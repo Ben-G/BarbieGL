@@ -22,6 +22,7 @@
 <script type="text/javascript" src="components/texture.js"></script>
 <script type="text/javascript" src="components/textUnit.js"></script>
 <script type="text/javascript" src="components/scrollableTextUnit.js"></script>
+<script type="text/javascript" src="components/staticScrollableTextUnit.js"></script>
 <script type="text/javascript" src="components/label.js"></script>
 <script type="text/javascript" src="components/button.js"></script>
 <script type="text/javascript" src="components/window.js"></script>
@@ -33,7 +34,35 @@
 
 <script type="text/javascript">
 
+conn = new Object();
+
+function openConnection(){
+  // uses global 'conn' object
+  if (conn.readyState === undefined || conn.readyState > 1) {
+    conn = new WebSocket('ws://9.152.99.132:5656');    
+    conn.onopen = function () {
+    
+    };
+
+    conn.onmessage = function (event) {
+      var message = JSON.parse(event.data);
+      if (typeof message == 'string') {
+      		textUnit2.setText(textUnit2.text+String.fromCharCode(13)+message);
+      }
+    };
+    
+    conn.onclose = function (event) {
+      state.className = 'fail';
+      state.innerHTML = 'Socket closed';
+    };
+  }
+	
+}
+
 function init() {
+	
+	openConnection();  
+	
     object3d = new Array();
     
  	var myGl = WebGLBase.initGL(document.getElementById("scene"));
@@ -185,11 +214,11 @@ function init() {
 				WebGLBase.textureShaderProgram = myShaderProgram3;
 				
     	
-    	    	textUnit = new TextUnit(myGl, 19, 10); 
-    			textUnit2 = new ScrollableTextUnit(myGl, 10.2, 4.9); 
+    	    	textUnit = new ScrollableTextUnit(myGl, 12, 5); 
+    			textUnit2 = new StaticScrollableTextUnit(myGl, 12, 8); 
     			myLabel = new Label(myGl,10,5);
     			myButton = new BarbieButton(myGl,2.65,1);
-    			myWindow = new GLWindow(myGl, 20,20);
+    			myWindow = new GLWindow(myGl, 20,15);
     			
     			console.log(textUnit2);
     			
@@ -197,16 +226,19 @@ function init() {
     			//myRoot.add(textUnit2);
                 
                 myWindow.addSubview(textUnit);
-                //myWindow.addSubview(myButton);
+                myWindow.addSubview(myButton);
+                myWindow.addSubview(textUnit2);
     
-     			textUnit.zOffset =0.1; 
+     			textUnit.zOffset =0; 
                 textUnit.xOffset = 0.5;
-                textUnit.yOffset = -0.1;
+                textUnit.yOffset = -9.1;
                 textUnit.tileLayer = 1;    
 
                     
-                textUnit2.zOffset = -35;
-                textUnit2.yOffset = 8;
+                textUnit2.tileLayer = 1;    
+                textUnit2.xOffset = 0.5;
+                textUnit2.yOffset = -0.1;
+                textUnit2.zOffset = 0;
                     
                 myLabel.tileLayer = 1;    
                 myLabel.xOffset = 0.1;
@@ -214,12 +246,12 @@ function init() {
                 myLabel.zOffset = 0;
                 
                 myButton.zOffset = 1;
-                myButton.xOffset = 5;
-                myButton.yOffset = 5;
+                myButton.xOffset = 15;
+                myButton.yOffset = -13;
                    
                 myWindow.zOffset = -29;
                 myWindow.yOffset = 10;
-
+				myWindow.xOffset = -5;
 				
 
 				myWindow.name = "window";
@@ -246,7 +278,7 @@ function init() {
 				textUnit.backgroundField.setShaderProgram(myShaderProgram2);
 
 				textUnit.setBitmapFont(text_a,newFont);
-				textUnit.setFontSize(1);
+				textUnit.setFontSize(-15);
 				textUnit.setText("AB");
 				
 				textUnit2.setShaderProgram(myTextShaderP);
@@ -254,7 +286,7 @@ function init() {
 				textUnit2.backgroundField.setShaderProgram(myShaderProgram2);
 				
 				textUnit2.setBitmapFont(text_a,newFont);
-				textUnit2.setFontSize(10);
+				textUnit2.setFontSize(-15);
 				textUnit2.setText("TextUnit2");
 				
 				
@@ -265,7 +297,7 @@ function init() {
 				
 				myLabel.setBitmapFont(text_a,newFont);
 				myLabel.setFontSize(-20);
-				myLabel.setText("first window ConTENT");
+				myLabel.setText("Boehmi:"+String.fromCharCode(13)+"Stop this!");
 				myLabel.backgroundField.visible = false;
 				
 				
@@ -275,8 +307,11 @@ function init() {
 				myButton.name = "Button";				
 				myButton.setBitmapFont(WebGLBase.UIDelegate.bmFontTexture,WebGLBase.UIDelegate.bmFontDescriptor);
 				myButton.setFontSize(-20);
-				myButton.setText("Button");
-				myButton.clicked = function(){console.log("buttonclicked");}
+				myButton.setText("Send"); 
+				myButton.clicked = function(){if (conn.readyState === 1) {
+      												conn.send(JSON.stringify(textUnit.text)); 
+      												textUnit2.setText(textUnit2.text+String.fromCharCode(13)+textUnit.text);}
+												textUnit.setText("");}
 				
 				
 			
