@@ -1,4 +1,5 @@
 function Object3D(gl){
+	asMaterial.call(Object3D.prototype);
 	this.gl = gl;
 	this.buffer = new Object();
 	this.texBuffer = null;
@@ -10,6 +11,8 @@ function Object3D(gl){
     this.perspectiveHasChanged = true;
     this.mvMatrixHasChanged = true;
     this.vertexPositionsHaveChanged = true;
+    this.parent = null;
+    this.lights = new Array();
     //this.boundingBox
     //this.lastTranslMatrix
     //this.minPoint;
@@ -124,6 +127,8 @@ Object3D.prototype = {
 		}
 		this.shaderProgram.vertexPositionAttribute = this.shaderProgram.gl.getAttribLocation(this.shaderProgram.binary, WebGLBase.stdVertParams["VERTEX_POSITION"].identifier);
     	this.shaderProgram.gl.enableVertexAttribArray(this.shaderProgram.vertexPositionAttribute);     	
+    	this.shaderProgram.normalsAttribute = this.shaderProgram.gl.getAttribLocation(this.shaderProgram.binary, WebGLBase.stdVertParams["NORMALS"].identifier);
+    	this.shaderProgram.gl.enableVertexAttribArray(this.shaderProgram.normalsAttribute);     	
 	},
 	
 	
@@ -215,6 +220,10 @@ Object3D.prototype = {
 		    }  else {
 		    	this.mvMatrixHasChanged = false;
 		    }
+		    
+		    this.normalMatrix = this.lastTranslMatrix.inverse();
+			this.normalMatrix = this.normalMatrix.transpose();
+		    
 			this.refreshPartActivators();
             return this.lastTranslMatrix;
     },
@@ -272,9 +281,25 @@ Object3D.prototype = {
     */
     add : function(object){
         this.children[this.children.length] = object;
+        object.parent = this;
         return object;
     },
+    
+    /**
+     * @method getAllLights
+     * @return all lights affecting this object, including lights of its parents
+     */
+    getAllLights : function() {
+    	var par = new Array();
+    	if(this.parent != null) {
+    		par = this.parent.getAllLights();
+    	}
+    	return par.concat(this.lights)
+    },
 
+	addLight : function(light) {
+		this.lights.push(light);
+	},
 
     /*  Is called before redraw. Updates the BoundingBoxes of the object
         regarding the childrens boundings.    

@@ -186,8 +186,8 @@ function createMash(width, height, rectsPerSide, gl) {
 	for(var i = 0;i<6*(rectsPerSide)*(rectsPerSide);i++) {
 		var base = i*3;
 		normals[base + 0] = 0;
-		normals[base + 1] = 0;
-		normals[base + 2] = 1;
+		normals[base + 1] = 1;
+		normals[base + 2] = 0;
 	}	
 	
 	
@@ -207,6 +207,14 @@ function createMash(width, height, rectsPerSide, gl) {
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(newObject.texBuffer.buffer), gl.STATIC_DRAW);
     newObject.texBuffer.itemSize = 2;
     newObject.texBuffer.numItems = 6*(rectsPerSide)*(rectsPerSide);
+    
+	newObject.normalsBuffer = new Object();
+    newObject.normalsBuffer.values = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, newObject.normalsBuffer.values);
+    newObject.normalsBuffer.buffer = normals;
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(newObject.normalsBuffer.buffer), gl.STATIC_DRAW);
+    newObject.normalsBuffer.itemSize = 3;
+    newObject.normalsBuffer.numItems = 6*(rectsPerSide)*(rectsPerSide);
        
     /*   
     newObject.normalsBuffer = new Object();

@@ -176,10 +176,33 @@ function parseParameters(src) {
 		found = false;
 		rest_start += end;
 		var rest = src.substr(rest_start);
-		var pos = rest.search("(uniform|attribute|varying)[ \t\s]*.+[ \t\s]*.+[ \t\s]*[ \t\s]*;");
+		var pos = rest.search("(uniform|attribute|varying)[ \t\s]*.+[ \t\s]*.+[ \t\s]*(\\[[0-9]+\\])?[ \t\s]*;");
 		if(pos != -1) {
 			found = true;
-			var para = rest.match("(uniform|attribute|varying)[ \t\s]*.+[ \t\s]*.+[ \t\s]*[ \t\s]*;");
+			var para = rest.match("(uniform|attribute|varying)[ \t\s]*.+[ \t\s]*.+[ \t\s]*(\\[[0-9]+\\])?[ \t\s]*;");
+			res.push(para[0]);
+			end = pos + para[0].length+1;
+		}
+		c++;
+	}
+	res = res.concat(parseConsts(src));
+	return res;
+}
+
+function parseConsts(src) {
+	var res = new Array();
+	var found = true;
+	var end = 0;
+	var rest_start = 0;
+	var c = 0;
+	while(found == true) {
+		found = false;
+		rest_start += end;
+		var rest = src.substr(rest_start);
+		var pos = rest.search("const[ \t\s]*.+[ \t\s]*.+;");
+		if(pos != -1) {
+			found = true;
+			var para = rest.match("const[ \t\s]*.+[ \t\s]*.+;");
 			res.push(para[0]);
 			end = pos + para[0].length+1;
 		}
@@ -188,6 +211,13 @@ function parseParameters(src) {
 	return res;
 }
 
+
+/**
+function trim (zeichenkette) {
+  // Erst führende, dann Abschließende Whitespaces entfernen
+  // und das Ergebnis dieser Operationen zurückliefern
+  return zeichenkette.replace (/^\s+/, '').replace (/\s+$/, '');
+}
 
 /**
  * returns the code of all functions contained in a given source
