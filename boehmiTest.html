@@ -14,6 +14,7 @@
 		<script type="text/javascript" src="utils/sylvester.js"></script>
 		<script type="text/javascript" src="utils/GlUtils.js"></script>
 		<script type="text/javascript" src="skeleton.js"></script>
+		<script type="text/javascript" src="lighting.js"></script>
 		<script type="text/javascript" src="animation.js"></script>
 		<script type="text/javascript" src="components/object3D.js"></script>
 		<script type="text/javascript" src="components/texture.js"></script>
@@ -155,7 +156,7 @@
 					mash4 = data;
 					mash4.name = "blink";
 				});
-				myDefs.push(AnimationMashFactory.createCircleMinimizeAnimation(3, 1000));
+				myDefs.push(AnimationMashFactory.createCircleMinimizeAnimation(3, 5000));
 				myDefs[myDefs.length-1].addCallback( function(data) {
 					mash2 = data;
 					mash2.name = "minimize";
@@ -176,8 +177,9 @@
 				mash7 = new AnimationMash();
 				aniassss = new BezierTranslationAnimation(Animation.TYPE_ENDLESS, "bez", path.getBezierCurve());
 				myDefs.push(aniassss.completed);
-				
 				mash7.addStartAnimation(aniassss);
+
+				
 				
 				
 				myDefs.push(AnimationMashFactory.createSplineTranslationAnimation(path, true, 1000));
@@ -186,7 +188,7 @@
 					mash6.name = "path";
 				});
 				
-				myDefs.push(ShaderProgramBuilder.buildShaderProgramFromName("benji", myGl));
+				myDefs.push(ShaderProgramBuilder.buildShaderProgramFromName("lighting", myGl));
 				myDefs[myDefs.length-1].addCallback( function(data) {
 					program_test = data;
 					console.log(data);
@@ -196,45 +198,76 @@
 				mash = new AnimationMash();
 
 				def.finalCallback( function() {
-
+					var l = program_test.fragmentShader.parts[0];
+					var s = program_test.vertexShader.parts[0];
+					
 					var vertShader = ShaderBuilder.buildDefaultShader(Shader.TYPE_VERTEX_SHADER, myGl);
 					var fragShader = ShaderBuilder.buildShaderFromParts(new Array(myShaders[1]), Shader.TYPE_FRAGMENT_SHADER, myGl);
 					var fragShader2 = ShaderBuilder.buildShaderFromParts(new Array(myShaders2[1]), Shader.TYPE_FRAGMENT_SHADER, myGl);
 					var vertShader3 = ShaderBuilder.buildShaderFromParts(new Array(myShaders3[0]), Shader.TYPE_VERTEX_SHADER, myGl);
 					var fragShader3 = ShaderBuilder.buildShaderFromParts(new Array(myShaders3[1]), Shader.TYPE_FRAGMENT_SHADER, myGl);
 
+					fragShader3.addShaderPart(l);
+					vertShader3.addShaderPart(s);
+					
+					//console.log(vertShader3.getSrc());
+					
+
+					
 					var myShaderProgram = ShaderProgramBuilder.buildShaderProgram(vertShader, fragShader);
 					var myShaderProgram2 = ShaderProgramBuilder.buildShaderProgram(vertShader, fragShader2);
 					myShaderProgram3 = ShaderProgramBuilder.buildShaderProgram(vertShader3, fragShader3);
 
 					var minimize = createMash(1.2,1.2,1,myGl);
-					minimize.setShaderProgram(myShaderProgram3);
+					//minimize.setShaderProgram(myShaderProgram3);
 					minimize.name = "minimize";
 					minimize.xOffset = -12.6;
 					minimize.yOffset = 0.01;
 					minimize.zOffset = -14.1;
-					minimize.addAnimationMash(mash5);
+					//minimize.visible = false;
+					//minimize.addAnimationMash(mash5);
 
 					var button = createMash(5.3,1.5,1,myGl);
-					button.setShaderProgram(myShaderProgram3);
+					//button.setShaderProgram(myShaderProgram3);
 					button.name = "button";
 					button.xOffset = 12.3;
 					button.yOffset = 0.01;
 					button.zOffset = 9.6;
-					button.addAnimationMash(mash4);
+					//button.visible = false;
+					//button.addAnimationMash(mash4);
 
 					
+					var light = new Array();
+					light.push(new PointLight(Vector.create([1,0,0]),Vector.create([0,0,-39.9]), 1));
+					light.push(new PointLight(Vector.create([0,0,1]),Vector.create([-10,0,-39.9]), 1));
+					light.push(new PointLight(Vector.create([0,1,0]),Vector.create([10,0,-39.9]), 1));
+					//light.push(new PointLight(Vector.create([0,1,1]),Vector.create([-10,0,-50]), 1));			
+					light.push(new AmbientLight(Vector.create([0.2,0.2,0.2])));
+					//light.push(new AmbientLight(Vector.create([0,0,1])));
+					//light.push(new AmbientLight(Vector.create([0,1,0])));
+					//light.push(new DirectionalLight(Vector.create([0.0,0.0,0.0]), Vector.create([0,0,-1]), 1));
+					
+
+					light[1].addAnimationMash(mash7);
+					light[2].addAnimationMash(mash6);
+					mash7.start();			
+					mash6.start();		
 
 					area = createMash(30,30,1,myGl);
 					area.setShaderProgram(myShaderProgram3);
 					area.name = "area";
+					//area.visible = false;
 					area.rotation = true;
 					area.rotValue = 90;
+					//area.yOffset = -5;
 					//area.animationSpeed = 1;
 					area.rotationAxis = "x";
 
-					area.add(button);
-					area.add(minimize);
+					area.lights= light;
+					area.sheen = true;
+					area.shininess = 20;
+					//area.add(button);
+					//area.add(minimize);
 
 					myRoot.add(area);
 					
@@ -242,8 +275,8 @@
 					area.zOffset = -45;
 					area.addAnimationMash(mash3);
 					area.addAnimationMash(mash2);
-					area.addAnimationMash(mash7);
-					mash7.start();
+					//area.addAnimationMash(mash7);
+					
 
 					myRoot.setShaderProgram(myShaderProgram2);
 					myRoot.name = "root";
@@ -280,8 +313,8 @@
 					object3d3.visible = false;
 
 					area.addTexture(windowTexture, "randomTextureCoord", "uSampler");
-					button.addTexture(buttonTexture, "randomTextureCoord", "uSampler");
-					minimize.addTexture(minimizeTexture, "randomTextureCoord", "uSampler");
+					//button.addTexture(buttonTexture, "randomTextureCoord", "uSampler");
+					//minimize.addTexture(minimizeTexture, "randomTextureCoord", "uSampler");
 					triangle3.addTexture(myTexture, "randomTextureCoord", "uSampler");
 					triangle2.addTexture(myTexture2, "randomTextureCoord", "uSampler");
 					triangle.addTexture(myTexture3, "randomTextureCoord", "uSampler");

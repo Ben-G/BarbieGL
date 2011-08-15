@@ -367,7 +367,7 @@ SplineTranslationAnimation.prototype= new TranslationAnimation();
 
 SplineTranslationAnimation.prototype._calculateTranslationVector = function() {
 	var u = this.time_elapsed / this.duration;
-	//console.log(this.name, this.duration, -s*u3+2*s*u2-s*u, (2-s)*u3+(s-3)*u2+1, (s-2)*u3+(3-2*s)*u2+1+s*u, s*u3-s*u2, "\n", p[0].toVector().inspect(), p[1].toVector().inspect(), p[2].toVector().inspect(), p[3].toVector().inspect(), res.inspect());
+	
 	return this.spline.getPosition(u, this.tension);
 }
 
@@ -381,7 +381,7 @@ BezierTranslationAnimation.prototype= new TranslationAnimation();
 
 BezierTranslationAnimation.prototype._calculateTranslationVector = function() {
 	var u = this.time_elapsed / this.duration;
-	//console.log(this.name, this.duration, -s*u3+2*s*u2-s*u, (2-s)*u3+(s-3)*u2+1, (s-2)*u3+(3-2*s)*u2+1+s*u, s*u3-s*u2, "\n", p[0].toVector().inspect(), p[1].toVector().inspect(), p[2].toVector().inspect(), p[3].toVector().inspect(), res.inspect());
+	//console.log("a", this.curve.getPosition(u).inspect());
 	return this.curve.getPosition(u);
 }
 

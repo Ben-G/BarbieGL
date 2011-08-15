@@ -62,13 +62,48 @@ ShaderParameterFactory.prototype = {
 	 * @return {ShaderParameter} a ShaderParameter object
 	 */
 	createFromString: function(string, part) {
+		string = string.replace(";", '');
+		string = string.replace (/\s+/g, ' ');
 		var split = string.split(" ");
-		var id=split[2];
-		if(id.search(";") >= 0) {
-			id = id.substring(0,id.length-1);
+		for(var i = 0; i < split.length; i++) {
+			if(split[i] == "" || split[i] == " ") split.splice(i);
 		}
+
+		var id=split[2];
+		var endPos = string.length-1;
+		// create object
 		var para = new ShaderParameter(id, split[1], split[0]);
 		para.shaderPart = part;
+		
+		// parse array identifier 
+		var pos = id.search("\\[");
+		if(pos >= 0) {
+			para.identifier = id.substring(0,pos);
+			para.originalIdentifier = para.identifier;
+
+		}
+		// parse array length
+		pos = string.search("\\[");
+		if(pos >= 0) {
+			para.isArray = true;
+			var pos2 = string.search("\\]");
+			para.arrayLength = trim(string.substring(pos+1,pos2));
+			console.log(para);
+		}
+		
+		
+		// parse const value
+		if(para.modifier == "const") {
+			pos = id.search("=");
+			if(pos >= 0) {
+				para.identifier = id.substring(0,pos);
+				para.originalIdentifier = para.identifier;
+			}
+			pos = string.search("=");
+			console.log(pos, endPos);
+			para.constValue = trim(string.substring(pos+1,endPos+1));
+			console.log(para);
+		}
 		return para;
 	},
 }
@@ -282,6 +317,9 @@ ShaderParameter = function(identifier, type, modifier) {
 	this.modifier = modifier;
 
 	this.shaderPart = null;
+	
+	// states if the parameter is an array
+	this.isArray = false;
 }
 ShaderParameter.prototype = {
 	// the identifier of the parameter
@@ -292,6 +330,8 @@ ShaderParameter.prototype = {
 	modifier: "",
 	part: null,
 	getSrc: function() {
+		if(this.modifier == "const") return this.modifier + " " + this.type + " " + this.identifier + " = " + this.constValue;
+		if(this.isArray) return this.modifier + " " + this.type + " " + this.identifier + "[" + this.arrayLength + "]";
 		return this.modifier + " " + this.type + " " + this.identifier;
 	},
 	getUniqueIdentifier: function() {
@@ -388,6 +428,18 @@ Shader.prototype = {
 		}
 		return null;
 	},
+	/**
+	 * searches for all parts of a given name
+	 * @param name the ShaderPart's name
+	 * @return {Array(ShaderPart)} an array of all fitting ShaderPart objects
+	 */
+	getPartsByName: function(name) {
+		var res = new Array();
+		for(var i = 0; i<this.parts.length; i++) {
+			if(this.parts[i].name == name) res.push(this.parts[i]);
+		}
+		return res;
+	},
 	/*
 	 * compiles this shader and saves the compiled program in this.binary
 	 * if the shader is not yet compiled yet
@@ -471,7 +523,17 @@ Shader.prototype = {
 		var para_src = "";
 		if(this.type == Shader.TYPE_VERTEX_SHADER) {
 			para_src = 	"attribute vec3 aVertexPosition;\n" +
+			"attribute vec3 aNormals;\n" +
 			"uniform mat4 uMVMatrix;\n"+
+			"uniform mat4 uNMatrix;\n"+
+			"varying vec3 vNormals;\n"+
+			"varying vec4 vVertexPosition;\n"+
+			"uniform mat4 uPMatrix;\n\n";
+		} else {
+			para_src = "uniform mat4 uMVMatrix;\n"+
+			"varying vec3 vNormals;\n"+
+			"uniform mat4 uNMatrix;\n"+
+			"varying vec4 vVertexPosition;\n"+
 			"uniform mat4 uPMatrix;\n\n";
 		}
 		var func_src = "";
@@ -480,6 +542,7 @@ Shader.prototype = {
 		if(this.type == Shader.TYPE_VERTEX_SHADER) {
 			main_src += "\tvec4 originalPosition = vec4(aVertexPosition,1.0);\n";
 			main_src += "\tvec4 vertexPosition = vec4(aVertexPosition,1.0);\n";
+			main_src += "\tvNormals = aNormals;\n";
 		} else {
 			main_src += "\tvec4 fragColor = vec4(0.0,0.0,0.0,0.0);\n"
 		}
@@ -494,6 +557,7 @@ Shader.prototype = {
 
 		if(this.type == Shader.TYPE_VERTEX_SHADER) {
 			main_src += "\tgl_Position = uPMatrix * (uMVMatrix * vertexPosition);\n"
+			main_src += "\tvVertexPosition = gl_Position;\n"
 		} else {
 			main_src += "\tgl_FragColor = fragColor;\n"
 		}
@@ -564,8 +628,10 @@ ShaderProgram.prototype = {
 			location = this.parameterLocations[para.identifier];
 		}
 
-		if(location == -1)
+		if(location == -1 || location == null) {
 			return;
+		}
+			
 		gl.bindBuffer(gl.ARRAY_BUFFER, buffer.values);
 		gl.bufferData(gl.ARRAY_BUFFER, values, gl.STATIC_DRAW);
 		gl.vertexAttribPointer(location, buffer.itemSize, gl.FLOAT, false, 0, 0);
@@ -574,8 +640,9 @@ ShaderProgram.prototype = {
 	 * sets a shader parameter to a specified value
 	 * @param para a ShaderParameter object
 	 * @param value the value to be set
+	 * @param index the index, if the parameter is an array
 	 */
-	setParameter: function(para, value) {
+	setParameter: function(para, value, index) {
 		if(para == null)
 			return;
 		var location;
@@ -583,21 +650,31 @@ ShaderProgram.prototype = {
 		if(para.modifier.search("varying") >= 0) {
 			throw "Varying parameters can only be set inside shaders!"
 		}
-		if(this.parameterLocations[para.identifier] == null) {
+		var cacheName = para.identifier;
+		if(para.isArray) {
+			cacheName = para.identifier +  "[" + index + "]";
+			cacheName = cacheName.replace("\[", "_123456__").replace("\]", "_123456__");
+		}
+				
+		if(this.parameterLocations[cacheName] == null) {
+			var id = para.identifier;
+			if(para.isArray) id += "[" + index + "]";
 			if(para.modifier.search("uniform") >= 0) {
-				location = this.gl.getUniformLocation(this.binary, para.identifier);
-				this.parameterLocations[para.identifier] = location;
-
+				location = this.gl.getUniformLocation(this.binary, id);
+				this.parameterLocations[cacheName] = location;
 			} else if (para.modifier.search("attribute") >= 0) {
-				location = this.gl.getAttribLocation(this.binary, para.identifier);
-				this.parameterLocations[para.identifier] = location;
+				location = this.gl.getAttribLocation(this.binary, id);
+				this.parameterLocations[cacheName] = location;
 			}
 		} else {
-			location = this.parameterLocations[para.identifier];
+			location = this.parameterLocations[cacheName];
 		}
-		if(location == -1)
+		if(location == null || location == -1) {
+			//console.log("not found ", cacheName);
+			//console.log(this.fragmentShader.getSrc());
 			return;
-
+		} 
+		
 		switch(para.type) {
 			case "mat4": {
 				switch(para.modifier) {
@@ -612,6 +689,7 @@ ShaderProgram.prototype = {
 				switch(para.modifier) {
 					case "uniform": {
 						this.gl.uniform3fv(location, value);
+						
 						break;
 					}
 					case "attribute": {
@@ -626,6 +704,7 @@ ShaderProgram.prototype = {
 				switch(para.modifier) {
 					case "uniform": {
 						this.gl.uniform1i(location, value);
+						//console.log(para.identifier, " to ", value);
 						break;
 					}
 					// attribute can not be int
@@ -650,6 +729,7 @@ ShaderProgram.prototype = {
 				switch(para.modifier) {
 					case "uniform": {
 						this.gl.uniform1i(location, value);
+						//console.log(para.identifier, " to ", value);
 						break;
 					}
 					// attribute can not be bool

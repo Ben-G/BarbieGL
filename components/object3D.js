@@ -12,6 +12,7 @@ function Object3D(gl){
     this.mvMatrixHasChanged = true;
     this.vertexPositionsHaveChanged = true;
     this.parent = null;
+    this.lights = new Array();
     //this.boundingBox
     //this.lastTranslMatrix
     //this.minPoint;
@@ -123,6 +124,8 @@ Object3D.prototype = {
 		}
 		this.shaderProgram.vertexPositionAttribute = this.shaderProgram.gl.getAttribLocation(this.shaderProgram.binary, WebGLBase.stdVertParams["VERTEX_POSITION"].identifier);
     	this.shaderProgram.gl.enableVertexAttribArray(this.shaderProgram.vertexPositionAttribute);     	
+    	this.shaderProgram.normalsAttribute = this.shaderProgram.gl.getAttribLocation(this.shaderProgram.binary, WebGLBase.stdVertParams["NORMALS"].identifier);
+    	this.shaderProgram.gl.enableVertexAttribArray(this.shaderProgram.normalsAttribute);     	
 	},
 	
 	
@@ -214,6 +217,10 @@ Object3D.prototype = {
 		    }  else {
 		    	this.mvMatrixHasChanged = false;
 		    }
+		    
+		    this.normalMatrix = this.lastTranslMatrix.inverse();
+			this.normalMatrix = this.normalMatrix.transpose();
+		    
 			this.refreshPartActivators();
             return this.lastTranslMatrix;
     },
@@ -287,6 +294,9 @@ Object3D.prototype = {
     	return par.concat(this.lights)
     },
 
+	addLight : function(light) {
+		this.lights.push(light);
+	},
 
     /*  Is called before redraw. Updates the BoundingBoxes of the object
         regarding the childrens boundings.    

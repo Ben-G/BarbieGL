@@ -8,9 +8,11 @@ function WebGLBase(){
     this.cameraVector = $V([0,0,0,1]);
     
     this.stdVertParams = new Object();
+    this.stdVertParams["NORMALS"] = new ShaderParameter("aNormals", "vec3","attribute");
     this.stdVertParams["VERTEX_POSITION"] = new ShaderParameter("aVertexPosition", "vec3","attribute");
     this.stdVertParams["MV_MATRIX"] = new ShaderParameter("uMVMatrix", "mat4","uniform");
     this.stdVertParams["P_MATRIX"] = new ShaderParameter("uPMatrix", "mat4","uniform");
+    this.stdVertParams["N_MATRIX"] = new ShaderParameter("uNMatrix", "mat4","uniform");
     this.stdFragParams = new Object();
 }
 
@@ -169,6 +171,7 @@ WebGLBase.prototype = {
      
         if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
           console.log(gl.getShaderInfoLog(shader));
+
           return null;
         }
  

@@ -63,6 +63,9 @@ Drawer.prototype = {
 
     	if(obj.visible) {
 	    	if (obj.buffer.itemSize != null) {
+	    		//console.log("drawing ", obj.name, obj.shaderProgram);
+	    		this.drawLights(obj, translationMat);
+	    		
 	    		//console.log(obj.name, shaderProgram);
 	    		if(obj.perspectiveHasChanged) {
 		     		shaderProgram.setParameter(WebGLBase.stdVertParams["P_MATRIX"], new Float32Array(WebGLBase.pMatrix.flatten()));
@@ -71,6 +74,16 @@ Drawer.prototype = {
 				//if(obj.mvMatrixHasChanged) {
 					shaderProgram.setParameter(WebGLBase.stdVertParams["MV_MATRIX"], new Float32Array(translationMat.flatten()));
 					obj.mvMatrixHasChanged = false;
+					
+					if(obj.normalMatrix != null) {
+						shaderProgram.setParameter(WebGLBase.stdVertParams["N_MATRIX"], new Float32Array(obj.normalMatrix.flatten()));
+						obj.mvMatrixHasChanged = false;
+					}
+					
+					if(obj.normalsBuffer != null) {
+						shaderProgram.setBuffer(WebGLBase.stdVertParams["NORMALS"], obj.normalsBuffer, new Float32Array(obj.normalsBuffer.buffer));
+						obj.normalsHaveChanged = false;
+					}
 				//}
 				//if(obj.vertexPositionsHaveChanged) {
 					shaderProgram.setBuffer(WebGLBase.stdVertParams["VERTEX_POSITION"], obj.buffer, new Float32Array(obj.vertices));
@@ -82,7 +95,7 @@ Drawer.prototype = {
 			    	TextureModel.activate(obj);      	              	
 			    }
 			    // DEBUGGING OUTPUT for webgl inspector
-			    //gl.getUniformLocation(shaderProgram.binary, "drawing " + obj.name);
+			    gl.getUniformLocation(shaderProgram.binary, "drawing " + obj.name);
 
 			    gl.drawArrays(gl.TRIANGLES, 0, obj.buffer.numItems);
 	        }
@@ -97,7 +110,7 @@ Drawer.prototype = {
         }
         
        	//gl.useProgram(shaderProgram.binary);
-        obj.updateBoundingBox(gl, shaderProgram);
+       obj.updateBoundingBox(gl, shaderProgram);
         
         //console.log(obj.name + " " + (new Date().getTime() - anfang) + " ms");
         /*gl.bindBuffer(gl.ARRAY_BUFFER, obj.boundingBox.buffer.values);
@@ -106,6 +119,58 @@ Drawer.prototype = {
         */
        
         
+    },
+    drawLights: function(obj, transMat) {
+    	var lights = obj.getAllLights();
+    	var pointCount = dirCount = ambCount = 0;
+    	var part = obj.shaderProgram.fragmentShader.getPartsByName("lighting")[0];
+    	
+    	if(lights.length > 0) {
+	    	
+	    	for(var i = 0; i < lights.length; i++) {
+	    		var light = lights[i];
+			light.refresh(transMat);
+	    		
+	    		switch(light.type) {
+	    			case Light.TYPE_AMBIENT_LIGHT:
+	    				obj.shaderProgram.setParameter(part.getParameterById("uAmbientColor" + ambCount), light.color.flatten());
+	    				ambCount++;
+						break;
+					case Light.TYPE_DIRECTIONAL_LIGHT:
+						obj.shaderProgram.setParameter(part.getParameterById("uDirectionalColor"+ dirCount), light.color.flatten());
+						obj.shaderProgram.setParameter(part.getParameterById("uDirectionalDirection" +dirCount), light.direction.flatten());
+						dirCount++;
+						break;
+					case Light.TYPE_POINT_LIGHT:
+						obj.shaderProgram.setParameter(part.getParameterById("uPointColor"+pointCount), light.color.flatten());
+						obj.shaderProgram.setParameter(part.getParameterById("uPointPosition"+pointCount), light.position.flatten());
+						pointCount++;
+						break;
+					case Light.TYPE_SPOT_LIGHT:
+						break;
+	    		}
+	    	}
+    	}
+    	
+		//var s = (pointCount > 0);
+		//obj.shaderProgram.setParameter(part.getParameterById("usePointLights"), s);
+		obj.shaderProgram.setParameter(part.getParameterById("uPointLightsCount"), pointCount);
+		
+		//s = (dirCount>0);
+		//obj.shaderProgram.setParameter(part.getParameterById("useDirectionalLights"), s);
+		obj.shaderProgram.setParameter(part.getParameterById("uDirectionalLightsCount"), dirCount);
+		
+		//s = (ambCount>0);
+		//obj.shaderProgram.setParameter(part.getParameterById("useAmbientLights"), s);
+		obj.shaderProgram.setParameter(part.getParameterById("uAmbientLightsCount"), ambCount);
+		
+		if(obj.sheen && pointCount > 0) {
+    		obj.shaderProgram.setParameter(part.getParameterById("useSpecularLights"), true);
+			obj.shaderProgram.setParameter(part.getParameterById("uSpecularColor"), obj.sheenColor.flatten());
+			obj.shaderProgram.setParameter(part.getParameterById("uShininess"), obj.shininess);		
+    	} else {
+    		obj.shaderProgram.setParameter(part.getParameterById("useSpecularLights"), false);
+    	}
     }
 }
 
