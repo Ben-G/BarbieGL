@@ -22,47 +22,19 @@
 <script type="text/javascript" src="components/tile.js"></script>
 <script type="text/javascript" src="text/bmFont.js"></script>
 <script type="text/javascript" src="animation.js"></script>
+<script type="text/javascript" src="UIBase.js"></script>
 
 
 <script type="text/javascript">
 
-
-function mouseUpCanvas(){
-	var hitObject = hitTest(event.offsetX, event.offsetY, myRoot);
-                                                if (hitObject.mouseUp != null){ 
-                                                	hitObject.mouseUp();       
-                                                }     
-}
-
-function mouseDownCanvas(){
-	var hitObject = hitTest(event.offsetX, event.offsetY, myRoot);
-                                                if (hitObject.mouseDown != null){ 
-                                                	hitObject.mouseDown();       
-                                                }                                               
-}
-
-function keyDownCanvas(){	 
-	if (event.keyCode == 46){
-		textUnit.deleteLetterAt(textUnit.cursor.positionId);
-	}
-	if (event.keyCode == 8){
-		textUnit.deleteLetterAt(textUnit.cursor.positionId-1);
-	}
-	if (event.keyCode == 39){ 
-		textUnit.moveCursorRight();
-	}
-	if (event.keyCode == 37){
-		textUnit.moveCursorLeft(); 
-	}	
-}
-
-function keyPressCanvas(){ 
-		textUnit.insertLetterAt(textUnit.cursor.positionId,event.keyCode);
-}
-
 function init() {
     object3d = new Array();
+    
  	var myGl = WebGLBase.initGL(document.getElementById("scene"));
+ 	var myUI = new WebGLBase_UI(document.getElementById("scene"),document.getElementById("body"));
+ 	WebGLBase.UIDelegate = myUI;
+ 	
+ 	
     var myShaders = new Array();
     var myShaders2 = new Array();
     var myShaders3 = new Array();
@@ -94,7 +66,8 @@ function init() {
     var object3dCube = WebGLBase.createObject3D(triangles, myGl);
     
     
-    textUnit = new TextUnit(myGl); 
+    textUnit = new TextUnit(myGl, 20, 10); 
+    textUnit2 = new TextUnit(myGl, 10, 5);
 
 	
 	var myTexture = WebGLBase.textureModel.find("texpyra.jpg", myGl);
@@ -123,8 +96,13 @@ function init() {
                     object3dCube.yOffset = -5;
                     myRoot.add(object3d3);
                     myRoot.add(textUnit);
+                    myRoot.add(textUnit2);
                     textUnit.zOffset = -30; 
                     textUnit.xOffset = -10;
+                    
+                    textUnit2.zOffset = -35;
+                    textUnit2.yOffset = 8;
+                    
                     object3d3.yOffset = 4;
                     object3d3.xOffset = 10;
                     object3d3.zOffset = -40;
@@ -134,7 +112,7 @@ function init() {
                     triangle.xOffset = 0;
                     triangle.zOffset = -40;
                     triangle.startRotation(2,"y");
-                    //textUnit.startRotation(1,"y");
+                    //textUnit2.startRotation(1,"y");
                     triangle.onMyFirstEvent = function(event){
                     							var hitObject = hitTest(event.offsetX, event.offsetY, myRoot);
                                                 //console.log(hitObject);    
@@ -179,6 +157,7 @@ function init() {
     		function(data){
     			myMash = data;
     			myMash.connectSuccessor(myMash._animations[1], myMash._animations[0]);
+    			
     		}
     ));      
     
@@ -213,15 +192,24 @@ function init() {
 				textUnit.setShaderProgram(myTextShaderP);
 				textUnit.name = "textUnit";
 				textUnit.cursor.setShaderProgram(myShaderProgram2);
+				textUnit.backgroundField.setShaderProgram(myShaderProgram2);
 
 				textUnit.setBitmapFont(text_a,newFont);
-				textUnit.setMaxWidth(5);
-				textUnit.setMaxWidth(20);
-				textUnit.setFontSize(0.7);
+				textUnit.setFontSize(1);
 				textUnit.setText("AB");
 				textUnit.cursor.addAnimationMash(myMash);
-				myMash.start();
 				
+				textUnit2.setShaderProgram(myTextShaderP);
+				textUnit2.name = "textUnit2";
+				textUnit2.cursor.setShaderProgram(myShaderProgram2);
+				textUnit2.backgroundField.setShaderProgram(myShaderProgram2);
+				
+				textUnit2.setBitmapFont(text_a,newFont);
+				textUnit2.setFontSize(1);
+				textUnit2.setText("TextUnit2");
+				//textUnit2.cursor.addAnimationMash(myMash2);
+				
+				myMash.start();
 				//console.log(myTextShaderP.fragmentShader.parts[0].getParameterById("marked"));
 				myTextShaderP.setParameter(myTextShaderP.fragmentShader.parts[0].getParameterById("marked"), true);
 				
@@ -252,8 +240,8 @@ function init() {
 
 </script>
 </head>
-<body onload="init()" onkeydown='keyDownCanvas(event);' onkeypress='keyPressCanvas(event);'>
-<canvas id="scene" onmousedown="mouseDownCanvas()" onmouseup="mouseUpCanvas()" onClick='WebGLBase.event.eventOccured("a",event);' width=512 height=512></canvas>
+<body id="body" onload="init()">
+<canvas id="scene" width=512 height=512></canvas>
 <button name="Klickmich" type="button"
       value="Überraschung" onclick='WebGLBase.event.eventOccured("moveLeft","blabla");'>
       <p>

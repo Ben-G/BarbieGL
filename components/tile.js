@@ -17,12 +17,10 @@ Tile = function(gl) {
 
 Tile.prototype = new Object3D();
 
-Tile.prototype.refresh = function(transMat) {
-	var transMatReturn = Object3D.prototype.refresh.call(this,transMat);
+Tile.prototype.prepareDrawing = function(transMat) {
 	if (this.marked == true){ 
 		this.shaderProgram.setParameter(this.shaderProgram.fragmentShader.parts[0].getParameterById("marked"), true);
 	}else{
 		this.shaderProgram.setParameter(this.shaderProgram.fragmentShader.parts[0].getParameterById("marked"), false);
 	}
-	return transMatReturn;
 }
