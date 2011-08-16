@@ -66,6 +66,7 @@ Drawer.prototype = {
     	gl.useProgram(shaderProgram.binary);
     	var translationMat = obj.refresh(transMat);	
 
+
     	
         //console.log("  " +   obj.name + " " + (new Date().getTime() - anfang) + " ms");
         if (obj.children.length > 0){
@@ -75,6 +76,11 @@ Drawer.prototype = {
                 
             }
         }
+        
+       // if(obj.mvMatrixHasChanged) {
+        	obj.updateBoundingBox(gl, shaderProgram);
+        	//console.log("ipdate", obj.name)
+       // }
         
         //this.drawObject(obj,gl,shaderProgram);
         if (obj != this.rootElement){
@@ -91,7 +97,7 @@ Drawer.prototype = {
        
         
        	//gl.useProgram(shaderProgram.binary);
-        obj.updateBoundingBox(gl, shaderProgram);
+
         
         //console.log(obj.name + " " + (new Date().getTime() - anfang) + " ms");
         /*gl.bindBuffer(gl.ARRAY_BUFFER, obj.boundingBox.buffer.values);
@@ -101,7 +107,7 @@ Drawer.prototype = {
        
         
     },
-    drawObject: function(obj, translationMat){
+    drawObject: function(obj){
     	var gl = obj.gl;
     	var shaderProgram = obj.shaderProgram;
     	gl.useProgram(shaderProgram.binary);
@@ -111,7 +117,7 @@ Drawer.prototype = {
     		obj.prepareDrawing();
 	    	if (obj.buffer.itemSize != null) {
 	    		//console.log("drawing ", obj.name, obj.shaderProgram);
-	    		//this.drawLights(obj, translationMat);
+	    		this.drawLights(obj, obj.lastTranslMatrix);
 	    		
 	    		//console.log(obj.name, shaderProgram);
 	    		if(obj.perspectiveHasChanged) {
@@ -142,30 +148,11 @@ Drawer.prototype = {
 			    	TextureModel.activate(obj);      	              	
 			    }
 			    // DEBUGGING OUTPUT for webgl inspector
-			    gl.getUniformLocation(shaderProgram.binary, "drawing " + obj.name);
+			   // gl.getUniformLocation(shaderProgram.binary, "drawing " + obj.name);
 
 			    gl.drawArrays(gl.TRIANGLES, 0, obj.buffer.numItems);
 	        }
        }
-        //console.log("  " +   obj.name + " " + (new Date().getTime() - anfang) + " ms");
-        if (obj.children.length > 0){
-            for (var i=0; i<obj.children.length;i++){
-            	 this.currentShaderProgram = obj.children[i].shaderProgram;
-                 this.drawElement(obj.children[i],gl,this.currentShaderProgram, translationMat);
-                
-            }
-        }
-        
-       	//gl.useProgram(shaderProgram.binary);
-       obj.updateBoundingBox(gl, shaderProgram);
-        
-        //console.log(obj.name + " " + (new Date().getTime() - anfang) + " ms");
-        /*gl.bindBuffer(gl.ARRAY_BUFFER, obj.boundingBox.buffer.values);
-        gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, obj.boundingBox.buffer.itemSize, gl.FLOAT, false, 0, 0);
-        gl.drawArrays(gl.LINE_LOOP, 0, obj.boundingBox.buffer.numItems);   
-        */
-       
-        
     },
     drawLights: function(obj, transMat) {
     	var lights = obj.getAllLights();
@@ -223,4 +210,5 @@ Drawer.prototype = {
 	    }
     }
 }
+
 

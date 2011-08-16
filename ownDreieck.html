@@ -133,9 +133,7 @@ function init() {
                     triangle.add(object3dCube);
                     object3dCube.xOffset = -5;
                     object3dCube.yOffset = -5;
-                    myRoot.add(object3d3);
-
-                    
+                    myRoot.add(object3d3);                    
                    
                                     
                     object3d3.yOffset = 4;
@@ -204,7 +202,7 @@ function init() {
                 var textShader_vert = ShaderBuilder.buildShaderFromParts(new Array(myTextShader[0]), Shader.TYPE_VERTEX_SHADER, myGl);   
                 var textShader = ShaderBuilder.buildShaderFromParts(new Array(myTextShader[1]), Shader.TYPE_FRAGMENT_SHADER, myGl);    
                    
-                var myShaderProgram = ShaderProgramBuilder.buildShaderProgram(vertShader, fragShader);
+                //var myShaderProgram = ShaderProgramBuilder.buildShaderProgram(vertShader, fragShader);
                 var myShaderProgram2 = ShaderProgramBuilder.buildShaderProgram(vertShader2, fragShader2);
                 var myShaderProgram3 = ShaderProgramBuilder.buildShaderProgram(vertShader3, fragShader3);
                 var myTextShaderP = ShaderProgramBuilder.buildShaderProgram(textShader_vert, textShader); 
@@ -226,6 +224,7 @@ function init() {
     			console.log(textUnit2);
     			
     			myRoot.add(myWindow);
+    			myRoot.name = "root";
     			//myRoot.add(textUnit2);
                 
                 myWindow.addSubview(textUnit);

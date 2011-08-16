@@ -526,6 +526,7 @@ Shader.prototype = {
 			"attribute vec3 aNormals;\n" +
 			"uniform mat4 uMVMatrix;\n"+
 			"uniform mat4 uNMatrix;\n"+
+			"varying mat4 vNMatrix;\n"+
 			"varying vec3 vNormals;\n"+
 			"varying vec4 vVertexPosition;\n"+
 			"uniform mat4 uPMatrix;\n\n";
@@ -533,6 +534,7 @@ Shader.prototype = {
 			para_src = "uniform mat4 uMVMatrix;\n"+
 			"varying vec3 vNormals;\n"+
 			"uniform mat4 uNMatrix;\n"+
+			"varying mat4 vNMatrix;\n"+
 			"varying vec4 vVertexPosition;\n"+
 			"uniform mat4 uPMatrix;\n\n";
 		}
@@ -543,6 +545,7 @@ Shader.prototype = {
 			main_src += "\tvec4 originalPosition = vec4(aVertexPosition,1.0);\n";
 			main_src += "\tvec4 vertexPosition = vec4(aVertexPosition,1.0);\n";
 			main_src += "\tvNormals = aNormals;\n";
+			main_src += "\tvNMatrix = uNMatrix;\n";
 		} else {
 			main_src += "\tvec4 fragColor = vec4(0.0,0.0,0.0,0.0);\n"
 		}
@@ -670,7 +673,7 @@ ShaderProgram.prototype = {
 			location = this.parameterLocations[cacheName];
 		}
 		if(location == null || location == -1) {
-			//console.log("not found ", cacheName);
+			console.log("not found ", cacheName);
 			//console.log(this.fragmentShader.getSrc());
 			return;
 		} 

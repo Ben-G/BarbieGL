@@ -91,13 +91,24 @@ WebGLBase.prototype = {
         newObject.buffer.values = gl.createBuffer();
 	    gl.bindBuffer(gl.ARRAY_BUFFER, newObject.buffer.values);
         var totalItemSize = 0;	
+        // TODO: NORMALS ORDENTLICH BERECHNEN
+        var normals = new Array();
         for (var i=0; i<polygons.length; i++){
 	        newObject.vertices = newObject.vertices.concat(polygons[i]);
+	        normals = normals.concat(polygons[i]);
 	        totalItemSize+=polygons[i].length;
         }
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(newObject.vertices), gl.STATIC_DRAW);
         newObject.buffer.itemSize = 3;
         newObject.buffer.numItems = totalItemSize/3;
+        
+        newObject.normalsBuffer = new Object();
+	    newObject.normalsBuffer.values = gl.createBuffer();
+	    gl.bindBuffer(gl.ARRAY_BUFFER, newObject.normalsBuffer.values);
+	    newObject.normalsBuffer.buffer = normals;
+	    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(newObject.normalsBuffer.buffer), gl.STATIC_DRAW);
+	    newObject.normalsBuffer.itemSize = 3;
+	    newObject.normalsBuffer.numItems = totalItemSize/3;
         
         if (texBuffer != null){
         	newObject.texBuffer = new Object();
@@ -131,9 +142,14 @@ WebGLBase.prototype = {
     },
     
     createBoundingBox: function(polygons, boundingBox ,gl){
+    	
     	if(boundingBox == null){ 
-    			return this.createObject3D(polygons, gl);    	  
-    	}      
+    			boundingBox = new Object();
+    			
+    			//return this.createObject3D(polygons, gl);    	  
+    	}    
+    	boundingBox.vertices = polygons;
+    	return boundingBox;  
 	    gl.bindBuffer(gl.ARRAY_BUFFER, boundingBox.buffer.values);  
 	    boundingBox.vertices = polygons;
 	    var totalItemSize = polygons.length;                     
