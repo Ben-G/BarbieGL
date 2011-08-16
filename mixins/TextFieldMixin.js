@@ -65,6 +65,10 @@ var asTextField = function(){
 		}
 		
 	
+		this.setColor = function(color){
+			Object3D.prototype.setColor.call(this,color);
+			this.backgroundField.setColor(color);
+		}	
 	    //this.add(this.cursor);
 	    //this.add(this.backgroundField);
 	}

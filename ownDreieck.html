@@ -119,7 +119,7 @@ function init() {
     myDefs[0] = WebGLBase.shaderPartFactory.createFromName("vertshader_benji").addCallback(function(data){myShaders[0] = data; });
     myDefs[1] = WebGLBase.shaderPartFactory.createFromName("fragshader_benji").addCallback(function(data){myShaders[1] = data; });
     myDefs[2] = WebGLBase.shaderPartFactory.createFromName("vertshader_benji").addCallback(function(data){myShaders2[0] = data; });
-    myDefs[3] = WebGLBase.shaderPartFactory.createFromName("fragshader2_benji").addCallback(function(data){myShaders2[1] = data; });
+    myDefs[3] = WebGLBase.shaderPartFactory.createFromName2("dynamicColor", Shader.TYPE_FRAGMENT_SHADER).addCallback(function(data){myShaders2[1] = data; });
     myDefs[8] = WebGLBase.shaderPartFactory.createFromName("vertshader_texture").addCallback(function(data){myShaders3[0] = data; });
     myDefs.push( WebGLBase.shaderPartFactory.createFromName("vertshader_texture").addCallback(function(data){myTextShader[0] = data; }));
     myDefs.push( WebGLBase.shaderPartFactory.createFromName("textshader").addCallback(function(data){myTextShader[1] = data; }));
@@ -132,9 +132,7 @@ function init() {
                     triangle.add(object3dCube);
                     object3dCube.xOffset = -5;
                     object3dCube.yOffset = -5;
-                    myRoot.add(object3d3);
-
-                    
+                    myRoot.add(object3d3);                    
                    
                                     
                     object3d3.yOffset = 4;
@@ -203,7 +201,7 @@ function init() {
                 var textShader_vert = ShaderBuilder.buildShaderFromParts(new Array(myTextShader[0]), Shader.TYPE_VERTEX_SHADER, myGl);   
                 var textShader = ShaderBuilder.buildShaderFromParts(new Array(myTextShader[1]), Shader.TYPE_FRAGMENT_SHADER, myGl);    
                    
-                var myShaderProgram = ShaderProgramBuilder.buildShaderProgram(vertShader, fragShader);
+                //var myShaderProgram = ShaderProgramBuilder.buildShaderProgram(vertShader, fragShader);
                 var myShaderProgram2 = ShaderProgramBuilder.buildShaderProgram(vertShader2, fragShader2);
                 var myShaderProgram3 = ShaderProgramBuilder.buildShaderProgram(vertShader3, fragShader3);
                 var myTextShaderP = ShaderProgramBuilder.buildShaderProgram(textShader_vert, textShader); 
@@ -218,20 +216,36 @@ function init() {
     	
     	    	textUnit = new ScrollableTextUnit(myGl, 12, 5); 
     			textUnit2 = new StaticScrollableTextUnit(myGl, 12, 8); 
-    			myLabel = new Label(myGl,10,5);
-    			myButton = new BarbieButton(myGl,2.65,1);
-    			myWindow = new GLWindow(myGl, 20,15);
+    			myProfileName = new TextUnit(myGl,10,5);
+    			myButton = new BarbieButton(myGl,2.35,1);
+    			myWindow = new GLWindow(myGl, 16,16);
+    			myProfileWindow = new GLWindow(myGl,12,8);
+    			
+    			textUnit.backgroundField.name = "bg";
+    			textUnit.setColor($V([0,0,0,0.5]));
+    			textUnit2.setColor($V([0,0,0,0.5]));
+    			object3d3.setColor($V([0,0,1,0.5]));
+    			
+   				myButton.setColor($V([0,1,0,0.5]));
+   				myWindow.setColor($V([0,0,1,0.5]));
+  				myProfileWindow.setColor($V([0,0,1,0.5]));
+
+
     			
     			console.log(textUnit2);
     			
     			myRoot.add(myWindow);
+    			myRoot.add(myProfileWindow);
+    			myRoot.name = "root";
     			//myRoot.add(textUnit2);
     			
                 myWindow.addSubview(textUnit);
                 myWindow.addSubview(myButton);
                 myWindow.addSubview(textUnit2);
+                
+                myProfileWindow.addSubview(myProfileName);
     
-     			textUnit.zOffset =0; 
+     			textUnit.zOffset =0.1; 
                 textUnit.xOffset = 0.5;
                 textUnit.yOffset = -9.1;
                 textUnit.tileLayer = 1;    
@@ -240,31 +254,37 @@ function init() {
                 textUnit2.tileLayer = 1;    
                 textUnit2.xOffset = 0.5;
                 textUnit2.yOffset = -0.1;
-                textUnit2.zOffset = 0;
+                textUnit2.zOffset = 0.1;
                     
-                myLabel.tileLayer = 1;    
-                myLabel.xOffset = 0.1;
-                myLabel.yOffset = -0.1;
-                myLabel.zOffset = 0;
+                myProfileName.tileLayer = 1;    
+                myProfileName.xOffset = 0.1;
+                myProfileName.yOffset = -0.1;
+                myProfileName.zOffset = 0.1;
                 
-                myButton.zOffset = 1;
-                myButton.xOffset = 15;
-                myButton.yOffset = -13;
+                myButton.zOffset = 0.1;
+                myButton.xOffset = 0.5;
+                myButton.yOffset = -14.5;
+                myButton.tileLayer = 1;
                    
                 myWindow.zOffset = -29;
                 myWindow.yOffset = 10;
 				myWindow.xOffset = -5;
 				
+				myProfileWindow.zOffset = -28;
+                myProfileWindow.yOffset = 10;
+				myProfileWindow.xOffset = 5;
+				
 
 				myWindow.name = "window";
 				
 				myWindow.titleBar.setText("Chat window");
+				myProfileWindow.titleBar.setText("Profile");
 				
 				//myWindow.startRotation(1,"y");
 				//textUnit2.startRotation(1,"y");
-				/*myWindow.rotation = true;
-				myWindow.rotationAxis = "x";
-				myWindow.rotValue = -10;*/
+				myWindow.rotation = true;
+				myWindow.rotationAxis = "y";
+				myWindow.rotValue = 0;
                    
                 //TODO default setting for shaderPrograms   
                 myRoot.setShaderProgram(myShaderProgram2);
@@ -280,7 +300,7 @@ function init() {
 				textUnit.backgroundField.setShaderProgram(myShaderProgram2);
 
 				textUnit.setBitmapFont(text_a,newFont);
-				textUnit.setFontSize(-15);
+				textUnit.setFontSize(-45);
 				textUnit.setText("AB");
 				
 				textUnit2.setShaderProgram(myTextShaderP);
@@ -288,19 +308,19 @@ function init() {
 				textUnit2.backgroundField.setShaderProgram(myShaderProgram2);
 				
 				textUnit2.setBitmapFont(text_a,newFont);
-				textUnit2.setFontSize(-15);
+				textUnit2.setFontSize(-45);
 				textUnit2.setText("TextUnit2");
 				
 				
-				myLabel.setShaderProgram(myTextShaderP);
-				myLabel.name = "textUnit2";
-				myLabel.backgroundField.setShaderProgram(myShaderProgram2);
+				myProfileName.setShaderProgram(myTextShaderP);
+				myProfileName.name = "textUnit2";
+				myProfileName.backgroundField.setShaderProgram(myShaderProgram2);
 
 				
-				myLabel.setBitmapFont(text_a,newFont);
-				myLabel.setFontSize(-20);
-				myLabel.setText("Boehmi:"+String.fromCharCode(13)+"Stop this!");
-				myLabel.backgroundField.visible = false;
+				myProfileName.setBitmapFont(text_a,newFont);
+				myProfileName.setFontSize(-20);
+				myProfileName.setText("Benjamin");
+				myProfileName.backgroundField.visible = false;
 				
 				
 			
@@ -311,7 +331,7 @@ function init() {
 				myButton.setFontSize(-20);
 				myButton.setText("Send"); 
 				myButton.clicked = function(){if (conn.readyState === 1) {
-      												conn.send(JSON.stringify(textUnit.text)); 
+      												conn.send(JSON.stringify(myProfileName.text+":"+textUnit.text)); 
       												textUnit2.setText(textUnit2.text+String.fromCharCode(13)+textUnit.text);}
 												textUnit.setText("");}
 				
@@ -330,6 +350,9 @@ function init() {
                 triangle3.addTexture(myTexture, "randomTextureCoord", "uSampler" ,myGl);
                 triangle2.addTexture(myTexture2, "randomTextureCoord", "uSampler" ,myGl);
                 myWindow.titleBar.backgroundField.addTexture(titleBarTexture, "randomTextureCoord", "uSampler" ,myGl);
+                myProfileWindow.titleBar.backgroundField.addTexture(titleBarTexture, "randomTextureCoord", "uSampler" ,myGl);
+                myButton.backgroundField.setShaderProgram(WebGLBase.textureShaderProgram);
+                myButton.backgroundField.addTexture(titleBarTexture, "randomTextureCoord", "uSampler" ,myGl); 
                 //textUnit.children[0].addTexture(text_a, "randomTextureCoord", "uSampler" ,myGl);
                 //textUnit.children[1].addTexture(text_a, "randomTextureCoord", "uSampler" ,myGl); 
 
@@ -349,7 +372,7 @@ function init() {
 </script>
 </head>
 <body id="body" onload="init()">
-<canvas id="scene" width=512 height=512></canvas>
+<canvas id="scene" width=1400 height=650></canvas>
 <button name="Klickmich" type="button"
       value="Überraschung" onclick='WebGLBase.event.eventOccured("moveLeft","blabla");'>
       <p>

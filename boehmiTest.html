@@ -207,8 +207,8 @@
 					var vertShader3 = ShaderBuilder.buildShaderFromParts(new Array(myShaders3[0]), Shader.TYPE_VERTEX_SHADER, myGl);
 					var fragShader3 = ShaderBuilder.buildShaderFromParts(new Array(myShaders3[1]), Shader.TYPE_FRAGMENT_SHADER, myGl);
 
-				//	fragShader3.addShaderPart(l);
-				//	vertShader3.addShaderPart(s);
+					fragShader3.addShaderPart(l);
+					vertShader3.addShaderPart(s);
 					
 					//console.log(vertShader3.getSrc());
 					

@@ -7,6 +7,10 @@ function GLWindow(gl,width,height){
 	this.addSubview = function(obj){
 		this.backgroundField.add(obj);
 	}
+	
+	this.setColor = function(color) {
+		this.backgroundField.setColor(color);
+	}
 }
 
 extend(GLWindow, Object3D); 

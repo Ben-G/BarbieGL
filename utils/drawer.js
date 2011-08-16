@@ -17,7 +17,7 @@ Drawer.prototype = {
      startDrawing: function(object){
         this.currentObject = object;
         this.currentGl = object.gl;
-        this.currentGl.clearColor(0.0, 0.0, 0.0, 1.0);     
+        this.currentGl.clearColor(0.0, 0.0, 0.0, 0.0);     
         this.currentGl.clearDepth(1.0);
         this.currentGl.enable(this.currentGl.DEPTH_TEST);
         this.currentGl.depthFunc(this.currentGl.LEQUAL);
@@ -66,6 +66,7 @@ Drawer.prototype = {
     	gl.useProgram(shaderProgram.binary);
     	var translationMat = obj.refresh(transMat);	
 
+
     	
         //console.log("  " +   obj.name + " " + (new Date().getTime() - anfang) + " ms");
         if (obj.children.length > 0){
@@ -74,6 +75,12 @@ Drawer.prototype = {
                  this.drawElement(obj.children[i],gl,this.currentShaderProgram, translationMat);
                 
             }
+        }
+        
+        if(obj.shouldUpdateBoundingBox) {
+        	obj.updateBoundingBox(gl, shaderProgram);
+        	
+        	//console.log("ipdate", obj.name)
         }
         
         //this.drawObject(obj,gl,shaderProgram);
@@ -91,7 +98,7 @@ Drawer.prototype = {
        
         
        	//gl.useProgram(shaderProgram.binary);
-        obj.updateBoundingBox(gl, shaderProgram);
+
         
         //console.log(obj.name + " " + (new Date().getTime() - anfang) + " ms");
         /*gl.bindBuffer(gl.ARRAY_BUFFER, obj.boundingBox.buffer.values);
@@ -101,7 +108,7 @@ Drawer.prototype = {
        
         
     },
-    drawObject: function(obj, translationMat){
+    drawObject: function(obj){
     	var gl = obj.gl;
     	var shaderProgram = obj.shaderProgram;
     	gl.useProgram(shaderProgram.binary);
@@ -110,6 +117,10 @@ Drawer.prototype = {
     	if(obj.visible) {
     		obj.prepareDrawing();
 	    	if (obj.buffer.itemSize != null) {
+
+	    		this.drawLights(obj, obj.lastTranslMatrix);
+	    		
+
 	    		//console.log(obj.name, shaderProgram);
 	    		if(obj.perspectiveHasChanged) {
 		     		shaderProgram.setParameter(WebGLBase.stdVertParams["P_MATRIX"], new Float32Array(WebGLBase.pMatrix.flatten()));
@@ -134,6 +145,63 @@ Drawer.prototype = {
 			    gl.drawArrays(gl.TRIANGLES, 0, obj.buffer.numItems);
 	        }
        }
+
+    },
+    drawLights: function(obj, transMat) {
+    	var lights = obj.getAllLights();
+    	var pointCount = dirCount = ambCount = 0;
+    	var part = obj.shaderProgram.fragmentShader.getPartsByName("lighting")[0];
+    	
+    	if(part != null) {
+	    	
+	    	if(lights.length > 0) {
+		    	
+		    	for(var i = 0; i < lights.length; i++) {
+		    		var light = lights[i];
+				light.refresh(transMat);
+		    		
+		    		switch(light.type) {
+		    			case Light.TYPE_AMBIENT_LIGHT:
+		    				obj.shaderProgram.setParameter(part.getParameterById("uAmbientColor" + ambCount), light.color.flatten());
+		    				ambCount++;
+							break;
+						case Light.TYPE_DIRECTIONAL_LIGHT:
+							obj.shaderProgram.setParameter(part.getParameterById("uDirectionalColor"+ dirCount), light.color.flatten());
+							obj.shaderProgram.setParameter(part.getParameterById("uDirectionalDirection" +dirCount), light.direction.flatten());
+							dirCount++;
+							break;
+						case Light.TYPE_POINT_LIGHT:
+							obj.shaderProgram.setParameter(part.getParameterById("uPointColor"+pointCount), light.color.flatten());
+							obj.shaderProgram.setParameter(part.getParameterById("uPointPosition"+pointCount), light.position.flatten());
+							pointCount++;
+							break;
+						case Light.TYPE_SPOT_LIGHT:
+							break;
+		    		}
+		    	}
+	    	}
+	    	
+			//var s = (pointCount > 0);
+			//obj.shaderProgram.setParameter(part.getParameterById("usePointLights"), s);
+			obj.shaderProgram.setParameter(part.getParameterById("uPointLightsCount"), pointCount);
+			
+			//s = (dirCount>0);
+			//obj.shaderProgram.setParameter(part.getParameterById("useDirectionalLights"), s);
+			obj.shaderProgram.setParameter(part.getParameterById("uDirectionalLightsCount"), dirCount);
+			
+			//s = (ambCount>0);
+			//obj.shaderProgram.setParameter(part.getParameterById("useAmbientLights"), s);
+			obj.shaderProgram.setParameter(part.getParameterById("uAmbientLightsCount"), ambCount);
+			
+			if(obj.sheen && pointCount > 0) {
+	    		obj.shaderProgram.setParameter(part.getParameterById("useSpecularLights"), true);
+				obj.shaderProgram.setParameter(part.getParameterById("uSpecularColor"), obj.sheenColor.flatten());
+				obj.shaderProgram.setParameter(part.getParameterById("uShininess"), obj.shininess);		
+	    	} else {
+	    		obj.shaderProgram.setParameter(part.getParameterById("useSpecularLights"), false);
+	    	}
+	    }
     }
 }
+
 

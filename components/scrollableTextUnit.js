@@ -26,6 +26,7 @@ function ScrollableTextUnit(gl,maxWidth,maxHeight){
 		this.visibleLines = Math.floor(this.maxHeight/this.scrollStep);
 		console.log(this.visibleLines);
 	}
+	
 }
 
 extend(ScrollableTextUnit, Object3D); 

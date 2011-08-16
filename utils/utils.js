@@ -361,9 +361,9 @@ function zSort(object3D1, object3D2){
 	if (object3D1.layer < object3D2.layer)
 			return -1;
 			
-	if (object3D1.minPoint.z > object3D2.minPoint.z)
+	if (object3D1.ownMinPoint.z > object3D2.ownMinPoint.z)
 		return -1;
-	if (object3D1.minPoint.z < object3D2.minPoint.z)
+	if (object3D1.ownMinPoint.z < object3D2.ownMinPoint.z)
 		return +1;
 		
 
