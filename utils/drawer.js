@@ -17,7 +17,7 @@ Drawer.prototype = {
      startDrawing: function(object){
         this.currentObject = object;
         this.currentGl = object.gl;
-        this.currentGl.clearColor(0.0, 0.0, 0.0, 1.0);     
+        this.currentGl.clearColor(0.0, 0.0, 0.0, 0.0);     
         this.currentGl.clearDepth(1.0);
         this.currentGl.enable(this.currentGl.DEPTH_TEST);
         this.currentGl.depthFunc(this.currentGl.LEQUAL);
@@ -77,10 +77,11 @@ Drawer.prototype = {
             }
         }
         
-       // if(obj.mvMatrixHasChanged) {
+        if(obj.shouldUpdateBoundingBox) {
         	obj.updateBoundingBox(gl, shaderProgram);
+        	
         	//console.log("ipdate", obj.name)
-       // }
+        }
         
         //this.drawObject(obj,gl,shaderProgram);
         if (obj != this.rootElement){
@@ -148,7 +149,7 @@ Drawer.prototype = {
 			    	TextureModel.activate(obj);      	              	
 			    }
 			    // DEBUGGING OUTPUT for webgl inspector
-			   // gl.getUniformLocation(shaderProgram.binary, "drawing " + obj.name);
+			    //gl.getUniformLocation(shaderProgram.binary, "drawing " + obj.name);
 
 			    gl.drawArrays(gl.TRIANGLES, 0, obj.buffer.numItems);
 	        }

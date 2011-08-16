@@ -36,7 +36,8 @@ var asDraggable = function(){
 var asScrollable = function(){
 	
 	this.scrollbarInitialize = function(){
-	var scrollUpButton = new BarbieButton(this.gl,1.4,1); 
+	var scrollUpButton = new BarbieButton(this.gl,1.4,1);
+	scrollUpButton.tileLayer = 1; 
 	scrollUpButton.setShaderProgram(WebGLBase.UIDelegate.ButtonShaderText);
 	scrollUpButton.backgroundField.setShaderProgram(WebGLBase.UIDelegate.ButtonShaderBack);
 	scrollUpButton.name = "Button";				
@@ -47,6 +48,7 @@ var asScrollable = function(){
 	this.scrollUpButton = scrollUpButton;
 	
 	var scrollDownButton = new BarbieButton(this.gl,1.4,1); 
+	scrollDownButton.tileLayer = 1;
 	scrollDownButton.setShaderProgram(WebGLBase.UIDelegate.ButtonShaderText);
 	scrollDownButton.backgroundField.setShaderProgram(WebGLBase.UIDelegate.ButtonShaderBack);
 	scrollDownButton.name = "Button";				
@@ -56,6 +58,8 @@ var asScrollable = function(){
 	scrollDownButton.xOffset = this.maxWidth;
 	scrollDownButton.yOffset = -(this.maxHeight-scrollDownButton.maxHeight);
 	this.scrollDownButton = scrollDownButton;	
+	
+
 	
 	
 	this.scrollStep = 1;
@@ -74,6 +78,13 @@ var asScrollable = function(){
 			
 	}
 		
+	this.setColor = function(color){
+		Object3D.prototype.setColor.call(this,color);
+		this.backgroundField.setColor(color);
+		this.scrollUpButton.backgroundField.setColor(color);
+		this.scrollDownButton.backgroundField.setColor(color);
+	}
+
 }
 
 this.hideScrolledOutLetters = function(){

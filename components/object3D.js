@@ -13,6 +13,8 @@ function Object3D(gl){
     this.vertexPositionsHaveChanged = true;
     this.parent = null;
     this.lights = new Array();
+    this.color = null;
+    this.colorHasChanged = true;
     //this.boundingBox
     //this.lastTranslMatrix
     //this.minPoint;
@@ -217,6 +219,7 @@ Object3D.prototype = {
 		    this.lastTranslMatrix = translationMatrix.x(rotationMatrix).x(scalingMatrix);
 		    if(tmp == null || !tmp.eql(this.lastTranslMatrix)) {
 		    	this.mvMatrixHasChanged = true;
+		    	this.setShouldUpdateBoundingBox(true);
 		    }  else {
 		    	this.mvMatrixHasChanged = false;
 		    }
@@ -228,7 +231,34 @@ Object3D.prototype = {
             return this.lastTranslMatrix;
     },
     
+    setShouldUpdateBoundingBox: function(s) {
+    	if(this.parent != null) this.parent.setShouldUpdateBoundingBox(s);
+    	this.shouldUpdateBoundingBox = s;
+    },
     
+    prepareDrawing: function() {
+    	//if(this.colorHasChanged) {
+	    	var part = this.shaderProgram.fragmentShader.getPartsByName("dynamicColor")[0];
+	    	if(part != null) {
+	    		if(this.color != null) {
+	    			this.shaderProgram.setParameter(part.getParameterById("color"), this.color.flatten());
+	    		} else {
+	    			this.shaderProgram.setParameter(part.getParameterById("color"), [0,1,0,1]);
+	    		}
+	    		this.colorHasChanged = false;
+	    	}
+	    	
+	    //}
+    },
+    
+    setColor: function(color) {
+    	this.color = color;
+    	this.colorHasChanged = true;
+    },
+    
+     getColor: function() {
+    	return this.color;
+    },
     
     refreshPartActivators : function() {
     	var act;
@@ -345,6 +375,10 @@ Object3D.prototype = {
             the childrens one as new bounding, so that parents encapsulate children
         */
            
+         this.ownMinPoint = new Point3D(VMin.elements[0],VMin.elements[1],VMin.elements[2]);
+         this.ownMaxPoint = new Point3D(VMax.elements[0],VMax.elements[1],VMax.elements[2]);
+			
+           
              for (var i=0; i < this.children.length; i++){
     
                 
@@ -368,7 +402,7 @@ Object3D.prototype = {
 
             }
                    
-        
+         
         
         this.minPoint = new Point3D(VMin.elements[0],VMin.elements[1],VMin.elements[2]);
         this.maxPoint = new Point3D(VMax.elements[0],VMax.elements[1],VMax.elements[2]);
@@ -376,14 +410,11 @@ Object3D.prototype = {
 		//var boundings= new Array();
         boundings = createBoundingBox(this.minPoint, this.maxPoint);
         this.boundingBox = WebGLBase.createBoundingBox(boundings, this.boundingBox, gl);
-
+		this.shouldUpdateBoundingBox = false;
 
         //Override the translationMatrix in the Shader because here the translation is applied
         //to the vertices directly
         
        //var mvUniform = gl.getUniformLocation(shaderProgram.binary, "uMVMatrix");
        //gl.uniformMatrix4fv(mvUniform, false, new Float32Array(Matrix.I(4).flatten()));
-    },
-    prepareDrawing: function(){
-    	
     }}
