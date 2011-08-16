@@ -1,5 +1,4 @@
 function Object3D(gl){
-	asMaterial.call(Object3D.prototype);
 	this.gl = gl;
 	this.buffer = new Object();
 	this.texBuffer = null;

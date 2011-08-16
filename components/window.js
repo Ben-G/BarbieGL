@@ -23,9 +23,7 @@ GLWindow.prototype.windowInitialize = function(width, height){
 	this.backgroundField.setShaderProgram(WebGLBase.UIDelegate.ButtonShaderBack);
 	this.add(this.backgroundField);
 	this.backgroundField.yOffset = -1;
-	
-	
-	
+		
 
 	this.titleBar = new Label(this.gl,width,1); 
 	this.titleBar.tileLayer = 1;

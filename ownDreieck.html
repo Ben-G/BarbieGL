@@ -19,7 +19,6 @@
 <script type="text/javascript" src="mixins/TextFieldMixin.js"></script>  
 <script type="text/javascript" src="mixins/UIMixin.js"></script>  
 <script type="text/javascript" src="skeleton.js"></script>
-<script type="text/javascript" src="lighting.js"></script>
 <script type="text/javascript" src="components/object3D.js"></script>
 <script type="text/javascript" src="components/texture.js"></script>
 <script type="text/javascript" src="components/textUnit.js"></script>
@@ -35,7 +34,7 @@
 
 
 
-<script type="text/javascript">
+
 <script type="text/javascript">
 
 conn = new Object();
@@ -56,8 +55,7 @@ function openConnection(){
     };
     
     conn.onclose = function (event) {
-      state.className = 'fail';
-      state.innerHTML = 'Socket closed';
+
     };
   }
 	
@@ -228,7 +226,7 @@ function init() {
     			
     			myRoot.add(myWindow);
     			//myRoot.add(textUnit2);
-                
+    			
                 myWindow.addSubview(textUnit);
                 myWindow.addSubview(myButton);
                 myWindow.addSubview(textUnit2);

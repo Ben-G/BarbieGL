@@ -113,7 +113,6 @@ var asTextField = function(){
 		
 		if (this.tileLayer != null){
 			tile.layer = this.tileLayer;
-			console.log("setting tileLayer");
 		}
 		
 		tile.objectHierarchyId = this.objectHierarchyIdFloat;
