@@ -16,8 +16,13 @@ var asDraggable = function(){
 		var hitPoint = WebGLBase.calculateClickVector(event.offsetX,event.offsetY, this,0);
 		hitPoint = $V([hitPoint.e(1),hitPoint.e(2),hitPoint.e(3),1]);
 		hitPoint = WebGLBase.pMatrix.inverse().x(hitPoint);
-		this.clickOffsetX = hitPoint.e(1) - this.xOffset;
-		this.clickOffsetY = hitPoint.e(2) - this.yOffset;
+		if (this.parentDrag == true){
+			this.clickOffsetX = hitPoint.e(1) - this.parent.xOffset;
+			this.clickOffsetY = hitPoint.e(2) - this.parent.yOffset;
+		}else{
+			this.clickOffsetX = hitPoint.e(1) - this.xOffset;
+			this.clickOffsetY = hitPoint.e(2) - this.yOffset;
+		}
 	} 
 	
 	
@@ -27,16 +32,29 @@ var asDraggable = function(){
 		        var hitPoint = WebGLBase.calculateClickVector(event.offsetX,event.offsetY, this,0);
 		        hitPoint = $V([hitPoint.e(1),hitPoint.e(2),hitPoint.e(3),1]);
 				hitPoint = WebGLBase.pMatrix.inverse().x(hitPoint);
-				var oldxOffset = this.xOffset;
-				var oldyOffset = this.yOffset;
-		   		this.xOffset = hitPoint.e(1) - this.clickOffsetX;
-		   		this.yOffset = hitPoint.e(2) - this.clickOffsetY;
+				//var oldxOffset = this.xOffset;
+				//var oldyOffset = this.yOffset;
+		   		var newxOffset = hitPoint.e(1)- this.clickOffsetX;
+		   		var newyOffset = hitPoint.e(2)- this.clickOffsetY;
 		   		
-		   		var xChange = this.xOffset - oldxOffset;
-		   		var yChange = this.yOffset - oldyOffset;
 		   		
-		   		//this.parent.xOffset += xChange;
-		   		//this.parent.yOffset += yChange;
+		   		if (this.parentDrag == true){
+					this.parent.xOffset = newxOffset;
+		   			this.parent.yOffset = newyOffset;
+				}else{
+					this.xOffset = newxOffset; 
+		   			this.yOffset = newyOffset;
+				}
+		   		
+		   		/*
+		   		var oldxOffset = this.parent.xOffset;
+				var oldyOffset = this.parent.yOffset;
+		   				   		
+		   		var xChange = newxOffset - oldxOffset;
+		   		var yChange = newyOffset - oldyOffset;
+		   		
+		   		this.parent.xOffset = newxOffset;
+		   		this.parent.yOffset = newyOffset;*/
 	   		}
 	}
 }
