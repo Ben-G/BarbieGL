@@ -15,7 +15,7 @@ function Object3D(gl){
     this.color = null;
     this.colorHasChanged = true;
     //this.boundingBox
-    //this.lastTranslMatrix
+    this.lastTranslMatrix = null;
     //this.minPoint;
     //this.maxPoint; 
     this.boundingNormals = new Array();
@@ -99,8 +99,9 @@ Object3D.prototype = {
 		for(var j=0;j<animation.getAnimations().length; j++) {
 			parts = parts.concat(animation.getAnimations()[j].parts);
 		}
-		
-		this._rebuildShaderProgram(parts);
+		if(parts.length > 0) {
+			this._rebuildShaderProgram(parts);
+		}
 	},
 	
 	removeAnimationMash : function (name) {
@@ -165,6 +166,8 @@ Object3D.prototype = {
 			var aniTransMats = new Array();
 			var aniScaleMats = new Array();
 			
+			
+			
 			for(var i in this.animationMashs) {
 				var mash = this.animationMashs[i];
 				mash.refresh(this);
@@ -178,10 +181,10 @@ Object3D.prototype = {
 			/**
 			 * compose the global translation matrix
 			 */
-		    var translationMatrix = Matrix.I(4);
+		    var translationMatrix; // = Matrix.I(4);
 
             if (transMat == null) {
-		        translationMatrix = translationMatrix.x(create3DTranslationMatrix(Vector.create([this.currentX, this.currentY, this.currentZ])).ensure4x4());
+		        translationMatrix = WebGLBase.unitMatrix.x(create3DTranslationMatrix(Vector.create([this.currentX, this.currentY, this.currentZ])).ensure4x4());
             }
             else {
                 translationMatrix = transMat;
@@ -194,39 +197,48 @@ Object3D.prototype = {
 			/**
 			 * compose the global rotation matrix
 			 */
-			var rotationMatrix = Matrix.I(4);
+			var rotationMatrix; // = Matrix.I(4);
 			
 		    if (this.rotation == true){
 			    this.rotValue += this.animationspeed;
 		   	 	this.rotationMatrix = WebGLBase.createRotationMatrix(this.rotationAxis, this.rotValue);
-		    	rotationMatrix = rotationMatrix.x(this.rotationMatrix);
+		    	rotationMatrix = WebGLBase.unitMatrix.x(this.rotationMatrix);
 		    }
 		    
 			for(var i = 0;i<aniRotMats.length;i++) {
-		    	rotationMatrix = rotationMatrix.x(aniRotMats[i]);
+				if(rotationMatrix == null) rotationMatrix = WebGLBase.unitMatrix.x(aniRotMats[i]);
+				else rotationMatrix = rotationMatrix.x(aniRotMats[i]);
 		    }
 		    
 		    /**
 			 * compose the global scaling matrix
 			 */
-			var scalingMatrix = Matrix.I(4);
+			var scalingMatrix;
 			
 			for(var i = 0;i<aniScaleMats.length;i++) {
-		    	scalingMatrix = scalingMatrix.x(aniScaleMats[i]);
+				if(scalingMatrix == null) scalingMatrix = WebGLBase.unitMatrix.x(aniScaleMats[i]);
+		    	else scalingMatrix = scalingMatrix.x(aniScaleMats[i]);
 		    }
 		    
-		    var tmp = this.lastTranslMatrix;
-		    this.lastTranslMatrix = translationMatrix.x(rotationMatrix).x(scalingMatrix);
-		    if(tmp == null || !tmp.eql(this.lastTranslMatrix)) {
+
+		    
+		    if(rotationMatrix != null) {
+		    	translationMatrix = translationMatrix.x(rotationMatrix);
+		    }
+		    if(scalingMatrix != null) {
+		    	translationMatrix = translationMatrix.x(scalingMatrix);
+		    }
+		    
+		    if(this.lastTranslMatrix == null || !this.lastTranslMatrix.eql(translationMatrix)) {
+		    	this.lastTranslMatrix = translationMatrix;
 		    	this.mvMatrixHasChanged = true;
 		    	this.setShouldUpdateBoundingBox(true);
+		    	this.normalMatrix = this.lastTranslMatrix.inverse();
+				this.normalMatrix = this.normalMatrix.transpose();
 		    }  else {
 		    	this.mvMatrixHasChanged = false;
 		    }
-		    
-		    this.normalMatrix = this.lastTranslMatrix.inverse();
-			this.normalMatrix = this.normalMatrix.transpose();
-		    
+
 			this.refreshPartActivators();
             return this.lastTranslMatrix;
     },

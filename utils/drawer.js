@@ -62,6 +62,7 @@ Drawer.prototype = {
     	//console.log("Frame:" + (new Date().getTime() - last_frame) + " ms");
     },
     drawElement: function(obj, gl, shaderProgram, transMat){
+    	
     	shaderProgram = obj.shaderProgram;
     	gl.useProgram(shaderProgram.binary);
     	var translationMat = obj.refresh(transMat);	
@@ -90,8 +91,9 @@ Drawer.prototype = {
         	//sort elements by z-value to ensure correct transparency calculation	
 
        		this.drawables.sort(zSort);
-       		
+       		//time = new Date().getTime();
        		for (var i=0; i < this.drawables.length; i++){
+       			
         		this.drawObject(this.drawables[i], transMat);      		
         	}
         }
@@ -109,6 +111,7 @@ Drawer.prototype = {
         
     },
     drawObject: function(obj){
+    	
     	var gl = obj.gl;
     	var shaderProgram = obj.shaderProgram;
     	gl.useProgram(shaderProgram.binary);
@@ -134,6 +137,18 @@ Drawer.prototype = {
 					shaderProgram.setBuffer(WebGLBase.stdVertParams["VERTEX_POSITION"], obj.buffer, new Float32Array(obj.vertices));
 					obj.vertexPositionsHaveChanged = false;
 				//}
+				
+				
+				if(obj.normalMatrix != null) {
+						shaderProgram.setParameter(WebGLBase.stdVertParams["N_MATRIX"], new Float32Array(obj.normalMatrix.flatten()));
+						obj.mvMatrixHasChanged = false;
+				}
+					
+				if(obj.normalsBuffer != null) {
+						shaderProgram.setBuffer(WebGLBase.stdVertParams["NORMALS"], obj.normalsBuffer, new Float32Array(obj.normalsBuffer.buffer));
+						obj.normalsHaveChanged = false;
+				}
+				
 			    if (obj.texBuffer != null){
 			    	//obj has a texture in use COMMIT TEST
 			    	//request texture to be hold in place by textureModel
@@ -145,6 +160,7 @@ Drawer.prototype = {
 			    gl.drawArrays(gl.TRIANGLES, 0, obj.buffer.numItems);
 	        }
        }
+     // console.log(obj.name + " ", new Date().getTime() - time, "ms");
 
     },
     drawLights: function(obj, transMat) {

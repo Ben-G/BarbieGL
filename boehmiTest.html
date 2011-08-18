@@ -207,8 +207,8 @@
 					var vertShader3 = ShaderBuilder.buildShaderFromParts(new Array(myShaders3[0]), Shader.TYPE_VERTEX_SHADER, myGl);
 					var fragShader3 = ShaderBuilder.buildShaderFromParts(new Array(myShaders3[1]), Shader.TYPE_FRAGMENT_SHADER, myGl);
 
-					fragShader3.addShaderPart(l);
-					vertShader3.addShaderPart(s);
+				//	fragShader3.addShaderPart(l);
+				//	vertShader3.addShaderPart(s);
 					
 					//console.log(vertShader3.getSrc());
 					
@@ -219,22 +219,22 @@
 					myShaderProgram3 = ShaderProgramBuilder.buildShaderProgram(vertShader3, fragShader3);
 
 					var minimize = createMash(1.2,1.2,1,myGl);
-					//minimize.setShaderProgram(myShaderProgram3);
+					minimize.setShaderProgram(myShaderProgram3);
 					minimize.name = "minimize";
 					minimize.xOffset = -12.6;
 					minimize.yOffset = 0.01;
 					minimize.zOffset = -14.1;
 					//minimize.visible = false;
-					//minimize.addAnimationMash(mash5);
+					minimize.addAnimationMash(mash5);
 
 					var button = createMash(5.3,1.5,1,myGl);
-					//button.setShaderProgram(myShaderProgram3);
+					button.setShaderProgram(myShaderProgram3);
 					button.name = "button";
 					button.xOffset = 12.3;
 					button.yOffset = 0.01;
 					button.zOffset = 9.6;
 					//button.visible = false;
-					//button.addAnimationMash(mash4);
+					button.addAnimationMash(mash4);
 
 					
 					var light = new Array();
@@ -263,11 +263,11 @@
 					//area.animationSpeed = 1;
 					area.rotationAxis = "x";
 
-					area.lights= light;
+					//area.lights= light;
 					area.sheen = true;
 					area.shininess = 20;
-					//area.add(button);
-					//area.add(minimize);
+					area.add(button);
+					area.add(minimize);
 
 					myRoot.add(area);
 					
@@ -302,7 +302,7 @@
 					//mash2.start();
 
 					triangle4.setShaderProgram(myShaderProgram);
-					triangle4.visible = false;
+					triangle4.visible = true;
 					triangle4.name = "triangle4";
 
 					object3dCube.setShaderProgram(myShaderProgram);
@@ -313,8 +313,8 @@
 					object3d3.visible = false;
 
 					area.addTexture(windowTexture, "randomTextureCoord", "uSampler");
-					//button.addTexture(buttonTexture, "randomTextureCoord", "uSampler");
-					//minimize.addTexture(minimizeTexture, "randomTextureCoord", "uSampler");
+					button.addTexture(buttonTexture, "randomTextureCoord", "uSampler");
+					minimize.addTexture(minimizeTexture, "randomTextureCoord", "uSampler");
 					triangle3.addTexture(myTexture, "randomTextureCoord", "uSampler");
 					triangle2.addTexture(myTexture2, "randomTextureCoord", "uSampler");
 					triangle.addTexture(myTexture3, "randomTextureCoord", "uSampler");
