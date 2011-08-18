@@ -17,7 +17,7 @@ Drawer.prototype = {
      startDrawing: function(object){
         this.currentObject = object;
         this.currentGl = object.gl;
-        this.currentGl.clearColor(0.0, 0.0, 0.0, 0.0);     
+        this.currentGl.clearColor(0.0, 0.0, 0.0, 1.0);     
         this.currentGl.clearDepth(1.0);
         this.currentGl.enable(this.currentGl.DEPTH_TEST);
         this.currentGl.depthFunc(this.currentGl.LEQUAL);

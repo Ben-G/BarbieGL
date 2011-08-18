@@ -82,8 +82,8 @@ Object3D.prototype = {
 		tmp_frag_parts = tmp_frag_parts.concat(this.shaderProgram.fragmentShader.parts);
 		
 		
-		var vertShader = ShaderBuilder.buildShaderFromParts(tmp_vert_parts, Shader.TYPE_VERTEX_SHADER, this.gl, false);
-        var fragShader = ShaderBuilder.buildShaderFromParts(tmp_frag_parts, Shader.TYPE_FRAGMENT_SHADER, this.gl, false);
+		var vertShader = ShaderBuilder.buildShaderFromParts(tmp_vert_parts, Shader.TYPE_VERTEX_SHADER, this.gl);
+        var fragShader = ShaderBuilder.buildShaderFromParts(tmp_frag_parts, Shader.TYPE_FRAGMENT_SHADER, this.gl);
         
         var myShaderProgram = ShaderProgramBuilder.buildShaderProgram(vertShader, fragShader);
         
@@ -164,6 +164,7 @@ Object3D.prototype = {
 			var aniRotMats = new Array();
 			var aniTransMats = new Array();
 			var aniScaleMats = new Array();
+			
 			for(var i in this.animationMashs) {
 				var mash = this.animationMashs[i];
 				mash.refresh(this);
@@ -239,6 +240,7 @@ Object3D.prototype = {
     	//if(this.colorHasChanged) {
 	    	var part = this.shaderProgram.fragmentShader.getPartsByName("dynamicColor")[0];
 	    	if(part != null) {
+	    		//console.log(this.name, this);
 	    		if(this.color != null) {
 	    			this.shaderProgram.setParameter(part.getParameterById("color"), this.color.flatten());
 	    		} else {
@@ -380,25 +382,25 @@ Object3D.prototype = {
            
              for (var i=0; i < this.children.length; i++){
     
-                
-                var V1 = $V([this.children[i].minPoint.x,this.children[i].minPoint.y,this.children[i].minPoint.z,1]);
-               
-                var V2 = $V([this.children[i].maxPoint.x,this.children[i].maxPoint.y,this.children[i].maxPoint.z,1]);
-       
-                if (V1.elements[0] < VMin.elements[0])
-                    VMin.elements[0] = V1.elements[0];
-                if (V1.elements[1] < VMin.elements[1])
-                    VMin.elements[1] = V1.elements[1];
-                if (V1.elements[2] < VMin.elements[2])
-                    VMin.elements[2] = V1.elements[2];
-
-                if (V2.elements[0] > VMax.elements[0])
-                    VMax.elements[0] = V2.elements[0];
-                if (V2.elements[1] > VMax.elements[1])
-                    VMax.elements[1] = V2.elements[1];
-                if (V2.elements[2] > VMax.elements[2])
-                    VMax.elements[2] = V2.elements[2];
-
+                if(this.children[i].visible) {
+	                var V1 = $V([this.children[i].minPoint.x,this.children[i].minPoint.y,this.children[i].minPoint.z,1]);
+	               
+	                var V2 = $V([this.children[i].maxPoint.x,this.children[i].maxPoint.y,this.children[i].maxPoint.z,1]);
+	       
+	                if (V1.elements[0] < VMin.elements[0])
+	                    VMin.elements[0] = V1.elements[0];
+	                if (V1.elements[1] < VMin.elements[1])
+	                    VMin.elements[1] = V1.elements[1];
+	                if (V1.elements[2] < VMin.elements[2])
+	                    VMin.elements[2] = V1.elements[2];
+	
+	                if (V2.elements[0] > VMax.elements[0])
+	                    VMax.elements[0] = V2.elements[0];
+	                if (V2.elements[1] > VMax.elements[1])
+	                    VMax.elements[1] = V2.elements[1];
+	                if (V2.elements[2] > VMax.elements[2])
+	                    VMax.elements[2] = V2.elements[2];
+				}
             }
                    
          
