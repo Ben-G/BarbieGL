@@ -10,6 +10,7 @@ function GLWindow(gl,width,height){
 	
 	this.setColor = function(color) {
 		this.backgroundField.setColor(color);
+		this.backgroundField.name = "windowBackgroundField";
 	}
 }
 

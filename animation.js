@@ -20,6 +20,8 @@ Animation = function(type, required_parts, name) {
 	this.changesTranslationMatrix = false;
 	this.changesScalingMatrix = false;
 	this.duration = 1000;
+	this.state = 0;
+	this.last_state = 0;
 	
 	
 	
@@ -145,6 +147,7 @@ Animation.prototype = {
 		}
 	},
 	refresh: function(obj) {
+
 		if(this.state == Animation.STATE_RUNNING) {
 			this.time_elapsed = new Date().getTime() - this.start_timestamp;
 				
@@ -264,6 +267,7 @@ ColorGradientAnimation.prototype._refreshValues = function(obj) {
 }
 
 ColorGradientAnimation.prototype._passParameters = function(program) {
+	
 	program.setParameter(this._getPartByName("fragshader_color").getParameterById("color"), new Float32Array(this.current_offset.flatten()));
  	this.current_offset = AnimationUtilities.calculateLinearValues(this.start_offset, this.end_offset, this.time_elapsed, this.duration);
 }
@@ -595,12 +599,13 @@ AnimationMash.prototype = {
 		return false;
 	},
 	_updateAnimationState: function(animation, last_state) {
-		//console.log(animation.name + " from " + last_state +  " to " + animation.state);
+		console.log(animation.name + " from " + last_state +  " to " + animation.state);
 		switch(animation.state) {
 			case Animation.STATE_CREATED: {break};
 			case Animation.STATE_RUNNING: {
 				this._removeRunningAnimation(animation);
 				this._runningAnimations.push(animation);
+				console.log("aaa", this);
 				this._removePausedAnimation(animation);
 				break;
 			};
@@ -649,8 +654,10 @@ AnimationMash.prototype = {
 	start: function() {
 		if(this.object == null) throw "You must add an AnimationMash to an Object3D beforce starting it"
 		this.state = Animation.STATE_RUNNING;
+		
 		for(var i=0; i<this._startAnimations.length; i++) {
 			this._startAnimation(this._startAnimations[i]);
+			
 		}
 	},
 	stop: function() {
@@ -823,7 +830,7 @@ AnimationPath.prototype = {
 			points.push(this.points[(index+1)%(this.points.length)]);
 			points.push(this.points[(index+2)%(this.points.length)]);
 		} else {
-			if(i+2 >= this.points.length) throw "Index is too high";
+			if(index+2 >= this.points.length) throw "Index is too high";
 			if(index == 0) {
 				points.push(this.points[index]);
 				points.push(this.points[index]);
@@ -1066,7 +1073,7 @@ AnimationMashFactory.prototype = {
 		
 		defs.push(minAni1.completed);
 		defs.push(this.createSplineTranslationAnimation(path,true,duration));
-		defs[defs.length-1].addCallback(function(data) { mash2 = data; console.log((data))});
+		defs[defs.length-1].addCallback(function(data) { mash2 = data;});
 		
 		defList.finalCallback( function() {
 			

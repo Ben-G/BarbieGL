@@ -51,6 +51,8 @@ function openConnection(){
       var message = JSON.parse(event.data);
       if (typeof message == 'string') {
       		textUnit2.setText(textUnit2.text+String.fromCharCode(13)+message);
+      		textUnit2.label.animationMashs["message"].start();
+      		myWindow.titleBar.animationMashs["windowFlip"].start();
       }
     };
     
@@ -186,7 +188,18 @@ function init() {
                     triangle4.zOffset = -30;
                     triangle4.startRotation(2,"y");
                 });
-    
+            
+    				myDefs.push(AnimationMashFactory.createFlipAnimation("z",180,500));
+				myDefs[myDefs.length-1].addCallback( function(data) {
+					mash4 = data;
+					mash4.name = "windowFlip";
+				});
+				
+				myDefs.push(AnimationMashFactory.createCircleMaximizeAnimation(4,1500));
+				myDefs[myDefs.length-1].addCallback( function(data) {
+					mash5 = data;
+					mash5.name = "message";
+				});
     myDefs.push(WebGLBase.UIDelegate.init());
     
     def.finalCallback(function(){ 
@@ -220,6 +233,7 @@ function init() {
     			myLabel = new Label(myGl,10,5);
     			myButton = new BarbieButton(myGl,2.65,1);
     			myWindow = new GLWindow(myGl, 16,16);
+    			myWindow.titleBar.addAnimationMash(mash4);
     			
     			textUnit.backgroundField.name = "bg";
     			textUnit.setColor($V([1,0,1,0.5]));
@@ -244,7 +258,7 @@ function init() {
                 textUnit.xOffset = 0.5;
                 textUnit.yOffset = -9.1;
                 textUnit.tileLayer = 1;    
-
+				textUnit2.label.addAnimationMash(mash5);
                     
                 textUnit2.tileLayer = 1;    
                 textUnit2.xOffset = 0.5;

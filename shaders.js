@@ -678,6 +678,7 @@ ShaderProgram.prototype = {
 			return;
 		} 
 		
+		
 		switch(para.type) {
 			case "mat4": {
 				switch(para.modifier) {
