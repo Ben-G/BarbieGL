@@ -51,7 +51,7 @@ function openConnection(){
       var message = JSON.parse(event.data);
       if (typeof message == 'string') {
       		textUnit2.setText(textUnit2.text+String.fromCharCode(13)+message);
-      		textUnit2.label.animationMashs["message"].start();
+      		//textUnit2.label.animationMashs["message"].start();
       		myWindow.titleBar.animationMashs["windowFlip"].start();
       }
     };
@@ -232,6 +232,7 @@ function init() {
     			myProfileName = new TextUnit(myGl,10,5);
     			myButton = new BarbieButton(myGl,2.35,1);
     			myWindow = new GLWindow(myGl, 16,16);
+    			myRightWindow = new GLWindow(myGl,16,16);
     			myProfileWindow = new GLWindow(myGl,12,8);
 
     			myWindow.titleBar.addAnimationMash(mash4);
@@ -243,13 +244,18 @@ function init() {
     			
    				myButton.setColor($V([0,1,0,0.5]));
    				myWindow.setColor($V([0,0,1,0.5]));
+   				myRightWindow.setColor($V([0,0,1,0.5]));
   				myProfileWindow.setColor($V([0,0,1,0.5]));
 
 
     			
     			console.log(textUnit2);
     			
-    			myRoot.add(myWindow);
+    			myWindowCube = new Object3D(myGl);
+    			
+    			myWindowCube.add(myWindow);
+    			myWindowCube.add(myRightWindow);
+    			myRoot.add(myWindowCube);
     			myRoot.add(myProfileWindow);
     			myRoot.name = "root";
     			//myRoot.add(textUnit2);
@@ -263,10 +269,10 @@ function init() {
      			textUnit.zOffset =0.1; 
                 textUnit.xOffset = 0.5;
                 textUnit.yOffset = -9.1;
-                textUnit.tileLayer = 1;    
+                //textUnit.tileLayer = 1;    
 				textUnit2.label.addAnimationMash(mash5);
                     
-                textUnit2.tileLayer = 1;    
+                //textUnit2.tileLayer = 1;    
                 textUnit2.xOffset = 0.5;
                 textUnit2.yOffset = -0.1;
                 textUnit2.zOffset = 0.1;
@@ -281,9 +287,15 @@ function init() {
                 myButton.yOffset = -14.5;
                 myButton.tileLayer = 1;
                    
-                myWindow.zOffset = -29;
-                myWindow.yOffset = 10;
-				myWindow.xOffset = -5;
+                   
+                   
+                myWindowCube.zOffset = -29;
+                myWindowCube.yOffset = 10;
+				myWindowCube.xOffset = -5;
+				
+				myRightWindow.zOffset = 0;
+                myRightWindow.yOffset = 0;
+				//yRightWindow.xOffset = 11;
 				
 				myProfileWindow.zOffset = -28;
                 myProfileWindow.yOffset = 10;
@@ -293,13 +305,14 @@ function init() {
 				myWindow.name = "window";
 				
 				myWindow.titleBar.setText("Chat window");
+				myRightWindow.titleBar.setText("Info");
 				myProfileWindow.titleBar.setText("Profile");
 				
 				//myWindow.startRotation(1,"y");
 				//textUnit2.startRotation(1,"y");
-				myWindow.rotation = true;
-				myWindow.rotationAxis = "y";
-				myWindow.rotValue = 0;
+				myRightWindow.rotation = true;
+				myRightWindow.rotationAxis = "y";
+				myRightWindow.rotValue = 90;
                    
                 //TODO default setting for shaderPrograms   
                 myRoot.setShaderProgram(myShaderProgram2);
@@ -309,6 +322,8 @@ function init() {
                 triangle4.setShaderProgram(myShaderProgram2);
                 object3dCube.setShaderProgram(myShaderProgram2);
                 object3d3.setShaderProgram(myShaderProgram2);
+                myWindowCube.setShaderProgram(myShaderProgram2);
+
 		
 				textUnit.setShaderProgram(myTextShaderP);
 				textUnit.name = "textUnit";
@@ -366,6 +381,8 @@ function init() {
                 triangle3.addTexture(myTexture, "randomTextureCoord", "uSampler" ,myGl);
                 triangle2.addTexture(myTexture2, "randomTextureCoord", "uSampler" ,myGl);
                 myWindow.titleBar.backgroundField.addTexture(titleBarTexture, "randomTextureCoord", "uSampler" ,myGl);
+                myRightWindow.titleBar.backgroundField.addTexture(titleBarTexture, "randomTextureCoord", "uSampler" ,myGl);
+
                 myProfileWindow.titleBar.backgroundField.addTexture(titleBarTexture, "randomTextureCoord", "uSampler" ,myGl);
                 myButton.backgroundField.setShaderProgram(WebGLBase.textureShaderProgram);
                 myButton.backgroundField.addTexture(titleBarTexture, "randomTextureCoord", "uSampler" ,myGl); 

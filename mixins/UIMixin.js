@@ -27,8 +27,16 @@ var asDraggable = function(){
 		        var hitPoint = WebGLBase.calculateClickVector(event.offsetX,event.offsetY, this,0);
 		        hitPoint = $V([hitPoint.e(1),hitPoint.e(2),hitPoint.e(3),1]);
 				hitPoint = WebGLBase.pMatrix.inverse().x(hitPoint);
+				var oldxOffset = this.xOffset;
+				var oldyOffset = this.yOffset;
 		   		this.xOffset = hitPoint.e(1) - this.clickOffsetX;
 		   		this.yOffset = hitPoint.e(2) - this.clickOffsetY;
+		   		
+		   		var xChange = this.xOffset - oldxOffset;
+		   		var yChange = this.yOffset - oldyOffset;
+		   		
+		   		//this.parent.xOffset += xChange;
+		   		//this.parent.yOffset += yChange;
 	   		}
 	}
 }
