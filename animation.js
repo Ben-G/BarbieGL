@@ -296,6 +296,7 @@ RotationAnimation.prototype._calculateRotationMatrix = function(curRotation) {
 RotationAnimation.prototype._refreshValues = function(obj) {
  	this.current_offset = AnimationUtilities.calculateLinearValues(this.start_offset, this.end_offset, this.time_elapsed, this.duration);
 	this.rotationMatrix = this._calculateRotationMatrix(this.current_offset);
+	
 }
 
 
@@ -616,11 +617,12 @@ AnimationMash.prototype = {
 			};
 			case Animation.STATE_FINISHED: {
 				this._removeRunningAnimation(animation);
-				if(this.isFinished() && this._successors[animation.name] == null) {
-					this.state = Animation.STATE_FINISHED;
-				}
 				if(this.state == Animation.STATE_RUNNING) {
-					this._startSuccessors(animation);
+					if(this.isFinished() && this._successors[animation.name] == null) {
+						this.state = Animation.STATE_FINISHED;
+					} else {
+						this._startSuccessors(animation);
+					}
 				} else if(this.state == Animation.STATE_PAUSED) {
 					animation._activateParts();
 					this._finishedInPause.push(animation);

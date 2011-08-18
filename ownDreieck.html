@@ -201,6 +201,12 @@ function init() {
 				});
     myDefs.push(WebGLBase.UIDelegate.init());
     
+	flipAni = new RotationAnimation(Animation.TYPE_ONCE);
+	flipAni.start_offset = Vector.create([0,0,0]);
+	flipAni.end_offset = Vector.create([0,-90,0]);
+	flipAni.duration = 500;
+	myDefs.push(flipAni.completed);
+    
     def.finalCallback(function(){ 
     	
     	
@@ -253,7 +259,13 @@ function init() {
     			
     			console.log(textUnit2);
     			
+    			
+    			flip = new AnimationMash();
+    			flip.addStartAnimation(flipAni);
+    			
+    			
     			myWindowCube = new Object3D(myGl);
+    			myWindowCube.name = "cube";
     			
     			myWindowCube.add(myWindow);
     			myWindowCube.add(myRightWindow);
@@ -333,7 +345,9 @@ function init() {
                 triangle4.setShaderProgram(myShaderProgram2);
                 object3dCube.setShaderProgram(myShaderProgram2);
                 object3d3.setShaderProgram(myShaderProgram2);
+                myWindowCube.addAnimationMash(flip);
                 myWindowCube.setShaderProgram(myShaderProgram2);
+                
 
 		
 				textUnit.setShaderProgram(myTextShaderP);
@@ -381,7 +395,10 @@ function init() {
 				flipButton.setBitmapFont(WebGLBase.UIDelegate.bmFontTexture,WebGLBase.UIDelegate.bmFontDescriptor);
 				flipButton.setFontSize(-20);
 				flipButton.setText("<>"); 
-				flipButton.clicked = function(){}
+				flipButton.clicked = function(){ 
+					flip.start(); 
+					flip.pause(); 
+				}
 				
 				
 			

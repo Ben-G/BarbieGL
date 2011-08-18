@@ -99,8 +99,9 @@ Object3D.prototype = {
 		for(var j=0;j<animation.getAnimations().length; j++) {
 			parts = parts.concat(animation.getAnimations()[j].parts);
 		}
-		
-		this._rebuildShaderProgram(parts);
+		if(parts.length > 0) {
+			this._rebuildShaderProgram(parts);
+		}
 	},
 	
 	removeAnimationMash : function (name) {
@@ -164,6 +165,8 @@ Object3D.prototype = {
 			var aniRotMats = new Array();
 			var aniTransMats = new Array();
 			var aniScaleMats = new Array();
+			
+			
 			
 			for(var i in this.animationMashs) {
 				var mash = this.animationMashs[i];
