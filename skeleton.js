@@ -14,6 +14,7 @@ function WebGLBase(){
     this.stdVertParams["P_MATRIX"] = new ShaderParameter("uPMatrix", "mat4","uniform");
     this.stdVertParams["N_MATRIX"] = new ShaderParameter("uNMatrix", "mat4","uniform");
     this.stdFragParams = new Object();
+    this.unitMatrix = Matrix.I(4);
 }
 
 
