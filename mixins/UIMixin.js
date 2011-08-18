@@ -62,25 +62,27 @@ var asDraggable = function(){
 var asScrollable = function(){
 	
 	this.scrollbarInitialize = function(){
-	var scrollUpButton = new BarbieButton(this.gl,1.4,1);
+	var scrollUpButton = new BarbieButton(this.gl,1,1);
 	scrollUpButton.tileLayer = 1; 
 	scrollUpButton.setShaderProgram(WebGLBase.UIDelegate.ButtonShaderText);
-	scrollUpButton.backgroundField.setShaderProgram(WebGLBase.UIDelegate.ButtonShaderBack);
+	scrollUpButton.backgroundField.setShaderProgram(WebGLBase.textureShaderProgram);
+	scrollUpButton.backgroundField.addTexture(upTexture, "randomTextureCoord", "uSampler" ,this.gl); 
 	scrollUpButton.name = "Button";				
 	scrollUpButton.setBitmapFont(WebGLBase.UIDelegate.bmFontTexture,WebGLBase.UIDelegate.bmFontDescriptor);
 	scrollUpButton.setFontSize(1);
-	scrollUpButton.setText("^");
+	scrollUpButton.setText("");
 	scrollUpButton.xOffset = this.maxWidth;
 	this.scrollUpButton = scrollUpButton;
 	
-	var scrollDownButton = new BarbieButton(this.gl,1.4,1); 
+	var scrollDownButton = new BarbieButton(this.gl,1,1); 
 	scrollDownButton.tileLayer = 1;
 	scrollDownButton.setShaderProgram(WebGLBase.UIDelegate.ButtonShaderText);
-	scrollDownButton.backgroundField.setShaderProgram(WebGLBase.UIDelegate.ButtonShaderBack);
+	scrollDownButton.backgroundField.setShaderProgram(WebGLBase.textureShaderProgram);
+	scrollDownButton.backgroundField.addTexture(downTexture, "randomTextureCoord", "uSampler" ,this.gl); 
 	scrollDownButton.name = "Button";				
 	scrollDownButton.setBitmapFont(WebGLBase.UIDelegate.bmFontTexture,WebGLBase.UIDelegate.bmFontDescriptor);
 	scrollDownButton.setFontSize(1);
-	scrollDownButton.setText("v");
+	scrollDownButton.setText("");
 	scrollDownButton.xOffset = this.maxWidth;
 	scrollDownButton.yOffset = -(this.maxHeight-scrollDownButton.maxHeight);
 	this.scrollDownButton = scrollDownButton;	
