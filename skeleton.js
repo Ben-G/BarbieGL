@@ -273,7 +273,7 @@ function hitTest(x,y, object){
             TODO: Check on ALL surfaces
         */        
 
-        var hitPoint = WebGLBase.calculateClickVector(x,y, object,0);//last Parameter is SurfaceID
+        var hitPoint = WebGLBase.file(x,y, object,0);//last Parameter is SurfaceID
         object.lastHitpoint = hitPoint;
         
         if ( (hitPoint.e(1) > object.minPoint.x && hitPoint.e(1) < object.maxPoint.x) && (hitPoint.e(2) > object.minPoint.y && hitPoint.e(2) < object.maxPoint.y) ){

@@ -309,7 +309,7 @@ function init() {
 				
 				textUnit2.setBitmapFont(text_a,newFont);
 				textUnit2.setFontSize(-45);
-				textUnit2.setText("TextUnit2");
+				textUnit2.setText("");
 				
 				
 				myProfileName.setShaderProgram(myTextShaderP);
@@ -331,8 +331,9 @@ function init() {
 				myButton.setFontSize(-20);
 				myButton.setText("Send"); 
 				myButton.clicked = function(){if (conn.readyState === 1) {
-      												conn.send(JSON.stringify(myProfileName.text+":"+textUnit.text)); 
-      												textUnit2.setText(textUnit2.text+String.fromCharCode(13)+textUnit.text);}
+													var message = myProfileName.text+":"+textUnit.text;
+													conn.send(JSON.stringify(message)); 
+      												textUnit2.setText(textUnit2.text+String.fromCharCode(13)+message);}
 												textUnit.setText("");}
 				
 				
