@@ -238,21 +238,32 @@ function init() {
     			myProfileName = new TextUnit(myGl,10,5);
     			myButton = new BarbieButton(myGl,2.35,1);
     			flipButton = new BarbieButton(myGl,1.5,1);
+    			flipButton2 = new BarbieButton(myGl,1.5,1);
+ 			    flipButton3 = new BarbieButton(myGl,1.5,1);
+ 			    flipButton4 = new BarbieButton(myGl,1.5,1); 
+ 			    
+
     			myWindow = new GLWindow(myGl, 16,16);
     			myRightWindow = new GLWindow(myGl,16,16);
+ 		    	myLeftWindow = new GLWindow(myGl,16,16);
+
+ 			    myBackWindow = new GLWindow(myGl,16,16);
     			myProfileWindow = new GLWindow(myGl,12,8);
     			myWindow.parentDrag = true;
 
     			myWindow.titleBar.addAnimationMash(mash4);
     			
     			textUnit.backgroundField.name = "bg";
-    			textUnit.setColor($V([0,0,0,0.5]));
-    			textUnit2.setColor($V([0,0,0,0.5]));
+    			textUnit.setColor($V([0.3,0.3,0.3,1]));
+    			textUnit2.setColor($V([0.3,0.3,0.3,1]));
     			object3d3.setColor($V([0,0,1,0.5]));
     			
    				myButton.setColor($V([0,1,0,0.5]));
-   				myWindow.setColor($V([0,0,1,0.5]));
-   				myRightWindow.setColor($V([0,1,0,0.5]));
+   				myWindow.setColor($V([0,0,0.5,1]));
+   				myBackWindow.setColor($V([0,0,0.5,1]));
+   				myRightWindow.setColor($V([0,0.5,0,1]));
+				myLeftWindow.setColor($V([0,0.5,0,1]));
+
   				myProfileWindow.setColor($V([0,0,1,0.5]));
 
 
@@ -269,6 +280,9 @@ function init() {
     			
     			myWindowCube.add(myWindow);
     			myWindowCube.add(myRightWindow);
+    			myWindowCube.add(myBackWindow);
+    			myWindowCube.add(myLeftWindow);
+    			
     			myRoot.add(myWindowCube);
     			myRoot.add(myProfileWindow);
     			myRoot.name = "root";
@@ -278,6 +292,12 @@ function init() {
                 myWindow.addSubview(myButton);
                 myWindow.addSubview(textUnit2);
                 myWindow.addSubview(flipButton); 
+                
+                myRightWindow.addSubview(flipButton2);
+                myBackWindow.addSubview(flipButton3);
+                myLeftWindow.addSubview(flipButton4);
+
+
                 
                 myProfileWindow.addSubview(myProfileName);
     
@@ -307,7 +327,22 @@ function init() {
                 flipButton.xOffset = 14.2;
                 flipButton.yOffset = -0.1;
                 flipButton.tileLayer = 1;
+                
+                flipButton2.zOffset = 0.1;
+                flipButton2.xOffset = 14.2;
+                flipButton2.yOffset = -0.1;
+                flipButton2.tileLayer = 1;
+                
+                flipButton3.zOffset = 0.1;
+                flipButton3.xOffset = 14.2;
+                flipButton3.yOffset = -0.1;
+                flipButton3.tileLayer = 1;
                    
+                flipButton4.zOffset = 0.1;
+                flipButton4.xOffset = 14.2;
+                flipButton4.yOffset = -0.1;
+                flipButton4.tileLayer = 1;
+                      
                    
                    
                 myWindowCube.zOffset = -37;
@@ -323,9 +358,28 @@ function init() {
                 myWindow.yOffset = 0;
 				myWindow.xOffset = -8;
 				
+				myBackWindow.zOffset = -8;
+                myBackWindow.yOffset = 0;
+				myBackWindow.xOffset = 8;
+				
+				myLeftWindow.zOffset = -8;
+                myLeftWindow.yOffset = 0;
+				myLeftWindow.xOffset = -8;
+				
 				myRightWindow.rotation = true;
 				myRightWindow.rotationAxis = "y";
 				myRightWindow.rotValue = 90;
+				myRightWindow.parentDrag = true;
+				
+				myBackWindow.rotation = true;
+				myBackWindow.rotationAxis = "y";
+				myBackWindow.rotValue = 180;
+				myBackWindow.parentDrag = true;
+				
+				myLeftWindow.rotation = true;
+				myLeftWindow.rotationAxis = "y";
+				myLeftWindow.rotValue = 270;
+				myLeftWindow.parentDrag = true;
 				
 				myProfileWindow.zOffset = -28;
                 myProfileWindow.yOffset = 10;
@@ -337,6 +391,10 @@ function init() {
 				myWindow.titleBar.setText("Chat window");
 				myRightWindow.titleBar.setText("Info");
 				myProfileWindow.titleBar.setText("Profile");
+				myBackWindow.titleBar.setText("back");
+				myLeftWindow.titleBar.setText("left");
+				
+
 				
 				//myWindow.startRotation(1,"y");
 				//textUnit2.startRotation(1,"y");
@@ -404,6 +462,35 @@ function init() {
 					flip.pause(); 
 				}
 				
+				flipButton2.setShaderProgram(WebGLBase.UIDelegate.ButtonShaderText);
+				flipButton2.name = "flipButton";				
+				flipButton2.setBitmapFont(WebGLBase.UIDelegate.bmFontTexture,WebGLBase.UIDelegate.bmFontDescriptor);
+				flipButton2.setFontSize(-20);
+				flipButton2.setText("<>"); 
+				flipButton2.clicked = function(){ 
+					flip.start(); 
+					flip.pause(); 
+				}
+				
+				flipButton3.setShaderProgram(WebGLBase.UIDelegate.ButtonShaderText);
+				flipButton3.name = "flipButton";				
+				flipButton3.setBitmapFont(WebGLBase.UIDelegate.bmFontTexture,WebGLBase.UIDelegate.bmFontDescriptor);
+				flipButton3.setFontSize(-20);
+				flipButton3.setText("<>"); 
+				flipButton3.clicked = function(){ 
+					flip.start(); 
+					flip.pause(); 
+				}
+				
+				flipButton4.setShaderProgram(WebGLBase.UIDelegate.ButtonShaderText);
+				flipButton4.name = "flipButton";				
+				flipButton4.setBitmapFont(WebGLBase.UIDelegate.bmFontTexture,WebGLBase.UIDelegate.bmFontDescriptor);
+				flipButton4.setFontSize(-20);
+				flipButton4.setText("<>"); 
+				flipButton4.clicked = function(){ 
+					flip.start(); 
+					flip.pause(); 
+				}
 				
 			
 				//textUnit2.cursor.addAnimationMash(myMash2);
@@ -419,6 +506,11 @@ function init() {
                 triangle3.addTexture(myTexture, "randomTextureCoord", "uSampler" ,myGl);
                 triangle2.addTexture(myTexture2, "randomTextureCoord", "uSampler" ,myGl);
                 myWindow.titleBar.backgroundField.addTexture(titleBarTexture, "randomTextureCoord", "uSampler" ,myGl);
+                myBackWindow.titleBar.backgroundField.addTexture(titleBarTexture, "randomTextureCoord", "uSampler" ,myGl);
+                myLeftWindow.titleBar.backgroundField.addTexture(titleBarTexture, "randomTextureCoord", "uSampler" ,myGl);
+
+                
+
                 myRightWindow.titleBar.backgroundField.addTexture(titleBarTexture, "randomTextureCoord", "uSampler" ,myGl);
 
                 myProfileWindow.titleBar.backgroundField.addTexture(titleBarTexture, "randomTextureCoord", "uSampler" ,myGl);
@@ -426,6 +518,12 @@ function init() {
                 myButton.backgroundField.addTexture(titleBarTexture, "randomTextureCoord", "uSampler" ,myGl); 
                 flipButton.backgroundField.setShaderProgram(WebGLBase.textureShaderProgram);
                 flipButton.backgroundField.addTexture(titleBarTexture, "randomTextureCoord", "uSampler" ,myGl); 
+                flipButton2.backgroundField.setShaderProgram(WebGLBase.textureShaderProgram);
+                flipButton2.backgroundField.addTexture(titleBarTexture, "randomTextureCoord", "uSampler" ,myGl); 
+                flipButton3.backgroundField.setShaderProgram(WebGLBase.textureShaderProgram);
+                flipButton3.backgroundField.addTexture(titleBarTexture, "randomTextureCoord", "uSampler" ,myGl); 
+                flipButton4.backgroundField.setShaderProgram(WebGLBase.textureShaderProgram);
+                flipButton4.backgroundField.addTexture(titleBarTexture, "randomTextureCoord", "uSampler" ,myGl);               
                 //textUnit.children[0].addTexture(text_a, "randomTextureCoord", "uSampler" ,myGl);
                 //textUnit.children[1].addTexture(text_a, "randomTextureCoord", "uSampler" ,myGl); 
 
