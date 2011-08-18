@@ -246,7 +246,7 @@ function init() {
     			
    				myButton.setColor($V([0,1,0,0.5]));
    				myWindow.setColor($V([0,0,1,0.5]));
-   				myRightWindow.setColor($V([0,0,1,0.5]));
+   				myRightWindow.setColor($V([0,1,0,0.5]));
   				myProfileWindow.setColor($V([0,0,1,0.5]));
 
 
@@ -298,14 +298,18 @@ function init() {
                    
                    
                    
-                myWindowCube.zOffset = -29;
+                myWindowCube.zOffset = -37;
                 myWindowCube.yOffset = 10;
-				myWindowCube.xOffset = -5;
+				myWindowCube.xOffset = -13;
 				                
 				
-				myRightWindow.zOffset = 0;
+				myRightWindow.zOffset = 8;
                 myRightWindow.yOffset = 0;
-				myRightWindow.xOffset = 16;
+				myRightWindow.xOffset = 8;
+				
+				myWindow.zOffset = 8;
+                myWindow.yOffset = 0;
+				myWindow.xOffset = -8;
 				
 				myRightWindow.rotation = true;
 				myRightWindow.rotationAxis = "y";
