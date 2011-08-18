@@ -113,6 +113,9 @@ function init() {
 	var myTexture3 = WebGLBase.textureModel.find("brown.jpg", myGl);
 	var text_a = WebGLBase.textureModel.find("arialLargeTransparent.png", myGl);  
 	var titleBarTexture = WebGLBase.textureModel.find("titleBar.png", myGl);
+	var buttonTexture = WebGLBase.textureModel.find("button.png", myGl);
+	upTexture = WebGLBase.textureModel.find("scrollUp.png", myGl);
+	downTexture = WebGLBase.textureModel.find("scrollDown.png", myGl);
 
 
     var triangle;
@@ -419,9 +422,9 @@ function init() {
 
                 myProfileWindow.titleBar.backgroundField.addTexture(titleBarTexture, "randomTextureCoord", "uSampler" ,myGl);
                 myButton.backgroundField.setShaderProgram(WebGLBase.textureShaderProgram);
-                myButton.backgroundField.addTexture(titleBarTexture, "randomTextureCoord", "uSampler" ,myGl); 
+                myButton.backgroundField.addTexture(buttonTexture, "randomTextureCoord", "uSampler" ,myGl); 
                 flipButton.backgroundField.setShaderProgram(WebGLBase.textureShaderProgram);
-                flipButton.backgroundField.addTexture(titleBarTexture, "randomTextureCoord", "uSampler" ,myGl); 
+                flipButton.backgroundField.addTexture(buttonTexture, "randomTextureCoord", "uSampler" ,myGl); 
                 //textUnit.children[0].addTexture(text_a, "randomTextureCoord", "uSampler" ,myGl);
                 //textUnit.children[1].addTexture(text_a, "randomTextureCoord", "uSampler" ,myGl); 
 
@@ -443,7 +446,7 @@ function init() {
 <body id="body" onload="init()">
 <canvas id="scene" width=1400 height=650></canvas>
 <button name="Klickmich" type="button"
-      value="Überraschung" onclick='WebGLBase.event.eventOccured("moveLeft","blabla");'>
+      value="Überraschung" onclick='flip.resumeOneStep()'>
       <p>
         <b>Root nach links</b>
       </p>
