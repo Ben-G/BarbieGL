@@ -86,7 +86,7 @@ WebGLBase.prototype = {
         }
         return newGL;
     },
-    createObject3D: function(polygons, gl, texBuffer){
+    createObject3D: function(polygons, gl, texBuffer, normalsBuffer){
     	
         var newObject = new Object3D();
         newObject.gl = gl;
@@ -97,21 +97,21 @@ WebGLBase.prototype = {
         var normals = new Array();
         for (var i=0; i<polygons.length; i++){
 	        newObject.vertices = newObject.vertices.concat(polygons[i]);
-	        normals = normals.concat(polygons[i]);
 	        totalItemSize+=polygons[i].length;
         }
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(newObject.vertices), gl.STATIC_DRAW);
         newObject.buffer.itemSize = 3;
         newObject.buffer.numItems = totalItemSize/3;
         
+	if(normalsBuffer != null) {
         newObject.normalsBuffer = new Object();
 	    newObject.normalsBuffer.values = gl.createBuffer();
 	    gl.bindBuffer(gl.ARRAY_BUFFER, newObject.normalsBuffer.values);
-	    newObject.normalsBuffer.buffer = normals;
+	    newObject.normalsBuffer.buffer = normalsBuffer.values;
 	    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(newObject.normalsBuffer.buffer), gl.STATIC_DRAW);
 	    newObject.normalsBuffer.itemSize = 3;
 	    newObject.normalsBuffer.numItems = totalItemSize/3;
-        
+        }
         if (texBuffer != null){
         	newObject.texBuffer = new Object();
 	        newObject.texBuffer.values = gl.createBuffer();

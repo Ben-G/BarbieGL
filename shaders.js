@@ -884,7 +884,8 @@ ShaderPart.prototype = {
 	getParameterSrc: function() {
 		var par_src = "";
 		for(var i = 0; i < this.parameters.length; i++) {
-			par_src += this.parameters[i].getSrc() + ";\n";
+			if(!this.parameters[i].isStdParameter())
+				par_src += this.parameters[i].getSrc() + ";\n";
 		}
 		return par_src;
 	},

@@ -22,9 +22,9 @@ GLWindow.prototype.windowInitialize = function(width, height){
 	
 	var backField = new Array();
 	backField[0] = createRectangle(new Point3D(0,-height,0.0), new Point3D(width,-height,0.0), new Point3D(width,0,0.0), new Point3D(0,0,0.0));
-	    //backField[0] = createRectangle(new Point3D(-5,-5,1), new Point3D(5,-5,1), new Point3D(5,5,1), new Point3D(-5,5,1));
 	var backFieldTextureCoord = rectangleTextureCoordBuffer();
-	this.backgroundField = WebGLBase.createObject3D(backField, this.gl,backFieldTextureCoord);
+	var backFieldNormals = rectangleNormalsBuffer();
+	this.backgroundField = WebGLBase.createObject3D(backField, this.gl,backFieldTextureCoord, backFieldNormals);
 	this.backgroundField.setShaderProgram(WebGLBase.UIDelegate.ButtonShaderBack);
 	this.add(this.backgroundField);
 	this.backgroundField.yOffset = -1;

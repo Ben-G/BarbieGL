@@ -19,6 +19,7 @@
 <script type="text/javascript" src="mixins/TextFieldMixin.js"></script>  
 <script type="text/javascript" src="mixins/UIMixin.js"></script>  
 <script type="text/javascript" src="skeleton.js"></script>
+<script type="text/javascript" src="lighting.js"></script>
 <script type="text/javascript" src="components/object3D.js"></script>
 <script type="text/javascript" src="components/texture.js"></script>
 <script type="text/javascript" src="components/textUnit.js"></script>
@@ -116,12 +117,14 @@ function init() {
 	var buttonTexture = WebGLBase.textureModel.find("button.png", myGl);
 	upTexture = WebGLBase.textureModel.find("scrollUp.png", myGl);
 	downTexture = WebGLBase.textureModel.find("scrollDown.png", myGl);
+	flipTexture = WebGLBase.textureModel.find("flipButton.png", myGl);
 
 
     var triangle;
     var triangle2;
  
     myDefs[0] = WebGLBase.shaderPartFactory.createFromName("vertshader_benji").addCallback(function(data){myShaders[0] = data; });
+
     myDefs[1] = WebGLBase.shaderPartFactory.createFromName("fragshader_benji").addCallback(function(data){myShaders[1] = data; });
     myDefs[2] = WebGLBase.shaderPartFactory.createFromName("vertshader_benji").addCallback(function(data){myShaders2[0] = data; });
     myDefs[3] = WebGLBase.shaderPartFactory.createFromName2("dynamicColor", Shader.TYPE_FRAGMENT_SHADER).addCallback(function(data){myShaders2[1] = data; });
@@ -209,19 +212,22 @@ function init() {
 	flipAni.end_offset = Vector.create([0,-90,0]);
 	flipAni.duration = 500;
 	myDefs.push(flipAni.completed);
+
+    myDefs.push(WebGLBase.shaderPartFactory.createFromName2("lighting", Shader.TYPE_FRAGMENT_SHADER).addCallback(function(data){lightFrag = data; }));
+myDefs.push(WebGLBase.shaderPartFactory.createFromName2("lighting", Shader.TYPE_VERTEX_SHADER).addCallback(function(data){vertFrag = data; }));
     
     def.finalCallback(function(){ 
     	
     	
-    			var vertShader = ShaderBuilder.buildDefaultShader(Shader.TYPE_VERTEX_SHADER, myGl);
+    		var vertShader = ShaderBuilder.buildDefaultShader(Shader.TYPE_VERTEX_SHADER, myGl);
                 var fragShader = ShaderBuilder.buildShaderFromParts(new Array(myShaders[1]), Shader.TYPE_FRAGMENT_SHADER, myGl);
-                var vertShader2 = ShaderBuilder.buildDefaultShader(Shader.TYPE_VERTEX_SHADER, myGl);
-                var fragShader2 = ShaderBuilder.buildShaderFromParts(new Array(myShaders2[1]), Shader.TYPE_FRAGMENT_SHADER, myGl);
-                var vertShader3 = ShaderBuilder.buildShaderFromParts(new Array(myShaders3[0]), Shader.TYPE_VERTEX_SHADER, myGl);
-                var fragShader3 = ShaderBuilder.buildShaderFromParts(new Array(myShaders3[1]), Shader.TYPE_FRAGMENT_SHADER, myGl);
+                var vertShader2 = ShaderBuilder.buildShaderFromParts([], Shader.TYPE_VERTEX_SHADER, myGl);
+                var fragShader2 = ShaderBuilder.buildShaderFromParts([myShaders2[1]], Shader.TYPE_FRAGMENT_SHADER, myGl);
+                var vertShader3 = ShaderBuilder.buildShaderFromParts([myShaders3[0]], Shader.TYPE_VERTEX_SHADER, myGl);
+                var fragShader3 = ShaderBuilder.buildShaderFromParts([myShaders3[1]], Shader.TYPE_FRAGMENT_SHADER, myGl);
                   
-                var textShader_vert = ShaderBuilder.buildShaderFromParts(new Array(myTextShader[0]), Shader.TYPE_VERTEX_SHADER, myGl);   
-                var textShader = ShaderBuilder.buildShaderFromParts(new Array(myTextShader[1]), Shader.TYPE_FRAGMENT_SHADER, myGl);    
+                var textShader_vert = ShaderBuilder.buildShaderFromParts([myTextShader[0]], Shader.TYPE_VERTEX_SHADER, myGl);   
+                var textShader = ShaderBuilder.buildShaderFromParts([myTextShader[1]], Shader.TYPE_FRAGMENT_SHADER, myGl);    
                    
                 //var myShaderProgram = ShaderProgramBuilder.buildShaderProgram(vertShader, fragShader);
                 var myShaderProgram2 = ShaderProgramBuilder.buildShaderProgram(vertShader2, fragShader2);
@@ -240,10 +246,10 @@ function init() {
     			textUnit2 = new StaticScrollableTextUnit(myGl, 12, 8); 
     			myProfileName = new TextUnit(myGl,10,5);
     			myButton = new BarbieButton(myGl,2.35,1);
-    			flipButton = new BarbieButton(myGl,1.5,1);
-    			flipButton2 = new BarbieButton(myGl,1.5,1);
- 			    flipButton3 = new BarbieButton(myGl,1.5,1);
- 			    flipButton4 = new BarbieButton(myGl,1.5,1); 
+    			flipButton = new BarbieButton(myGl,1,1);
+    			flipButton2 = new BarbieButton(myGl,1,1);
+ 			    flipButton3 = new BarbieButton(myGl,1,1);
+ 			    flipButton4 = new BarbieButton(myGl,1,1); 
  			    
 
     			myWindow = new GLWindow(myGl, 16,16);
@@ -262,12 +268,12 @@ function init() {
     			object3d3.setColor($V([0,0,1,0.5]));
     			
    				myButton.setColor($V([0,1,0,0.5]));
-   				myWindow.setColor($V([0,0,0.5,1]));
-   				myBackWindow.setColor($V([0,0,0.5,1]));
-   				myRightWindow.setColor($V([0,0.5,0,1]));
-				myLeftWindow.setColor($V([0,0.5,0,1]));
+   				myWindow.setColor($V([0.8,0.9,0.8,1]));
+   				myBackWindow.setColor($V([0.8,0.9,0.8,1]));
+   				myRightWindow.setColor($V([0.8,0.9,0.8,1]));
+				myLeftWindow.setColor($V([0.8,0.9,0.8,1]));
 
-  				myProfileWindow.setColor($V([0,0,1,0.5]));
+  				myProfileWindow.setColor($V([0.8,0.9,0.8,1]));
 
 
     			
@@ -285,6 +291,44 @@ function init() {
     			myWindowCube.add(myRightWindow);
     			myWindowCube.add(myBackWindow);
     			myWindowCube.add(myLeftWindow);
+
+			var light = new PointLight($V([1,1,1]), $V([0,0,-10]));
+			myRoot.addLight(light);
+			myWindow.backgroundField.sheen = true;
+			myWindow.backgroundField.shininess = 30;
+			myWindow.backgroundField.sheenColor = Vector.create([1,1,1]);
+			myWindow.titleBar.backgroundField.sheen = true;
+			myWindow.titleBar.backgroundField.shininess = 30;
+			myWindow.titleBar.backgroundField.sheenColor = Vector.create([1,1,1]);
+
+			myRightWindow.backgroundField.sheen = true;
+			myRightWindow.backgroundField.shininess = 30;
+			myRightWindow.backgroundField.sheenColor = Vector.create([1,1,1]);
+			myRightWindow.titleBar.backgroundField.sheen = true;
+			myRightWindow.titleBar.backgroundField.shininess = 30;
+			myRightWindow.titleBar.backgroundField.sheenColor = Vector.create([1,1,1]);
+
+			myBackWindow.backgroundField.sheen = true;
+			myBackWindow.backgroundField.shininess = 30;
+			myBackWindow.backgroundField.sheenColor = Vector.create([1,1,1]);
+			myBackWindow.titleBar.backgroundField.sheen = true;
+			myBackWindow.titleBar.backgroundField.shininess = 30;
+			myBackWindow.titleBar.backgroundField.sheenColor = Vector.create([1,1,1]);
+
+			myLeftWindow.backgroundField.sheen = true;
+			myLeftWindow.backgroundField.shininess = 30;
+			myLeftWindow.backgroundField.sheenColor = Vector.create([1,1,1]);
+			myLeftWindow.titleBar.backgroundField.sheen = true;
+			myLeftWindow.titleBar.backgroundField.shininess = 30;
+			myLeftWindow.titleBar.backgroundField.sheenColor = Vector.create([1,1,1]);
+
+			myProfileWindow.backgroundField.sheen = true;
+			myProfileWindow.backgroundField.shininess = 30;
+			myProfileWindow.backgroundField.sheenColor = Vector.create([1,1,1]);
+			myProfileWindow.titleBar.backgroundField.sheen = true;
+			myProfileWindow.titleBar.backgroundField.shininess = 30;
+			myProfileWindow.titleBar.backgroundField.sheenColor = Vector.create([1,1,1]);
+
     			
     			myRoot.add(myWindowCube);
     			myRoot.add(myProfileWindow);
@@ -459,7 +503,7 @@ function init() {
 				flipButton.name = "flipButton";				
 				flipButton.setBitmapFont(WebGLBase.UIDelegate.bmFontTexture,WebGLBase.UIDelegate.bmFontDescriptor);
 				flipButton.setFontSize(-20);
-				flipButton.setText("<>"); 
+				flipButton.setText(""); 
 				flipButton.clicked = function(){ 
 					flip.start(); 
 					flip.pause(); 
@@ -469,7 +513,7 @@ function init() {
 				flipButton2.name = "flipButton";				
 				flipButton2.setBitmapFont(WebGLBase.UIDelegate.bmFontTexture,WebGLBase.UIDelegate.bmFontDescriptor);
 				flipButton2.setFontSize(-20);
-				flipButton2.setText("<>"); 
+				flipButton2.setText(""); 
 				flipButton2.clicked = function(){ 
 					flip.start(); 
 					flip.pause(); 
@@ -479,7 +523,7 @@ function init() {
 				flipButton3.name = "flipButton";				
 				flipButton3.setBitmapFont(WebGLBase.UIDelegate.bmFontTexture,WebGLBase.UIDelegate.bmFontDescriptor);
 				flipButton3.setFontSize(-20);
-				flipButton3.setText("<>"); 
+				flipButton3.setText(""); 
 				flipButton3.clicked = function(){ 
 					flip.start(); 
 					flip.pause(); 
@@ -489,7 +533,7 @@ function init() {
 				flipButton4.name = "flipButton";				
 				flipButton4.setBitmapFont(WebGLBase.UIDelegate.bmFontTexture,WebGLBase.UIDelegate.bmFontDescriptor);
 				flipButton4.setFontSize(-20);
-				flipButton4.setText("<>"); 
+				flipButton4.setText(""); 
 				flipButton4.clicked = function(){ 
 					flip.start(); 
 					flip.pause(); 
@@ -520,13 +564,13 @@ function init() {
                 myButton.backgroundField.setShaderProgram(WebGLBase.textureShaderProgram);
                 myButton.backgroundField.addTexture(buttonTexture, "randomTextureCoord", "uSampler" ,myGl); 
                 flipButton.backgroundField.setShaderProgram(WebGLBase.textureShaderProgram);
-                flipButton.backgroundField.addTexture(buttonTexture, "randomTextureCoord", "uSampler" ,myGl); 
+                flipButton.backgroundField.addTexture(flipTexture, "randomTextureCoord", "uSampler" ,myGl); 
                 flipButton2.backgroundField.setShaderProgram(WebGLBase.textureShaderProgram);
-                flipButton2.backgroundField.addTexture(buttonTexture, "randomTextureCoord", "uSampler" ,myGl); 
+                flipButton2.backgroundField.addTexture(flipTexture, "randomTextureCoord", "uSampler" ,myGl); 
                 flipButton3.backgroundField.setShaderProgram(WebGLBase.textureShaderProgram);
-                flipButton3.backgroundField.addTexture(buttonTexture, "randomTextureCoord", "uSampler" ,myGl); 
+                flipButton3.backgroundField.addTexture(flipTexture, "randomTextureCoord", "uSampler" ,myGl); 
                 flipButton4.backgroundField.setShaderProgram(WebGLBase.textureShaderProgram);
-                flipButton4.backgroundField.addTexture(buttonTexture, "randomTextureCoord", "uSampler" ,myGl);               
+                flipButton4.backgroundField.addTexture(flipTexture, "randomTextureCoord", "uSampler" ,myGl);               
                 //textUnit.children[0].addTexture(text_a, "randomTextureCoord", "uSampler" ,myGl);
                 //textUnit.children[1].addTexture(text_a, "randomTextureCoord", "uSampler" ,myGl); 
 
@@ -547,18 +591,6 @@ function init() {
 </head>
 <body id="body" onload="init()">
 <canvas id="scene" width=1400 height=650></canvas>
-<button name="Klickmich" type="button"
-      value="Überraschung" onclick='flip.resumeOneStep()'>
-      <p>
-        <b>Root nach links</b>
-      </p>
- </button>
-<button name="Klickmich" type="button"
-      value="Überraschung" onclick='WebGLBase.event.eventOccured("moveRight","blabla");'>
-      <p>
-        <b>Root nach rechts</b>
-      </p>
- </button>
- <div id="fps"></div>
+
 </body>
 </html>
