@@ -832,7 +832,8 @@ AnimationPath.prototype = {
 			points.push(this.points[(index+1)%(this.points.length)]);
 			points.push(this.points[(index+2)%(this.points.length)]);
 		} else {
-			if(index+2 >= this.points.length) throw "Index is too high";
+			if(index+2 > this.points.length)
+				throw "Index is too high";
 			if(index == 0) {
 				points.push(this.points[index]);
 				points.push(this.points[index]);
@@ -1153,7 +1154,7 @@ AnimationMashFactory.prototype = {
 		
 		var c;
 		if(circle) c=path.points.length;
-		else c=path.points.length+1; 
+		else c=path.points.length-1; 
 		for(var i = 0; i<c; i++) {
 			var ani = new SplineTranslationAnimation(Animation.TYPE_ONCE);
 			anis.push(ani);
@@ -1173,10 +1174,16 @@ AnimationMashFactory.prototype = {
 				
 				if(i != anis.length -1) {
 					mash.connectSuccessor(ani, anis[i+1]);
-					ani.duration = duration * path.getLength(i,i+1) / path.getCircleLength();
+					if(circle)
+						ani.duration = duration * path.getLength(i,i+1) / path.getCircleLength();
+					else 
+						ani.duration = duration * path.getLength(i,i+1) / path.getLength();
 				} else {
-					mash.connectSuccessor(ani, anis[0]);
-					ani.duration = duration * (path.getCircleLength() - path.getLength()) / path.getCircleLength();
+					//mash.connectSuccessor(ani, anis[0]);
+					if(circle) 
+						ani.duration = duration * (path.getCircleLength() - path.getLength()) / path.getCircleLength();
+					else 
+						ani.duration = duration * path.getLength(i,i+1) / path.getLength();
 				}
 			}
 			d.callback(mash);
