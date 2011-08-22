@@ -50,10 +50,14 @@ function openConnection(){
 
     conn.onmessage = function (event) {
       var message = JSON.parse(event.data);
-      if (typeof message == 'string') {
-      		newFrag = new TextFragment(String.fromCharCode(13)+message, $V([0.0,1.0,0.0]));
+      if (typeof message.message == 'string') { 
+      		var newFrag = new TextFragment(String.fromCharCode(13)+message.user, $V([0.0,1.0,0.0]));
+      		var newFrag2 = new TextFragment(message.message, $V([1.0,1.0,1.0]));
+      		
       		//textUnit2.setText(textUnit2.text+String.fromCharCode(13)+message);
       		textUnit2.textFrags.push(newFrag);
+      		textUnit2.textFrags.push(newFrag2);
+      		
       		textUnit2.setTextFrags(textUnit2.textFrags);
       		//textUnit2.label.animationMashs["message"].start();
       		myWindowCube.animationMashs["message"].start();
@@ -522,7 +526,7 @@ myDefs.push(WebGLBase.shaderPartFactory.createFromName2("lighting", Shader.TYPE_
 				myButton.clicked = function(){if (conn.readyState === 1) {
 													var name =  myProfileName.text+": ";
 													var message = textUnit.text;
-													conn.send(JSON.stringify(message)); 
+													conn.send(JSON.stringify({message: message, user:name}));   
       												//textUnit2.setText(textUnit2.text+String.fromCharCode(13)+message);
       												textUnit2.textFrags.push(new TextFragment(String.fromCharCode(13)+name, $V([0.0,0.0,1.0])));
      											    textUnit2.textFrags.push(new TextFragment(message, $V([1.0,1.0,1.0])));
