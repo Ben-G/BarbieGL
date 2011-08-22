@@ -53,7 +53,7 @@ function openConnection(){
       if (typeof message == 'string') {
       		textUnit2.setText(textUnit2.text+String.fromCharCode(13)+message);
       		//textUnit2.label.animationMashs["message"].start();
-      		myWindow.titleBar.animationMashs["windowFlip"].start();
+      		myWindowCube.animationMashs["message"].start();
       }
     };
     
@@ -194,7 +194,7 @@ function init() {
                     triangle4.startRotation(2,"y");
                 });
             
-    				myDefs.push(AnimationMashFactory.createFlipAnimation("z",180,500));
+    			/*	myDefs.push(AnimationMashFactory.createFlipAnimation("z",180,500));
 				myDefs[myDefs.length-1].addCallback( function(data) {
 					mash4 = data;
 					mash4.name = "windowFlip";
@@ -204,8 +204,25 @@ function init() {
 				myDefs[myDefs.length-1].addCallback( function(data) {
 					mash5 = data;
 					mash5.name = "message";
-				});
+				});*/
     myDefs.push(WebGLBase.UIDelegate.init());
+    
+    var path2 = new AnimationPath();
+    path2.addPoint($V([0,0,0]));
+    path2.addPoint($V([1,0,0]));
+    path2.addPoint($V([0,0,0]));
+    path2.addPoint($V([-1,0,0]));
+    path2.addPoint($V([0,0,0]));
+    path2.addPoint($V([0.5,0,0]));
+    path2.addPoint($V([0,0,0]));
+    path2.addPoint($V([-0.5,0,0]));
+    path2.addPoint($V([0,0,0]));
+    myDefs.push(AnimationMashFactory.createSplineTranslationAnimation(path2, false, 250));
+	myDefs[myDefs.length-1].addCallback( function(data) {
+		mash4 = data;
+		mash4.name = "message";
+	});
+    
     
 	flipAni = new RotationAnimation(Animation.TYPE_ONCE);
 	flipAni.start_offset = Vector.create([0,0,0]);
@@ -260,7 +277,7 @@ myDefs.push(WebGLBase.shaderPartFactory.createFromName2("lighting", Shader.TYPE_
     			myProfileWindow = new GLWindow(myGl,12,8);
     			myWindow.parentDrag = true;
 
-    			myWindow.titleBar.addAnimationMash(mash4);
+    			
     			
     			textUnit.backgroundField.name = "bg";
     			textUnit.setColor($V([0.3,0.3,0.3,1]));
@@ -291,6 +308,8 @@ myDefs.push(WebGLBase.shaderPartFactory.createFromName2("lighting", Shader.TYPE_
     			myWindowCube.add(myRightWindow);
     			myWindowCube.add(myBackWindow);
     			myWindowCube.add(myLeftWindow);
+    			
+    			myWindowCube.addAnimationMash(mash4);
 
 			var light = new PointLight($V([1,1,1]), $V([0,0,-10]));
 			myRoot.addLight(light);
@@ -352,7 +371,7 @@ myDefs.push(WebGLBase.shaderPartFactory.createFromName2("lighting", Shader.TYPE_
                 textUnit.xOffset = 0.5;
                 textUnit.yOffset = -9.1;
                 //textUnit.tileLayer = 1;    
-				textUnit2.label.addAnimationMash(mash5);
+				//textUnit2.label.addAnimationMash(mash5);
                     
                 //textUnit2.tileLayer = 1;    
                 textUnit2.xOffset = 0.5;
@@ -591,6 +610,6 @@ myDefs.push(WebGLBase.shaderPartFactory.createFromName2("lighting", Shader.TYPE_
 </head>
 <body id="body" onload="init()">
 <canvas id="scene" width=1400 height=650></canvas>
-
+<br><div id="fps"></div>
 </body>
 </html>
