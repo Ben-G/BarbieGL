@@ -92,6 +92,11 @@ DeferrableList.prototype = {
         
 }
 
+function TextFragment(text,textColor){
+	this.text = text;
+	this.textColor = textColor
+}
+
 function Deferrable(){
     this.callbacks = new Array();
     this.deferrables = new Array();

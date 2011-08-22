@@ -15,6 +15,13 @@ function ScrollableTextUnit(gl,maxWidth,maxHeight){
 		this.hideScrolledOutLetters();
 	}
 	
+	this.setTextFrags = function(text){
+		ScrollableTextUnit.prototype.setTextFrags.call(this,text);
+		this.add(this.scrollUpButton);
+		this.add(this.scrollDownButton);
+		this.hideScrolledOutLetters();
+	}
+	
 	this.setBitmapFont = function(bitmapFont,bitmapFontDescriptor){
 		ScrollableTextUnit.prototype.setBitmapFont.call(this,bitmapFont,bitmapFontDescriptor);
 		this.scrollStep = this.lineHeight;

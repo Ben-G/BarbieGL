@@ -10,6 +10,7 @@ var asTextField = function(){
 		this.fontSize = 1;
 		this.text = "";
 		this.tiles = new Array();
+		this.textFrags = new Array();
 		
 		//TODO Dringend durch default shader programm ersetzen
 		this.label = new Object3D(this.gl);
@@ -21,6 +22,7 @@ var asTextField = function(){
 		//indicates the amount of scrolled lines
 		this.scrolledLines = 0;
 		this.currentLine = 0;
+		this.textColor = $V([1.0,1.0,1.0]);
 
 		this.objectHierarchyIdFloat = Math.random();
 	   
@@ -74,7 +76,7 @@ var asTextField = function(){
 	}
 	
 	
-	this.addLetter = function(letter){
+	this.addLetter = function(letter, textColor){
 		if (letter.charCodeAt(0) == 13){
 			this.newline();
 		}
@@ -96,6 +98,7 @@ var asTextField = function(){
     	var tile = WebGLBase.createTile(triangles2, this.gl);
  
     	//Create and fill a textureCoordBuffer
+    	tile.textColor = textColor;
     	tile.texBuffer = new Object();
 		tile.texBuffer.values = this.gl.createBuffer();
 		tile.texBuffer.buffer = letterInfo.textureBuffer; 
@@ -236,7 +239,7 @@ var asTextField = function(){
 		this.label.xOffset = 0.2;
 		
 		for (var i = 0; i<text.length; i++){
-			var textColor = $V([1.0,0.0,0.0]);
+			var textColor = this.textColor;
 			this.addLetter(text[i], textColor);
 		}
 		//cursor needs to be readded, because all children are deleted
@@ -252,6 +255,52 @@ var asTextField = function(){
 			this.scrollToLine(this.currentLine-(this.visibleLines-1));
 		else if(this.scrollToLine != null)
 			this.scrollToLine(0);
+	}
+	
+	this.setTextFrags = function(textFrags){
+		this.children = new Array();
+		this.label.children = new Array();
+		this.letters = new Array();
+		this.tiles = new Array();
+		this.currentxOffset = 0;
+		this.currentyOffset = 0;
+		this.currentLine = 0;
+		this.textFrags = textFrags;
+		if (this.cursor != null){
+			this.cursor.xOffset = 0;
+			this.cursor.yOffset = 0;
+		}
+		this.text = "";
+		
+		this.add(this.label);
+		this.label.xOffset = 0.2;
+		console.log(textFrags[0]);
+		for (var j = 0; j<textFrags.length; j++){
+			var text = textFrags[j];
+			for (var i = 0; i<text.text.length; i++){
+				//var textColor = this.textColor;
+				this.addLetter(text.text[i], text.textColor);
+			}
+		}
+		//cursor needs to be readded, because all children are deleted
+		//this.createCursor();
+		if (this.cursor != null)
+			this.add(this.cursor);
+		if (this.backgroundField != null)	
+			this.add(this.backgroundField);
+		if (this.moveCursorToTile != null)
+			this.moveCursorToTile(this.text.length);
+			
+		if (this.scrollToLine != null && this.currentLine >= this.visibleLines)
+			this.scrollToLine(this.currentLine-(this.visibleLines-1));
+		else if(this.scrollToLine != null)
+			this.scrollToLine(0);
+	}
+	
+	this.addTextFragment = function(textFrag){
+		//this.text += textFrag.text;
+		this.textFrags.push(textFrag);
+		this.setTextFragment(this.textFrags);
 	}
 	
 }

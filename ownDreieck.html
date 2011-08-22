@@ -51,7 +51,10 @@ function openConnection(){
     conn.onmessage = function (event) {
       var message = JSON.parse(event.data);
       if (typeof message == 'string') {
-      		textUnit2.setText(textUnit2.text+String.fromCharCode(13)+message);
+      		newFrag = new TextFragment(String.fromCharCode(13)+message, $V([0.0,1.0,0.0]));
+      		//textUnit2.setText(textUnit2.text+String.fromCharCode(13)+message);
+      		textUnit2.textFrags.push(newFrag);
+      		textUnit2.setTextFrags(textUnit2.textFrags);
       		//textUnit2.label.animationMashs["message"].start();
       		myWindow.titleBar.animationMashs["windowFlip"].start();
       }
@@ -244,7 +247,7 @@ myDefs.push(WebGLBase.shaderPartFactory.createFromName2("lighting", Shader.TYPE_
     	
     	    	textUnit = new ScrollableTextUnit(myGl, 12, 5); 
     			textUnit2 = new StaticScrollableTextUnit(myGl, 12, 8); 
-    			myProfileName = new TextUnit(myGl,10,5);
+    			myProfileName = new TextUnit(myGl,10,1);
     			myButton = new BarbieButton(myGl,2.35,1);
     			flipButton = new BarbieButton(myGl,1,1);
     			flipButton2 = new BarbieButton(myGl,1,1);
@@ -363,6 +366,7 @@ myDefs.push(WebGLBase.shaderPartFactory.createFromName2("lighting", Shader.TYPE_
                 myProfileName.xOffset = 0.1;
                 myProfileName.yOffset = -0.1;
                 myProfileName.zOffset = 0.1;
+                myProfileName.textColor = $V([0,0,0]);
                 
                 myButton.zOffset = 0.1;
                 myButton.xOffset = 0.5;
@@ -435,7 +439,7 @@ myDefs.push(WebGLBase.shaderPartFactory.createFromName2("lighting", Shader.TYPE_
 
 				myWindow.name = "window";
 				
-				myWindow.titleBar.setText("Chat window");
+				myWindow.titleBar.setTextFrags([new TextFragment("Chat Window",$V([1,1,1]))]);
 				myRightWindow.titleBar.setText("Info");
 				myProfileWindow.titleBar.setText("Profile");
 				myBackWindow.titleBar.setText("back");
@@ -473,18 +477,21 @@ myDefs.push(WebGLBase.shaderPartFactory.createFromName2("lighting", Shader.TYPE_
 				
 				textUnit2.setBitmapFont(text_a,newFont);
 				textUnit2.setFontSize(-45);
-				textUnit2.setText("");
+				textUnit2.setTextFrags([new TextFragment("chat opened...",$V([1,0,0]))]);
 				
 				
 				myProfileName.setShaderProgram(myTextShaderP);
 				myProfileName.name = "textUnit2";
 				myProfileName.backgroundField.setShaderProgram(myShaderProgram2);
+			
 
 				
 				myProfileName.setBitmapFont(text_a,newFont); 
 				myProfileName.setFontSize(-20);
 				myProfileName.setText("Benjamin");
-				myProfileName.backgroundField.visible = false;
+				myProfileName.backgroundField.visible = false; 
+				//myProfileName.backgroundField.setColor ($V([1,1,1,1]));
+				myProfileName.cursor.setColor ($V([0,0,0,1]));
 				
 				
 			
@@ -494,9 +501,17 @@ myDefs.push(WebGLBase.shaderPartFactory.createFromName2("lighting", Shader.TYPE_
 				myButton.setFontSize(-20);
 				myButton.setText("Send"); 
 				myButton.clicked = function(){if (conn.readyState === 1) {
-													var message = myProfileName.text+":"+textUnit.text;
+													var name =  myProfileName.text+": ";
+													var message = textUnit.text;
 													conn.send(JSON.stringify(message)); 
-      												textUnit2.setText(textUnit2.text+String.fromCharCode(13)+message);}
+      												//textUnit2.setText(textUnit2.text+String.fromCharCode(13)+message);
+      												textUnit2.textFrags.push(new TextFragment(String.fromCharCode(13)+name, $V([0.0,0.0,1.0])));
+     											    textUnit2.textFrags.push(new TextFragment(message, $V([1.0,1.0,1.0])));
+      												textUnit2.setTextFrags(textUnit2.textFrags)};
+      												      		//newFrag = new TextFragment(String.fromCharCode(13)+message, $V([1.0,1.0,1.0]));
+      		//textUnit2.setText(textUnit2.text+String.fromCharCode(13)+message);
+      		//textUnit2.addTextFragment(newFrag)};
+      		//textUnit2.label.animationMashs["message"
 												textUnit.setText("");}
 												
 				flipButton.setShaderProgram(WebGLBase.UIDelegate.ButtonShaderText);
