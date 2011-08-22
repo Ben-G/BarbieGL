@@ -155,7 +155,11 @@ var asTextField = function(){
 		this.letters.push(letter);
 		tile.setShaderProgram(this.shaderProgram);
 		tile.addTexture(this.bitmapFont, "randomTextureCoord", "uSampler" ,this.gl); 
-		
+		var lightpart = tile.shaderProgram.fragmentShader.getPartsByName("lighting")[0];
+		if(lightpart != null) {
+			lightpart.isActive = false;
+	
+		}		
 		
 		//is called if any of the tiles is beeing clicked
 		if (this.enableMouseInteraction != null)

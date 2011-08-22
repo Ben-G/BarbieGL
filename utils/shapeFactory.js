@@ -34,6 +34,20 @@ function rectangleTextureCoordBuffer(){
 	return tempBuffer;	
 }
 
+function rectangleNormalsBuffer(){
+	tempBuffer = new Object();
+	tempBuffer.values = [
+		0,0,1,//P1
+		0,0,1,//P2
+		0,0,1,//P4
+		0,0,1,//P2
+		0,0,1,//P3
+		0,0,1]//P4;
+	tempBuffer.itemSize = 3;
+	tempBuffer.numItems = 6;
+	return tempBuffer;	
+}
+
 rectangleTextureCoordBuffer.A = function(){
 	letterObj = new Object();
 	letterObj.buffer = [

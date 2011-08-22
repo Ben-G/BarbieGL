@@ -142,7 +142,11 @@ Object3D.prototype = {
 		var samplerPara = new ShaderParameter(samplerID, "sampler2D", "uniform");
 
 		texture.coordParameter = texCoordsPara;
-        texture.samplerParameter =  samplerPara;
+        	texture.samplerParameter =  samplerPara;
+
+		var texCoordLocation = this.shaderProgram.gl.getAttribLocation(this.shaderProgram.binary, texCoordsPara.identifier);
+		this.shaderProgram.gl.enableVertexAttribArray(texCoordLocation);
+
         
         this.textures.push(texture);
 	},

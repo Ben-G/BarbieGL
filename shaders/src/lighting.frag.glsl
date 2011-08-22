@@ -174,7 +174,7 @@ void main(void)
 	
 	
 	
-	fragColor += vec4(lightWeighting,1.0);
+	fragColor *= vec4(lightWeighting,1.0);
 
 }
 
