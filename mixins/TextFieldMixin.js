@@ -232,7 +232,8 @@ var asTextField = function(){
 		this.label.xOffset = 0.2;
 		
 		for (var i = 0; i<text.length; i++){
-			this.addLetter(text[i]);
+			var textColor = $V([1.0,0.0,0.0]);
+			this.addLetter(text[i], textColor);
 		}
 		//cursor needs to be readded, because all children are deleted
 		//this.createCursor();
