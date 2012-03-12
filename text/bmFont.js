@@ -24,11 +24,11 @@ function BitmapFontDescriptor(){
     this.chars = new Object(); 
 }
 
-
+ 
 BitmapFontDescriptor.prototype = {
 	instantiate: function(bitmapFontId){
         var xhrArgs = {
-            url: "text/arialLarge.fnt",
+            url: "text/arialLarge.xml", 
             preventCache: true,
             handleAs: "xml",
             sync: true
